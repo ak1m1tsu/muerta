@@ -2,20 +2,14 @@ package main
 
 import (
 	"log"
+	"os"
 
-	"github.com/bytedance/sonic"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/romankravchuk/muerta/internal/api"
+	"github.com/rs/zerolog"
 )
 
 func main() {
-	app := fiber.New(fiber.Config{
-		AppName:               "Muerta API v1.0",
-		DisableStartupMessage: true,
-		JSONEncoder:           sonic.Marshal,
-		JSONDecoder:           sonic.Unmarshal,
-	})
-	app.Use(logger.New())
-	app.Get("/", func(c *fiber.Ctx) error { return c.JSON(fiber.Map{"message": "welcome!"}) })
-	log.Fatal(app.Listen(":3000"))
+	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
+	api := api.New(&logger, ":3000")
+	log.Fatal(api.Run())
 }
