@@ -11,6 +11,7 @@ POSTGRES_USER=[psql_username]
 POSTGRES_DB=[psql_db_name]
 POSTGRES_PASSWORD=[psql_password]
 API_PORT=[api_port]
+SERVICE_PORT=[service_port]
 SECRET=[api_secret]
 RSA_PRIVATE_KEY=[api_rsa_private_key]
 RSA_PUBLIC_KEY=[api_rsa_public_key]
@@ -26,7 +27,7 @@ docker compose up -d --build
 
 ## Features
 
-- [ ] Python service to recognize shelf live on a picture
+- [x] Python service to recognize shelf life on a picture
 - [ ] JWT Authentication
 - [ ] Logging in JSON format
 - [ ] Users with roles and groups

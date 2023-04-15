@@ -1,12 +1,13 @@
 import easyocr
 import re
+import os
 
 from flask import Flask, jsonify, request, json
 
 app = Flask(__name__)
 pattern = r"(\d{2}[\.\,]\d{2}[\.\,]\d{2})"
 
-
+@app.route('/')
 def index():
     try:
         payload = json.loads(request.data)
@@ -24,5 +25,12 @@ def text_recognition(file_path):
     return " ".join(result).lower()
 
 
+def main():
+    port = os.environ.get("SERVICE_PORT")
+    if port is None:
+        port = "6996"
+    app.run(port)
+
+
 if __name__ == "__main__":
-    app.run(14824)
+    main()
