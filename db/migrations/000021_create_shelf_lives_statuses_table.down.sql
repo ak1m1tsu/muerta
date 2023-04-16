@@ -1,0 +1,1 @@
+DROP TABLE shelf_lives_statuses CASCADE;

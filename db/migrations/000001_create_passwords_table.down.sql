@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS passwords;
+DROP TABLE passwords CASCADE;

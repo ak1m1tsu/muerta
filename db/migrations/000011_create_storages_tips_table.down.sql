@@ -1,0 +1,1 @@
+DROP TABLE storages_tips CASCADE;
