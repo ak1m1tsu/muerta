@@ -1,6 +1,3 @@
-# Created by https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,python,database
-# Edit at https://www.toptal.com/developers/gitignore?templates=go,visualstudiocode,python,database
-
 ### Database ###
 *.accdb
 *.db
@@ -21,7 +18,7 @@
 *.dll
 *.so
 *.dylib
-bin
+bin/
 
 # Test binary, built with `go test -c`
 *.test
@@ -193,4 +190,5 @@ pyrightconfig.json
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/go,visualstudiocode,python,database
+### certificates ###
+cert/

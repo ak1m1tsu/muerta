@@ -6,6 +6,10 @@ require (
 	github.com/bytedance/sonic v1.8.7
 	github.com/gofiber/contrib/fiberzerolog v0.1.0
 	github.com/gofiber/fiber/v2 v2.44.0
+	github.com/gofiber/jwt/v3 v3.3.7
+	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/jmoiron/sqlx v1.3.5
+	github.com/lib/pq v1.10.8
 	github.com/rs/zerolog v1.29.1
 )
 
