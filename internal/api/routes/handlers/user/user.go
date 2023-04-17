@@ -3,16 +3,20 @@ package user
 import (
 	"strconv"
 
+	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/errors"
 	service "github.com/romankravchuk/muerta/internal/services/user"
+	"github.com/rs/zerolog"
 )
 
 type UserHanlder struct {
 	svc service.UserServicer
+	log *zerolog.Logger
 }
 
-func New(svc service.UserServicer) *UserHanlder {
-	return &UserHanlder{svc: svc}
+func New(svc service.UserServicer, log *zerolog.Logger) *UserHanlder {
+	return &UserHanlder{svc: svc, log: log}
 }
 
 func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
@@ -22,6 +26,10 @@ func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
 	}
 	user, err := h.svc.FindByID(ctx.Context(), id)
 	if err != nil {
+		h.log.Error().
+			Interface(fiberzerolog.FieldRequestID, ctx.GetRespHeader(fiber.HeaderXRequestID)).
+			Err(err).
+			Msg(errors.ErrClient)
 		return fiber.ErrNotFound
 	}
 	return ctx.Status(fiber.StatusOK).

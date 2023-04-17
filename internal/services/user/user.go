@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repo "github.com/romankravchuk/muerta/internal/repositories/user"
 )
 
@@ -42,11 +43,11 @@ func (svc *userService) FindByName(ctx context.Context, name string) (any, error
 }
 
 func (svc *userService) FindMany(ctx context.Context, filter any) ([]any, error) {
-	users, err := svc.repo.FindMany(ctx, filter)
+	_, err := svc.repo.FindMany(ctx, models.UserFilter{})
 	if err != nil {
 		return nil, err
 	}
-	return users, nil
+	return nil, nil
 }
 
 func (svc *userService) Create(ctx context.Context, userDTO any) (any, error) {

@@ -1,0 +1,8 @@
+api:
+  name: "Muerta"
+  host: "localhost"
+  port: "8000"
+db:
+  user: "postgres"
+  pass: "postgrespw"
+  name: "muerta"
