@@ -3,12 +3,12 @@ package user
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
+	"github.com/romankravchuk/muerta/internal/pkg/log"
 	repo "github.com/romankravchuk/muerta/internal/repositories/user"
 	svc "github.com/romankravchuk/muerta/internal/services/user"
-	"github.com/rs/zerolog"
 )
 
-func NewRouter(db *sqlx.DB, log *zerolog.Logger) *fiber.App {
+func NewRouter(db *sqlx.DB, log *log.Logger) *fiber.App {
 	r := fiber.New()
 	repo := repo.New(db)
 	svc := svc.New(repo)

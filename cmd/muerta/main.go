@@ -7,8 +7,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/romankravchuk/muerta/internal/api"
-	"github.com/romankravchuk/muerta/internal/config"
-	"github.com/rs/zerolog"
+	"github.com/romankravchuk/muerta/internal/pkg/config"
+	logger "github.com/romankravchuk/muerta/internal/pkg/log"
 )
 
 var (
@@ -37,7 +37,7 @@ func init() {
 }
 
 func main() {
-	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
-	api := api.New(db, cfg, &logger)
+	logger := logger.New()
+	api := api.New(db, cfg, logger)
 	log.Fatalf("api run: %v", api.Run())
 }

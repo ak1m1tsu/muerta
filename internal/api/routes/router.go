@@ -11,15 +11,15 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/auth"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/user"
-	"github.com/romankravchuk/muerta/internal/config"
-	"github.com/rs/zerolog"
+	"github.com/romankravchuk/muerta/internal/pkg/config"
+	"github.com/romankravchuk/muerta/internal/pkg/log"
 )
 
 type Router struct {
 	*fiber.App
 }
 
-func NewV1(db *sqlx.DB, cfg *config.Config, logger *zerolog.Logger) *Router {
+func NewV1(db *sqlx.DB, cfg *config.Config, logger *log.Logger) *Router {
 	r := &Router{
 		App: fiber.New(fiber.Config{
 			AppName:               "Muerta API v1.0",
@@ -30,7 +30,7 @@ func NewV1(db *sqlx.DB, cfg *config.Config, logger *zerolog.Logger) *Router {
 	}
 	r.mountAPIMiddlewares(logger)
 	r.Route("/api/v1", func(r fiber.Router) {
-		r.Mount("/auth", auth.NewRouter(db))
+		r.Mount("/auth", auth.NewRouter(cfg, db, logger))
 		r.Use(jwtware.New(jwtware.Config{
 			SigningMethod: "RS256",
 			SigningKey:    cfg.RSAPublicKey,
@@ -41,7 +41,7 @@ func NewV1(db *sqlx.DB, cfg *config.Config, logger *zerolog.Logger) *Router {
 	return r
 }
 
-func (r *Router) mountAPIMiddlewares(logger *zerolog.Logger) {
+func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
 	r.Use(requestid.New())
 	r.Use(fiberzerolog.New(fiberzerolog.Config{
 		Fields: []string{
@@ -54,7 +54,7 @@ func (r *Router) mountAPIMiddlewares(logger *zerolog.Logger) {
 			fiberzerolog.FieldUserAgent,
 			fiberzerolog.FieldError,
 		},
-		Logger: logger,
+		Logger: logger.GetLogger(),
 	}))
 	r.Use(csrf.New(csrf.Config{}))
 }

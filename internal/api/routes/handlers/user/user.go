@@ -3,19 +3,19 @@ package user
 import (
 	"strconv"
 
-	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
-	"github.com/romankravchuk/muerta/internal/api/errors"
+	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/validator"
 	service "github.com/romankravchuk/muerta/internal/services/user"
-	"github.com/rs/zerolog"
 )
 
 type UserHanlder struct {
 	svc service.UserServicer
-	log *zerolog.Logger
+	log *log.Logger
 }
 
-func New(svc service.UserServicer, log *zerolog.Logger) *UserHanlder {
+func New(svc service.UserServicer, log *log.Logger) *UserHanlder {
 	return &UserHanlder{svc: svc, log: log}
 }
 
@@ -26,10 +26,7 @@ func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
 	}
 	user, err := h.svc.FindByID(ctx.Context(), id)
 	if err != nil {
-		h.log.Error().
-			Interface(fiberzerolog.FieldRequestID, ctx.GetRespHeader(fiber.HeaderXRequestID)).
-			Err(err).
-			Msg(errors.ErrClient)
+		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
 	return ctx.Status(fiber.StatusOK).
@@ -62,8 +59,18 @@ func (h *UserHanlder) FindByName(ctx *fiber.Ctx) error {
 }
 
 func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
-	user, err := h.svc.Create(ctx.Context(), "")
+	var payload *dto.CreateUserPayload
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return fiber.ErrBadRequest
+	}
+	user, err := h.svc.Create(ctx.Context(), *payload)
 	if err != nil {
+		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
 	return ctx.Status(fiber.StatusOK).

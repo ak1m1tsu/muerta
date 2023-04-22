@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/romankravchuk/muerta/internal/config"
+	"github.com/romankravchuk/muerta/internal/pkg/config"
 )
 
 type JWTServicer interface {

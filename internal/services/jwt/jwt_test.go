@@ -7,7 +7,7 @@ import (
 	"encoding/pem"
 	"testing"
 
-	"github.com/romankravchuk/muerta/internal/config"
+	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/stretchr/testify/assert"
 )
 

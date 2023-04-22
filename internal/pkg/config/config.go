@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -23,11 +24,11 @@ type Config struct {
 
 func New(path string) (*Config, error) {
 	certFolder := os.Getenv("CERT_PATH")
-	prvKey, err := os.ReadFile(certFolder + "id_rsa")
+	prvKey, err := os.ReadFile(fmt.Sprintf("%s/id_rsa", certFolder))
 	if err != nil {
 		return nil, err
 	}
-	pubKey, err := os.ReadFile(certFolder + "id_rsa.pub")
+	pubKey, err := os.ReadFile(fmt.Sprintf("%s/id_rsa.pub", certFolder))
 	if err != nil {
 		return nil, err
 	}
