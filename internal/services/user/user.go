@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
-	"github.com/romankravchuk/muerta/internal/pkg/models"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repo "github.com/romankravchuk/muerta/internal/repositories/user"
 )
 

@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/romankravchuk/muerta/internal/pkg/models"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
 
 type UserRepositorer interface {

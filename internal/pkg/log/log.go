@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/errors"
-	"github.com/romankravchuk/muerta/internal/pkg/validator"
+	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/rs/zerolog"
 )
 

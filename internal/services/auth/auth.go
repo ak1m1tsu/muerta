@@ -10,7 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
-	"github.com/romankravchuk/muerta/internal/pkg/models"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	"github.com/romankravchuk/muerta/internal/repositories/user"
 	"github.com/romankravchuk/muerta/internal/services/jwt"
 	"golang.org/x/crypto/argon2"
