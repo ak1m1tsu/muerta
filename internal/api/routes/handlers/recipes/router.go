@@ -14,5 +14,6 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger) *fiber.App {
 	service := svc.New(repository)
 	handler := New(service, log)
 	router.Post("/", handler.CreateRecipe)
+	router.Get("/:id<int>", handler.FindRecipeByID)
 	return router
 }

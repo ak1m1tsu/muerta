@@ -30,3 +30,16 @@ type CreateRecipeDTO struct {
 	Description string          `json:"description,omitempty" validate:"max=200"`
 	Steps       []RecipeStepDTO `json:"steps" validate:"required"`
 }
+
+type FindRecipeDTO struct {
+	ID          int           `json:"id"`
+	Name        string        `json:"name"`
+	Description string        `json:"description"`
+	Steps       []FindStepDTO `json:"steps"`
+}
+
+type FindStepDTO struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Place int    `json:"place"`
+}
