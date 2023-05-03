@@ -22,6 +22,8 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.0 // indirect
+	github.com/otiai10/gosseract/v2 v2.4.0 // indirect
+	github.com/rbretecher/go-postman-collection v0.9.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 )
 

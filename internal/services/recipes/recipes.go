@@ -13,11 +13,10 @@ import (
 type RecipeServicer interface {
 	CreateRecipe(ctx context.Context, payload *dto.CreateRecipeDTO) error
 	FindRecipeByID(ctx context.Context, id int) (dto.FindRecipeDTO, error)
-	// UpdateRecipe(ctx context.Context)
-	// DeleteRecipe(ctx context.Context)
-	// FindRecipeByID(ctx context.Context)
-	// FindRecipeByName(ctx context.Context)
-	// FindManyRecipes(ctx context.Context)
+	FindRecipeByName(ctx context.Context, name string) (dto.FindRecipeDTO, error)
+	FindRecipes(ctx context.Context, filter *dto.RecipeFilterDTO) ([]dto.FindRecipeDTO, error)
+	UpdateRecipe(ctx context.Context, id int, payload *dto.UpdateRecipeDTO) error
+	DeleteRecipe(ctx context.Context, id int) error
 }
 
 type RecipeService struct {
@@ -49,4 +48,43 @@ func (s *RecipeService) FindRecipeByID(ctx context.Context, id int) (dto.FindRec
 	}
 	result := translate.RecipeModelToFindDTO(recipe)
 	return result, nil
+}
+
+func (s *RecipeService) FindRecipeByName(ctx context.Context, name string) (dto.FindRecipeDTO, error) {
+	recipe, err := s.repository.FindByName(ctx, name)
+	if err != nil {
+		return dto.FindRecipeDTO{}, fmt.Errorf("recipe not found by name: %w", err)
+	}
+	result := translate.RecipeModelToFindDTO(recipe)
+	return result, nil
+}
+
+func (s *RecipeService) FindRecipes(ctx context.Context, filter *dto.RecipeFilterDTO) ([]dto.FindRecipeDTO, error) {
+	recipes, err := s.repository.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	if err != nil {
+		return nil, fmt.Errorf("recipes not found: %w", err)
+	}
+	result := translate.RecipeModelsToFindDTOs(recipes)
+	return result, nil
+}
+
+func (s *RecipeService) UpdateRecipe(ctx context.Context, id int, payload *dto.UpdateRecipeDTO) error {
+	recipe, err := s.repository.FindByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("recipe not found by id: %w", err)
+	}
+	if payload.Name != "" {
+		recipe.Name = payload.Name
+	}
+	if payload.Description != "" {
+		recipe.Description = payload.Description
+	}
+	if err := s.repository.Update(ctx, &recipe); err != nil {
+		return fmt.Errorf("update recipe: %w", err)
+	}
+	return nil
+}
+
+func (s *RecipeService) DeleteRecipe(ctx context.Context, id int) error {
+	return nil
 }

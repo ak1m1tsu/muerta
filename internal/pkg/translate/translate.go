@@ -21,3 +21,15 @@ func RecipeModelToFindDTO(model models.Recipe) dto.FindRecipeDTO {
 		Steps:       steps,
 	}
 }
+
+func RecipeModelsToFindDTOs(models []models.Recipe) []dto.FindRecipeDTO {
+	result := make([]dto.FindRecipeDTO, len(models))
+	for i, recipe := range models {
+		result[i] = dto.FindRecipeDTO{
+			ID:          recipe.ID,
+			Name:        recipe.Name,
+			Description: recipe.Description,
+		}
+	}
+	return result
+}

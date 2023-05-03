@@ -20,26 +20,13 @@ type TokenPayload struct {
 	Roles []string
 }
 
-type RecipeStepDTO struct {
-	ID    int `json:"id" validate:"required, unique"`
-	Place int `json:"place" validate:"required, unique"`
-}
-
-type CreateRecipeDTO struct {
-	Name        string          `json:"name" validate:"required,min=3,max=100"`
-	Description string          `json:"description,omitempty" validate:"max=200"`
-	Steps       []RecipeStepDTO `json:"steps" validate:"required"`
-}
-
-type FindRecipeDTO struct {
-	ID          int           `json:"id"`
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Steps       []FindStepDTO `json:"steps"`
-}
-
 type FindStepDTO struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Place int    `json:"place"`
+}
+
+type Paging struct {
+	Limit  int `query:"limit"`
+	Offset int `query:"offset"`
 }

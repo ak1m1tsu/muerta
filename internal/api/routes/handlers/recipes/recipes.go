@@ -56,3 +56,61 @@ func (h *RecipesHandler) FindRecipeByID(ctx *fiber.Ctx) error {
 		"data":    dto,
 	})
 }
+
+func (h *RecipesHandler) FindRecipeByName(ctx *fiber.Ctx) error {
+	name, err := common.GetNameByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	dto, err := h.svc.FindRecipeByName(ctx.Context(), name)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    dto,
+	})
+}
+
+func (h *RecipesHandler) FindRecipes(ctx *fiber.Ctx) error {
+	filter := new(dto.RecipeFilterDTO)
+	if err := common.GetRecipeFilterByFiberCtx(ctx, filter); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	dto, err := h.svc.FindRecipes(ctx.Context(), filter)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    dto,
+	})
+}
+
+func (h *RecipesHandler) UpdateRecipe(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	payload := new(dto.UpdateRecipeDTO)
+	if err := ctx.BodyParser(payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return fiber.ErrBadRequest
+	}
+	if err := h.svc.UpdateRecipe(ctx.Context(), id, payload); err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+	})
+}
