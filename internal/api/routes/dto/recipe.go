@@ -23,6 +23,12 @@ type RecipeFilterDTO struct {
 	Name string `query:"name"`
 }
 
+type FindStepDTO struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Place int    `json:"place"`
+}
+
 type RecipeStepDTO struct {
 	ID    int `json:"id" validate:"required, unique"`
 	Place int `json:"place" validate:"required, unique"`

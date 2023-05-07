@@ -6,7 +6,6 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
 	"github.com/romankravchuk/muerta/internal/repositories/recipes"
 )
 
@@ -28,16 +27,8 @@ func New(repository recipes.RecipesRepositorer) *RecipeService {
 }
 
 func (s *RecipeService) CreateRecipe(ctx context.Context, payload *dto.CreateRecipeDTO) error {
-	steps := make([]models.Step, len(payload.Steps))
-	for i, step := range payload.Steps {
-		steps[i].ID = step.ID
-		steps[i].Place = step.Place
-	}
-	err := s.repository.Create(ctx, &models.Recipe{
-		Name:        payload.Name,
-		Description: payload.Description,
-		Steps:       steps,
-	})
+	model := translate.CreateRecipeDTOToModel(payload)
+	err := s.repository.Create(ctx, &model)
 	return err
 }
 
@@ -46,7 +37,7 @@ func (s *RecipeService) FindRecipeByID(ctx context.Context, id int) (dto.FindRec
 	if err != nil {
 		return dto.FindRecipeDTO{}, fmt.Errorf("recipe not found by id: %w", err)
 	}
-	result := translate.RecipeModelToFindDTO(recipe)
+	result := translate.RecipeModelToFindDTO(&recipe)
 	return result, nil
 }
 
@@ -55,7 +46,7 @@ func (s *RecipeService) FindRecipeByName(ctx context.Context, name string) (dto.
 	if err != nil {
 		return dto.FindRecipeDTO{}, fmt.Errorf("recipe not found by name: %w", err)
 	}
-	result := translate.RecipeModelToFindDTO(recipe)
+	result := translate.RecipeModelToFindDTO(&recipe)
 	return result, nil
 }
 
@@ -86,5 +77,8 @@ func (s *RecipeService) UpdateRecipe(ctx context.Context, id int, payload *dto.U
 }
 
 func (s *RecipeService) DeleteRecipe(ctx context.Context, id int) error {
+	if err := s.repository.Delete(ctx, id); err != nil {
+		return fmt.Errorf("delete recipe: %w", err)
+	}
 	return nil
 }

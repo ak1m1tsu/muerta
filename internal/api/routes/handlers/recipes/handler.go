@@ -53,7 +53,7 @@ func (h *RecipesHandler) FindRecipeByID(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    dto,
+		"data":    fiber.Map{"recipe": dto},
 	})
 }
 
@@ -70,7 +70,7 @@ func (h *RecipesHandler) FindRecipeByName(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    dto,
+		"data":    fiber.Map{"recipe": dto},
 	})
 }
 
@@ -80,14 +80,14 @@ func (h *RecipesHandler) FindRecipes(ctx *fiber.Ctx) error {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	dto, err := h.svc.FindRecipes(ctx.Context(), filter)
+	dtos, err := h.svc.FindRecipes(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrNotFound
+		return fiber.ErrInternalServerError
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    dto,
+		"data":    fiber.Map{"recipes": dtos},
 	})
 }
 
@@ -107,6 +107,21 @@ func (h *RecipesHandler) UpdateRecipe(ctx *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 	if err := h.svc.UpdateRecipe(ctx.Context(), id, payload); err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+	})
+}
+
+func (h *RecipesHandler) DeleteRecipe(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	if err := h.svc.DeleteRecipe(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}

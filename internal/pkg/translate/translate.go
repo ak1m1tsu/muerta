@@ -1,11 +1,13 @@
 package translate
 
 import (
+	"github.com/google/uuid"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/pkg/auth"
 	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
 
-func RecipeModelToFindDTO(model models.Recipe) dto.FindRecipeDTO {
+func RecipeModelToFindDTO(model *models.Recipe) dto.FindRecipeDTO {
 	steps := make([]dto.FindStepDTO, len(model.Steps))
 	for i, step := range model.Steps {
 		steps[i] = dto.FindStepDTO{
@@ -32,4 +34,67 @@ func RecipeModelsToFindDTOs(models []models.Recipe) []dto.FindRecipeDTO {
 		}
 	}
 	return result
+}
+
+func UserModelToFindDTO(model *models.User) dto.FindUserDTO {
+	settings := make([]dto.FindSettingDTO, len(model.Settings))
+	for i, setting := range model.Settings {
+		settings[i] = dto.FindSettingDTO{
+			ID:       setting.ID,
+			Name:     setting.Name,
+			Value:    setting.Value,
+			Category: setting.Category.Name,
+		}
+	}
+	return dto.FindUserDTO{
+		ID:        model.ID,
+		Name:      model.Name,
+		CreatedAt: model.CreatedAt,
+		Settings:  settings,
+	}
+}
+
+func UserModelsToFindDTOs(models []models.User) []dto.FindUserDTO {
+	result := make([]dto.FindUserDTO, len(models))
+	for i, user := range models {
+		result[i] = dto.FindUserDTO{
+			ID:        user.ID,
+			Name:      user.Name,
+			CreatedAt: user.CreatedAt,
+		}
+	}
+	return result
+}
+
+func CreateUserDTOToModel(dto *dto.CreateUserDTO) models.User {
+	settings := make([]models.Setting, len(dto.Settings))
+	for i, setting := range dto.Settings {
+		settings[i] = models.Setting{
+			ID:    setting.ID,
+			Value: setting.Value,
+		}
+	}
+	salt := uuid.New().String()
+	return models.User{
+		ID:       dto.ID,
+		Name:     dto.Name,
+		Salt:     salt,
+		Settings: settings,
+		Password: models.Password{
+			Hash: auth.GenerateHashFromPassword(dto.Password, salt),
+		},
+	}
+}
+
+func CreateRecipeDTOToModel(dto *dto.CreateRecipeDTO) models.Recipe {
+	steps := make([]models.Step, len(dto.Steps))
+	for i, step := range dto.Steps {
+		steps[i].ID = step.ID
+		steps[i].Place = step.Place
+	}
+	return models.Recipe{
+		Name:        dto.Name,
+		Description: dto.Description,
+		Steps:       steps,
+	}
 }

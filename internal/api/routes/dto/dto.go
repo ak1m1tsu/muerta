@@ -10,20 +10,9 @@ type SignUpUserPayload struct {
 	Password string `json:"password" validate:"required,min=8"`
 }
 
-type CreateUserPayload struct {
-	SignUpUserPayload
-	Hash string
-}
-
 type TokenPayload struct {
 	Name  string
 	Roles []string
-}
-
-type FindStepDTO struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Place int    `json:"place"`
 }
 
 type Paging struct {

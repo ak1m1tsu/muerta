@@ -4,10 +4,13 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/romankravchuk/muerta/internal/api/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipes"
 	shelflifedetector "github.com/romankravchuk/muerta/internal/api/routes/handlers/shelf-life-detector"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers/user"
+	usersetting "github.com/romankravchuk/muerta/internal/api/routes/handlers/user-setting"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -30,6 +33,8 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 	r.Route("/api/v1", func(r fiber.Router) {
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger))
 		r.Mount("/recipes", recipes.NewRouter(client, logger))
+		r.Mount("/users", user.NewRouter(client, logger))
+		r.Mount("/settings", usersetting.NewRouter(client, logger))
 		// r.Mount("/auth", auth.NewRouter(cfg, db, logger))
 		// r.Use(jwtware.New(jwtware.Config{
 		// 	SigningMethod: "RS256",
@@ -43,6 +48,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 
 func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
 	r.Use(requestid.New())
+	r.Use(recover.New())
 	r.Use(fiberzerolog.New(fiberzerolog.Config{
 		Fields: []string{
 			fiberzerolog.FieldRequestID,

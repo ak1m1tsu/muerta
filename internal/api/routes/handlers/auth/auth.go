@@ -64,10 +64,10 @@ func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, errors.New("hash password length is zero"))
 		return fiber.ErrInternalServerError
 	}
-	_ = dto.CreateUserPayload{
-		SignUpUserPayload: *payload,
-		Hash:              hash,
-	}
+	// _ = dto.CreateUserDTO{
+	// 	SignUpUserPayload: *payload,
+	// 	Hash:              hash,
+	// }
 	return ctx.Status(fiber.StatusOK).
 		JSON(fiber.Map{"success": true})
 }

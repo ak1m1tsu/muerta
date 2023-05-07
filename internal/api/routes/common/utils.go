@@ -35,11 +35,49 @@ func GetRecipeFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.RecipeFilterDTO) erro
 			Offset: 0,
 		}
 	}
-	if filter.Limit <= 0 {
-		filter.Limit = 10
+	if filter.Paging.Limit <= 0 {
+		filter.Paging.Limit = 10
 	}
-	if filter.Offset < 0 {
-		filter.Offset = 0
+	if filter.Paging.Offset < 0 {
+		filter.Paging.Offset = 0
+	}
+	return nil
+}
+
+func GetUserFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.UserFilterDTO) error {
+	if err := ctx.QueryParser(filter); err != nil {
+		return fmt.Errorf("failed to parse query: %w", err)
+	}
+	if filter.Paging == nil {
+		filter.Paging = &dto.Paging{
+			Limit:  10,
+			Offset: 0,
+		}
+	}
+	if filter.Paging.Limit <= 0 {
+		filter.Paging.Limit = 10
+	}
+	if filter.Paging.Offset < 0 {
+		filter.Paging.Offset = 0
+	}
+	return nil
+}
+
+func GetSettingFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.SettingFilterDTO) error {
+	if err := ctx.QueryParser(filter); err != nil {
+		return fmt.Errorf("failed to parse query: %w", err)
+	}
+	if filter.Paging == nil {
+		filter.Paging = &dto.Paging{
+			Limit:  10,
+			Offset: 0,
+		}
+	}
+	if filter.Paging.Limit <= 0 {
+		filter.Paging.Limit = 10
+	}
+	if filter.Paging.Offset < 0 {
+		filter.Paging.Offset = 0
 	}
 	return nil
 }

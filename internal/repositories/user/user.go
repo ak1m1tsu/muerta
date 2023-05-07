@@ -1,117 +1,228 @@
 package user
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"strings"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5"
+	"github.com/romankravchuk/muerta/internal/repositories"
 	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
 
 type UserRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.User, error)
 	FindByName(ctx context.Context, name string) (models.User, error)
-	FindMany(ctx context.Context, filter models.UserFilter) ([]models.User, error)
+	FindMany(ctx context.Context, limit, offset int, name string) ([]models.User, error)
 	FindPassword(ctx context.Context, passhash string) error
-	Create(ctx context.Context, user models.User) (models.User, error)
-	Update(ctx context.Context, id int, new any) (models.User, error)
+	Create(ctx context.Context, user models.User) error
+	Update(ctx context.Context, user models.User) error
 	Delete(ctx context.Context, id int) error
+	Restore(ctx context.Context, id int) error
 }
 
 type userRepository struct {
-	db *sqlx.DB
+	client repositories.PostgresClient
 }
 
-func New(db *sqlx.DB) UserRepositorer {
-	return &userRepository{db: db}
+func New(client repositories.PostgresClient) UserRepositorer {
+	return &userRepository{client: client}
 }
 
 func (repo *userRepository) FindByID(ctx context.Context, id int) (models.User, error) {
-	var user models.User
-	if err := repo.db.Get(&user, "SELECT * FROM users WHERE users.id = $1", id); err != nil {
-		return models.User{}, fmt.Errorf("find by id: %w", err)
+	var (
+		query = `
+			SELECT id, name, created_at
+			FROM users
+			WHERE id = $1
+			LIMIT 1
+		`
+		querySettings = `
+			SELECT s.name, us.value, sc.name FROM settings s
+			JOIN users_settings us ON s.id = us.id_setting
+			JOIN settings_categories sc ON s.id_category = sc.id
+			WHERE us.id_user = $1
+		`
+		user models.User
+	)
+	if err := repo.client.QueryRow(ctx, query, id).Scan(&user.ID, &user.Name, &user.CreatedAt); err != nil {
+		return models.User{}, fmt.Errorf("failed to query user: %w", err)
+	}
+	rows, err := repo.client.Query(ctx, querySettings, id)
+	if err != nil {
+		return models.User{}, fmt.Errorf("failed to query settings: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		setting := models.Setting{Category: models.Category{}}
+		if err := rows.Scan(&setting.Name, &setting.Value, &setting.Category.Name); err != nil {
+			return models.User{}, fmt.Errorf("failed to scan setting: %w", err)
+		}
+		user.Settings = append(user.Settings, setting)
 	}
 	return user, nil
 }
 
 func (repo *userRepository) FindByName(ctx context.Context, name string) (models.User, error) {
-	var user models.User
-	if err := repo.db.Get(&user, "SELECT * FROM users WHERE users.name = $1", name); err != nil {
-		return models.User{}, fmt.Errorf("find by name: %w", err)
+	var (
+		query = `
+			SELECT id, name, created_at
+			FROM users
+			WHERE name = $1
+			LIMIT 1
+		`
+		querySettings = `
+			SELECT s.name, s.value, sc.name FROM settings s
+			JOIN users_settings us ON s.id = us.id_setting
+			JOIN settings_categories sc ON s.id_category = sc.id
+			WHERE us.id_user = $1
+		`
+		user = models.User{Settings: make([]models.Setting, 0)}
+	)
+	if err := repo.client.QueryRow(ctx, query, name).Scan(&user.ID, &user.Name); err != nil {
+		return models.User{}, fmt.Errorf("failed to query user: %w", err)
+	}
+	rows, err := repo.client.Query(ctx, querySettings, user.ID)
+
+	if err != nil {
+		return models.User{}, fmt.Errorf("failed to query settings: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		setting := models.Setting{}
+		if err := rows.Scan(&setting.Name, &setting.Value, &setting.Category.Name); err != nil {
+			return models.User{}, fmt.Errorf("failed to scan setting: %w", err)
+		}
+		user.Settings = append(user.Settings, setting)
 	}
 	return user, nil
 }
 
-func (repo *userRepository) FindMany(ctx context.Context, filter models.UserFilter) ([]models.User, error) {
+func (repo *userRepository) FindMany(ctx context.Context, limit, offset int, name string) ([]models.User, error) {
 	var (
-		users []models.User
-		query string        = "SELECT * FROM users WHERE"
-		buf   *bytes.Buffer = bytes.NewBufferString(query)
+		query = `
+			SELECT id, name, created_at
+			FROM users
+			WHERE name LIKE $1
+			ORDER BY created_at DESC
+			LIMIT $2
+			OFFSET $3
+		`
+		users = make([]models.User, 0, limit)
 	)
-	if filter.Limit != 0 && filter.Offset != 0 {
-		buf.WriteString(fmt.Sprintf(" OFFSET %d ROWS FETCH FIRST %d ROWS ONLY ", filter.Offset, filter.Limit))
+	rows, err := repo.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query users: %w", err)
 	}
-	if err := repo.db.Select(&users, buf.String()); err != nil {
-		return nil, fmt.Errorf("find many: %w", err)
+	defer rows.Close()
+	for rows.Next() {
+		user := models.User{}
+		if err := rows.Scan(&user.ID, &user.Name, &user.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan user: %w", err)
+		}
+		fmt.Println(user)
+		users = append(users, user)
 	}
 	return users, nil
 }
 
 func (repo *userRepository) FindPassword(ctx context.Context, passhash string) error {
-	fmt.Println(passhash)
+	return nil
+}
+
+func (repo *userRepository) Create(ctx context.Context, user models.User) error {
 	var (
-		pwd   string
-		query string = "SELECT * FROM passwords WHERE passwords.passhash = $1 LIMIT 1"
+		err   error
+		buf   strings.Builder
+		query = `
+			INSERT INTO users 
+				(name, salt)
+			VALUES
+				($1, $2)
+			RETURNING id
+		`
+		queryPassword = `
+			INSERT INTO passwords (passhash)
+			VALUES ($1)
+		`
 	)
-	if err := repo.db.Get(&pwd, query, passhash); err != nil {
-		return fmt.Errorf("find password: %w", err)
+	for i, s := range user.Settings {
+		if i == len(user.Settings)-1 {
+			_, err = buf.WriteString(fmt.Sprintf("(%d, %d, '%s')", user.ID, s.ID, s.Value))
+		} else {
+			_, err = buf.WriteString(fmt.Sprintf("(%d, %d, '%s'), ", user.ID, s.ID, s.Value))
+		}
+		if err != nil {
+			return fmt.Errorf("failed to write settings: %w", err)
+		}
+	}
+	tx, err := repo.client.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+	if err := tx.QueryRow(ctx, query, user.Name, user.Salt).Scan(&user.ID); err != nil {
+		return fmt.Errorf("failed to insert user: %w", err)
+	}
+	if _, err := tx.Exec(ctx, queryPassword, user.Password.Hash); err != nil {
+		return fmt.Errorf("failed to insert password: %w", err)
+	}
+	if _, err := tx.CopyFrom(ctx,
+		pgx.Identifier{"users_settings"},
+		[]string{"id_user", "id_setting", "value"},
+		pgx.CopyFromSlice(len(user.Settings), func(i int) ([]any, error) {
+			return []any{user.ID, user.Settings[i].ID, user.Settings[i].Value}, nil
+		}),
+	); err != nil {
+		return fmt.Errorf("failed to copy settings: %w", err)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 	return nil
 }
 
-func (repo *userRepository) Create(ctx context.Context, user models.User) (models.User, error) {
+func (repo *userRepository) Update(ctx context.Context, user models.User) error {
 	var (
-		uquery string = "INSERT INTO users (name, salt) VALUES (:name, :salt) RETURN ID"
-		pquery string = "INSERT INTO passwords (passhash) VALUES (:passhash)"
-		squery string = "INSERT INTO users_settings (id_user, id_setting, value) VALUES (:id_user, :id_setting, :value)"
+		query = `
+			UPDATE users
+			SET name = $1,
+				updated_at = NOW()
+			WHERE id = $2
+		`
 	)
-
-	tx, err := repo.db.Begin()
-	if err != nil {
-		return models.User{}, fmt.Errorf("create: %w", err)
+	if _, err := repo.client.Exec(ctx, query, user.Name, user.ID); err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
 	}
-
-	_, err = tx.Exec(uquery, user.Name, user.Salt)
-	if err != nil {
-		tx.Rollback()
-		return models.User{}, fmt.Errorf("create: %w", err)
-	}
-
-	_, err = tx.Exec(pquery, user.Password.Hash)
-	if err != nil {
-		tx.Rollback()
-		return models.User{}, fmt.Errorf("create: %w", err)
-	}
-
-	_, err = tx.Exec(squery)
-	if err != nil {
-		tx.Rollback()
-		return models.User{}, fmt.Errorf("create: %w", err)
-	}
-
-	if err = tx.Commit(); err != nil {
-		return models.User{}, fmt.Errorf("create: %w", err)
-	}
-
-	return user, nil
-}
-
-func (repo *userRepository) Update(ctx context.Context, id int, new any) (models.User, error) {
-	var user models.User
-	return user, nil
+	return nil
 }
 
 func (repo *userRepository) Delete(ctx context.Context, id int) error {
+	var (
+		query = `
+			UPDATE users
+			SET deleted_at = NOW()
+			SET updated_at = NOW()
+			WHERE id = $1
+		`
+	)
+	if _, err := repo.client.Exec(ctx, query, id); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *userRepository) Restore(ctx context.Context, id int) error {
+	var (
+		query = `
+			UPDATE users
+			SET deleted_at = NULL
+			SET updated_at = NOW()
+			WHERE id = $1
+		`
+	)
+	if _, err := repo.client.Exec(ctx, query, id); err != nil {
+		return err
+	}
 	return nil
 }
