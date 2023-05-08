@@ -14,7 +14,6 @@ type MeasureServicer interface {
 	CreateMeasure(ctx context.Context, payload *dto.CreateMeasureDTO) error
 	UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasureDTO) error
 	DeleteMeasure(ctx context.Context, id int) error
-	RestoreMeasure(ctx context.Context, id int) error
 }
 
 type measureService struct {
@@ -58,13 +57,6 @@ func (svc *measureService) FindMeasures(ctx context.Context, filter *dto.Measure
 	return dtos, nil
 }
 
-// RestoreMeasure implements MeasureServicer
-func (svc *measureService) RestoreMeasure(ctx context.Context, id int) error {
-	if err := svc.repo.Restore(ctx, id); err != nil {
-		return err
-	}
-	return nil
-}
 
 // UpdateMeasure implements MeasureServicer
 func (svc *measureService) UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasureDTO) error {

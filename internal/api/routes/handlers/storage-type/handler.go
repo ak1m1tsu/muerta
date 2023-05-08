@@ -1,4 +1,4 @@
-package measure
+package storagetype
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,23 +6,23 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	service "github.com/romankravchuk/muerta/internal/services/measure"
+	service "github.com/romankravchuk/muerta/internal/services/storage-type"
 )
 
-type MeasureHandler struct {
-	svc service.MeasureServicer
+type StorageTypeHandler struct {
+	svc service.StorageTypeServicer
 	log *log.Logger
 }
 
-func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
-	return MeasureHandler{
+func New(svc service.StorageTypeServicer, log *log.Logger) *StorageTypeHandler {
+	return &StorageTypeHandler{
 		svc: svc,
 		log: log,
 	}
 }
 
-func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
-	var payload *dto.CreateMeasureDTO
+func (h *StorageTypeHandler) CreateStorageType(ctx *fiber.Ctx) error {
+	var payload *dto.CreateStorageTypeDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -31,7 +31,7 @@ func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.CreateMeasure(ctx.Context(), payload); err != nil {
+	if err := h.svc.CreateStorageType(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -40,47 +40,47 @@ func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
+func (h *StorageTypeHandler) FindStorageTypeByID(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	dto, err := h.svc.FindMeasureByID(ctx.Context(), id)
+	dto, err := h.svc.FindStorageTypeByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrNotFound
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    fiber.Map{"measure": dto},
+		"data":    fiber.Map{"storage_type": dto},
 	})
 }
 
-func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
-	filter := new(dto.MeasureFilterDTO)
+func (h *StorageTypeHandler) FindStorageTypes(ctx *fiber.Ctx) error {
+	filter := new(dto.StorageTypeFilterDTO)
 	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	dtos, err := h.svc.FindMeasures(ctx.Context(), filter)
+	dtos, err := h.svc.FindStorageTypes(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    fiber.Map{"measures": dtos},
+		"data":    fiber.Map{"storage_types": dtos},
 	})
 }
 
-func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
+func (h *StorageTypeHandler) UpdateStorageType(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	payload := new(dto.UpdateMeasureDTO)
+	payload := new(dto.UpdateStorageTypeDTO)
 	if err := ctx.BodyParser(payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -89,7 +89,7 @@ func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.UpdateMeasure(ctx.Context(), id, payload); err != nil {
+	if err := h.svc.UpdateStorageType(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -98,13 +98,13 @@ func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *MeasureHandler) DeleteMeasure(ctx *fiber.Ctx) error {
+func (h *StorageTypeHandler) DeleteStorageType(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	if err := h.svc.DeleteMeasure(ctx.Context(), id); err != nil {
+	if err := h.svc.DeleteStorageType(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}

@@ -148,7 +148,7 @@ func CreateStorageDTOToModel(dto *dto.CreateStorageDTO) models.Storage {
 		Name:        dto.Name,
 		Temperature: dto.Temperature,
 		Humidity:    dto.Humidity,
-		Type: models.Type{
+		Type: models.StorageType{
 			ID: dto.TypeID,
 		},
 	}
@@ -256,6 +256,25 @@ func MeasureModelsToFindDTOs(models []models.Measure) []dto.FindMeasureDTO {
 	dtos := make([]dto.FindMeasureDTO, len(models))
 	for i, model := range models {
 		dtos[i] = MeasureModelToFindDTO(&model)
+	}
+	return dtos
+}
+
+func CreateStorageTypeDTOToModel(dto *dto.CreateStorageTypeDTO) models.StorageType {
+	return models.StorageType{
+		Name: dto.Name,
+	}
+}
+func StorageTypeModelToFindDTO(model *models.StorageType) dto.FindStorageTypeDTO {
+	return dto.FindStorageTypeDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+func StorageTypeModelsToFindDTOs(models []models.StorageType) []dto.FindStorageTypeDTO {
+	dtos := make([]dto.FindStorageTypeDTO, len(models))
+	for i, model := range models {
+		dtos[i] = StorageTypeModelToFindDTO(&model)
 	}
 	return dtos
 }

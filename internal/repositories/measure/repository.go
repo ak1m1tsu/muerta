@@ -11,10 +11,9 @@ import (
 type MeasureRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.Measure, error)
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Measure, error)
-	Create(ctx context.Context, role models.Measure) error
-	Update(ctx context.Context, role models.Measure) error
+	Create(ctx context.Context, measure models.Measure) error
+	Update(ctx context.Context, measure models.Measure) error
 	Delete(ctx context.Context, id int) error
-	Restore(ctx context.Context, id int) error
 }
 
 type measureRepository struct {
@@ -22,42 +21,90 @@ type measureRepository struct {
 }
 
 // Create implements MeasureRepositorer
-func (r *measureRepository) Create(ctx context.Context, role models.Measure) error {
+func (r *measureRepository) Create(ctx context.Context, measure models.Measure) error {
 	var (
 		query = `
-			INSERT INTO roles (name)
+			INSERT INTO measures (name)
 			VALUES ($1)
 		`
 	)
-	if _, err := r.client.Exec(ctx, query, role.Name); err != nil {
-		return fmt.Errorf("failed to create role: %w", err)
+	if _, err := r.client.Exec(ctx, query, measure.Name); err != nil {
+		return fmt.Errorf("failed to create measure: %w", err)
 	}
 	return nil
 }
 
 // Delete implements MeasureRepositorer
 func (r *measureRepository) Delete(ctx context.Context, id int) error {
-	panic("unimplemented")
+	var (
+		query = `
+			DELETE FROM measures
+			WHERE id = $1
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, id); err != nil {
+		return fmt.Errorf("failed to delete measure: %w", err)
+	}
+	return nil
 }
 
 // FindByID implements MeasureRepositorer
 func (r *measureRepository) FindByID(ctx context.Context, id int) (models.Measure, error) {
-	panic("unimplemented")
+	var (
+		query = `
+			SELECT id, name
+			FROM measures
+			WHERE id = $1
+			LIMIT 1	
+		`
+		measure models.Measure
+	)
+	if err := r.client.QueryRow(ctx, query, id).Scan(&measure.ID, &measure.Name); err != nil {
+		return models.Measure{}, fmt.Errorf("failed to find measure: %w", err)
+	}
+	return measure, nil
 }
 
 // FindMany implements MeasureRepositorer
 func (r *measureRepository) FindMany(ctx context.Context, limit int, offset int, name string) ([]models.Measure, error) {
-	panic("unimplemented")
-}
-
-// Restore implements MeasureRepositorer
-func (r *measureRepository) Restore(ctx context.Context, id int) error {
-	panic("unimplemented")
+	var (
+		query = `
+			SELECT id, name
+			FROM measures
+			WHERE name ILIKE $1
+			LIMIT $2
+			OFFSET $3
+		`
+		measures = make([]models.Measure, 0, limit)
+	)
+	rows, err := r.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find measures: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var measure models.Measure
+		if err := rows.Scan(&measure.ID, &measure.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan measure: %w", err)
+		}
+		measures = append(measures, measure)
+	}
+	return measures, nil
 }
 
 // Update implements MeasureRepositorer
-func (r *measureRepository) Update(ctx context.Context, role models.Measure) error {
-	panic("unimplemented")
+func (r *measureRepository) Update(ctx context.Context, measure models.Measure) error {
+	var (
+		query = `
+			UPDATE measures
+			SET name = $1
+			WHERE id = $2
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, measure.Name, measure.ID); err != nil {
+		return fmt.Errorf("failed to update measure: %w", err)
+	}
+	return nil
 }
 
 func New(client repositories.PostgresClient) MeasureRepositorer {
