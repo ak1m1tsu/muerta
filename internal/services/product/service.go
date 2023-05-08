@@ -12,7 +12,7 @@ type ProductServicer interface {
 	FindProductByID(ctx context.Context, id int) (dto.FindProductDTO, error)
 	FindProducts(ctx context.Context, filter *dto.ProductFilterDTO) ([]dto.FindProductDTO, error)
 	CreateProduct(ctx context.Context, payload *dto.CreateProductDTO) error
-	UpdateProduct(ctx context.Context, id int, user *dto.UpdateProductDTO) error
+	UpdateProduct(ctx context.Context, id int, payload *dto.UpdateProductDTO) error
 	DeleteProduct(ctx context.Context, id int) error
 	RestoreProduct(ctx context.Context, id int) error
 }
@@ -28,8 +28,8 @@ func New(repo repo.ProductRepositorer) ProductServicer {
 }
 
 func (svc *productService) FindProductByID(ctx context.Context, id int) (dto.FindProductDTO, error) {
-	user, err := svc.repo.FindByID(ctx, id)
-	result := translate.ProductModelToFindDTO(&user)
+	model, err := svc.repo.FindByID(ctx, id)
+	result := translate.ProductModelToFindDTO(&model)
 	if err != nil {
 		return dto.FindProductDTO{}, err
 	}
@@ -37,8 +37,8 @@ func (svc *productService) FindProductByID(ctx context.Context, id int) (dto.Fin
 }
 
 func (svc *productService) FindProducts(ctx context.Context, filter *dto.ProductFilterDTO) ([]dto.FindProductDTO, error) {
-	users, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
-	dtos := translate.ProductModelsToFindDTOs(users)
+	models, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	dtos := translate.ProductModelsToFindDTOs(models)
 	if err != nil {
 		return nil, err
 	}
@@ -53,15 +53,15 @@ func (svc *productService) CreateProduct(ctx context.Context, payload *dto.Creat
 	return nil
 }
 
-func (svc *productService) UpdateProduct(ctx context.Context, id int, user *dto.UpdateProductDTO) error {
-	oldProduct, err := svc.repo.FindByID(ctx, id)
+func (svc *productService) UpdateProduct(ctx context.Context, id int, payload *dto.UpdateProductDTO) error {
+	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err
 	}
-	if user.Name != "" {
-		oldProduct.Name = user.Name
+	if payload.Name != "" {
+		model.Name = payload.Name
 	}
-	if err := svc.repo.Update(ctx, oldProduct); err != nil {
+	if err := svc.repo.Update(ctx, model); err != nil {
 		return err
 	}
 	return nil

@@ -217,3 +217,24 @@ func CreateCategoryDTOToModel(dto *dto.CreateCategoryDTO) models.ProductCategory
 		Name: dto.Name,
 	}
 }
+
+func CreateTipDTOToModel(dto *dto.CreateTipDTO) models.Tip {
+	return models.Tip{
+		Description: dto.Description,
+	}
+}
+
+func TipModelToFindTipDTO(model *models.Tip) dto.FindTipDTO {
+	return dto.FindTipDTO{
+		ID:          model.ID,
+		Description: model.Description,
+	}
+}
+
+func TipModelsToFindTipDTOs(models []models.Tip) []dto.FindTipDTO {
+	dtos := make([]dto.FindTipDTO, len(models))
+	for i, model := range models {
+		dtos[i] = TipModelToFindTipDTO(&model)
+	}
+	return dtos
+}
