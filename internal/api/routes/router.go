@@ -14,6 +14,7 @@ import (
 	productcategory "github.com/romankravchuk/muerta/internal/api/routes/handlers/product-category"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipe"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/role"
+	shelflife "github.com/romankravchuk/muerta/internal/api/routes/handlers/shelf-life"
 	shelflifedetector "github.com/romankravchuk/muerta/internal/api/routes/handlers/shelf-life-detector"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/storage"
 	storagetype "github.com/romankravchuk/muerta/internal/api/routes/handlers/storage-type"
@@ -54,7 +55,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 		r.Mount("/product-categories", productcategory.NewRouter(client, logger))
 		r.Mount("/tips", tip.NewRouter(client, logger))
 		r.Mount("/measures", measure.NewRouter(client, logger))
-		// r.Mount("/shelf-lives", shelflife.NewRouter(client, logger))
+		r.Mount("/shelf-lives", shelflife.NewRouter(client, logger))
 		// r.Mount("/shelf-life-statuses", shelflifestatus.NewRouter(client, logger))
 		r.Mount("/storage-types", storagetype.NewRouter(client, logger))
 		// r.Mount("/auth", auth.NewRouter(cfg, client, logger, jwtware))

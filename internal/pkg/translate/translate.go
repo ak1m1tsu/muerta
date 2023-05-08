@@ -278,3 +278,51 @@ func StorageTypeModelsToFindDTOs(models []models.StorageType) []dto.FindStorageT
 	}
 	return dtos
 }
+
+func CreateShelfLifeDTOToModel(dto *dto.CreateShelfLifeDTO) models.ShelfLife {
+	return models.ShelfLife{
+		Product: models.Product{
+			ID: dto.ProductID,
+		},
+		Storage: models.Storage{
+			ID: dto.StorageID,
+		},
+		Measure: models.Measure{
+			ID: dto.MeasureID,
+		},
+		Quantity:     dto.Quantity,
+		PurchaseDate: dto.PurchaseDate,
+		EndDate:      dto.EndDate,
+	}
+}
+func ShelfLifeModelToFindDTO(model *models.ShelfLife) dto.FindShelfLifeDTO {
+	return dto.FindShelfLifeDTO{
+		ID: model.ID,
+		Product: dto.FindProductDTO{
+			ID:   model.Product.ID,
+			Name: model.Product.Name,
+		},
+		Storage: dto.FindStorageDTO{
+			ID:          model.Storage.ID,
+			Name:        model.Storage.Name,
+			Temperature: model.Storage.Temperature,
+			Humidity:    model.Storage.Humidity,
+			TypeName:    model.Storage.Type.Name,
+			CreatedAt:   model.Storage.CreatedAt,
+		},
+		Measure: dto.FindMeasureDTO{
+			ID:   model.Measure.ID,
+			Name: model.Measure.Name,
+		},
+		Quantity:     model.Quantity,
+		PurchaseDate: model.PurchaseDate,
+		EndDate:      model.EndDate,
+	}
+}
+func ShelfLifeModelsToFindDTOs(models []models.ShelfLife) []dto.FindShelfLifeDTO {
+	dtos := make([]dto.FindShelfLifeDTO, len(models))
+	for i, model := range models {
+		dtos[i] = ShelfLifeModelToFindDTO(&model)
+	}
+	return dtos
+}

@@ -10,7 +10,8 @@ type Filter interface {
 		*SettingFilterDTO |
 		*TipFilterDTO |
 		*UserFilterDTO |
-		*StorageTypeFilterDTO
+		*StorageTypeFilterDTO |
+		*ShelfLifeFilterDTO
 
 	SetLimit(int)
 	GetLimit() int
