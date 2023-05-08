@@ -1,7 +1,8 @@
 CREATE TABLE
-    settings (
-        id integer DEFAULT nextval('settings_id_seq' :: regclass) NOT NULL,
+    IF NOT EXISTS settings (
+        id integer DEFAULT nextval('settings_id_seq':: regclass) NOT NULL,
         id_category integer NOT NULL,
+        name varchar(100) NOT NULL,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
         deleted_at timestamp,
         CONSTRAINT pk_settings PRIMARY KEY (id),

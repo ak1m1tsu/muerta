@@ -1,19 +1,21 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 
-	"github.com/jmoiron/sqlx"
+	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
 	"github.com/romankravchuk/muerta/internal/api"
-	"github.com/romankravchuk/muerta/internal/config"
-	"github.com/rs/zerolog"
+	"github.com/romankravchuk/muerta/internal/pkg/config"
+	logger "github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/repositories"
 )
 
 var (
-	db  *sqlx.DB
-	cfg *config.Config
+	client *pgxpool.Pool
+	cfg    *config.Config
 )
 
 func init() {
@@ -26,18 +28,14 @@ func init() {
 
 func init() {
 	var err error
-	db, err = sqlx.Connect("postgres", "user=postgres dbname=muerta password=postgrespw sslmode=disable")
+	client, err = repositories.NewPostgresClient(context.Background(), 5, cfg)
 	if err != nil {
-		log.Fatalf("database connection: %v", err)
-	}
-
-	if err = db.Ping(); err != nil {
 		log.Fatalf("database connection: %v", err)
 	}
 }
 
 func main() {
-	logger := zerolog.New(os.Stderr).With().Timestamp().Logger()
-	api := api.New(db, cfg, &logger)
+	logger := logger.New()
+	api := api.New(client, cfg, logger)
 	log.Fatalf("api run: %v", api.Run())
 }
