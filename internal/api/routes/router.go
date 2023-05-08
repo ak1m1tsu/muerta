@@ -7,6 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/romankravchuk/muerta/internal/api/middleware/notfound"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers/product"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipe"
 	shelflifedetector "github.com/romankravchuk/muerta/internal/api/routes/handlers/shelf-life-detector"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/storage"
@@ -37,12 +38,12 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 		r.Mount("/users", user.NewRouter(client, logger))
 		r.Mount("/settings", usersetting.NewRouter(client, logger))
 		r.Mount("/storages", storage.NewRouter(client, logger))
+		r.Mount("/products", product.NewRouter(client, logger))
 		// r.Mount("/auth", auth.NewRouter(cfg, db, logger))
 		// r.Use(jwtware.New(jwtware.Config{
 		// 	SigningMethod: "RS256",
 		// 	SigningKey:    cfg.RSAPublicKey,
 		// }))
-		// r.Mount("/users", user.NewRouter(db, logger))
 	})
 	r.Use(notfound.New())
 	return r

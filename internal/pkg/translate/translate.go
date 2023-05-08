@@ -153,3 +153,24 @@ func CreateStorageDTOToModel(dto *dto.CreateStorageDTO) models.Storage {
 		},
 	}
 }
+
+func ProductModelToFindDTO(model *models.Product) dto.FindProductDTO {
+	return dto.FindProductDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+
+func ProductModelsToFindDTOs(models []models.Product) []dto.FindProductDTO {
+	dtos := make([]dto.FindProductDTO, len(models))
+	for i, model := range models {
+		dtos[i] = ProductModelToFindDTO(&model)
+	}
+	return dtos
+}
+
+func CreateProductDTOToModel(dto *dto.CreateProductDTO) models.Product {
+	return models.Product{
+		Name: dto.Name,
+	}
+}

@@ -1,15 +1,15 @@
 CREATE TABLE
-    recipes (
+    IF NOT EXISTS recipes (
         id integer DEFAULT nextval('recipes_id_seq' :: regclass) NOT NULL,
-        id_step integer NOT NULL,
+        id_user integer NOT NULL,
         name varchar(100) NOT NULL,
         description text,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
         deleted_at timestamp,
         CONSTRAINT pk_recipes PRIMARY KEY (id),
-        CONSTRAINT unq_recipes_id_step UNIQUE (id_step)
+        CONSTRAINT unq_recipes_name UNIQUE (name)
     );
 
 ALTER TABLE recipes
 ADD
-    CONSTRAINT fk_recipes_steps FOREIGN KEY (id_step) REFERENCES steps(id);
+    CONSTRAINT fk_recipes_users FOREIGN KEY (id_user) REFERENCES users(id);
