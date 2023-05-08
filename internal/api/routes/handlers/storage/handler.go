@@ -1,4 +1,4 @@
-package user
+package storage
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,54 +6,57 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	service "github.com/romankravchuk/muerta/internal/services/user"
+	service "github.com/romankravchuk/muerta/internal/services/storage"
 )
 
-type UserHanlder struct {
-	svc service.UserServicer
+type StorageHandler struct {
+	svc service.StorageServicer
 	log *log.Logger
 }
 
-func New(svc service.UserServicer, log *log.Logger) *UserHanlder {
-	return &UserHanlder{svc: svc, log: log}
+func New(svc service.StorageServicer, log *log.Logger) *StorageHandler {
+	return &StorageHandler{
+		svc: svc,
+		log: log,
+	}
 }
 
-func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
-	user, err := h.svc.FindUserByID(ctx.Context(), id)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"user": user},
-	})
-}
-
-func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
-	filter := new(dto.UserFilterDTO)
-	if err := common.GetUserFilterByFiberCtx(ctx, filter); err != nil {
+func (h *StorageHandler) FindMany(ctx *fiber.Ctx) error {
+	filter := new(dto.StorageFilterDTO)
+	if err := common.GetStorageFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	users, err := h.svc.FindUsers(ctx.Context(), filter)
+	storages, err := h.svc.FindStorages(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    fiber.Map{"users": users},
+		"data":    fiber.Map{"storages": storages},
 	})
 }
 
-func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateUserDTO
+func (h *StorageHandler) FindOne(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	storage, err := h.svc.FindStorageByID(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"storage": storage},
+	})
+}
+
+func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
+	var payload *dto.CreateStorageDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -62,7 +65,7 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.CreateUser(ctx.Context(), payload); err != nil {
+	if err := h.svc.CreateStorage(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -71,21 +74,22 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
+func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	var payload *dto.UpdateUserDTO
+	var payload *dto.UpdateStorageDTO
 	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
 	if errs := validator.Validate(payload); errs != nil {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.UpdateUser(ctx.Context(), id, payload); err != nil {
+	if err := h.svc.UpdateStorage(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -94,13 +98,13 @@ func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *UserHanlder) Delete(ctx *fiber.Ctx) error {
+func (h *StorageHandler) Delete(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	if err := h.svc.DeleteUser(ctx.Context(), id); err != nil {
+	if err := h.svc.DeleteStorage(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -109,13 +113,13 @@ func (h *UserHanlder) Delete(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *UserHanlder) Restore(ctx *fiber.Ctx) error {
+func (h *StorageHandler) Restore(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	if err := h.svc.RestoreUser(ctx.Context(), id); err != nil {
+	if err := h.svc.RestoreStorage(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}

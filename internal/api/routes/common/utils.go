@@ -81,3 +81,22 @@ func GetSettingFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.SettingFilterDTO) er
 	}
 	return nil
 }
+
+func GetStorageFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.StorageFilterDTO) error {
+	if err := ctx.QueryParser(filter); err != nil {
+		return fmt.Errorf("failed to parse query: %w", err)
+	}
+	if filter.Paging == nil {
+		filter.Paging = &dto.Paging{
+			Limit:  10,
+			Offset: 0,
+		}
+	}
+	if filter.Paging.Limit <= 0 {
+		filter.Paging.Limit = 10
+	}
+	if filter.Paging.Offset < 0 {
+		filter.Paging.Offset = 0
+	}
+	return nil
+}

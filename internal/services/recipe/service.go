@@ -6,7 +6,7 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/recipes"
+	recipes "github.com/romankravchuk/muerta/internal/repositories/recipe"
 )
 
 type RecipeServicer interface {
@@ -28,8 +28,10 @@ func New(repository recipes.RecipesRepositorer) *RecipeService {
 
 func (s *RecipeService) CreateRecipe(ctx context.Context, payload *dto.CreateRecipeDTO) error {
 	model := translate.CreateRecipeDTOToModel(payload)
-	err := s.repository.Create(ctx, &model)
-	return err
+	if err := s.repository.Create(ctx, &model); err != nil {
+		return fmt.Errorf("create recipe: %w", err)
+	}
+	return nil
 }
 
 func (s *RecipeService) FindRecipeByID(ctx context.Context, id int) (dto.FindRecipeDTO, error) {

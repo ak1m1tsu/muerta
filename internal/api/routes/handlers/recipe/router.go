@@ -4,7 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
-	repo "github.com/romankravchuk/muerta/internal/repositories/recipes"
+	repo "github.com/romankravchuk/muerta/internal/repositories/recipe"
 	svc "github.com/romankravchuk/muerta/internal/services/recipe"
 )
 

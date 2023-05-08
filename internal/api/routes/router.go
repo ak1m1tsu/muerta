@@ -9,6 +9,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipe"
 	shelflifedetector "github.com/romankravchuk/muerta/internal/api/routes/handlers/shelf-life-detector"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers/storage"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/user"
 	usersetting "github.com/romankravchuk/muerta/internal/api/routes/handlers/user-setting"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
@@ -35,6 +36,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 		r.Mount("/recipes", recipe.NewRouter(client, logger))
 		r.Mount("/users", user.NewRouter(client, logger))
 		r.Mount("/settings", usersetting.NewRouter(client, logger))
+		r.Mount("/storages", storage.NewRouter(client, logger))
 		// r.Mount("/auth", auth.NewRouter(cfg, db, logger))
 		// r.Use(jwtware.New(jwtware.Config{
 		// 	SigningMethod: "RS256",
