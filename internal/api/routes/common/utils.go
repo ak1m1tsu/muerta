@@ -25,154 +25,15 @@ func GetNameByFiberCtx(ctx *fiber.Ctx) (string, error) {
 	return param, nil
 }
 
-func GetRecipeFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.RecipeFilterDTO) error {
+func GetFilterByFiberCtx[T dto.Filter](ctx *fiber.Ctx, filter T) error {
 	if err := ctx.QueryParser(filter); err != nil {
 		return fmt.Errorf("failed to parse query: %w", err)
 	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
+	if filter.GetLimit() == 0 {
+		filter.SetLimit(10)
 	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
-	}
-	return nil
-}
-
-func GetUserFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.UserFilterDTO) error {
-	if err := ctx.QueryParser(filter); err != nil {
-		return fmt.Errorf("failed to parse query: %w", err)
-	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
-	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
-	}
-	return nil
-}
-
-func GetSettingFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.SettingFilterDTO) error {
-	if err := ctx.QueryParser(filter); err != nil {
-		return fmt.Errorf("failed to parse query: %w", err)
-	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
-	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
-	}
-	return nil
-}
-
-func GetStorageFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.StorageFilterDTO) error {
-	if err := ctx.QueryParser(filter); err != nil {
-		return fmt.Errorf("failed to parse query: %w", err)
-	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
-	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
-	}
-	return nil
-}
-
-func GetProductFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.ProductFilterDTO) error {
-	if err := ctx.QueryParser(filter); err != nil {
-		return fmt.Errorf("failed to parse query: %w", err)
-	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
-	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
-	}
-	return nil
-}
-
-func GetRoleFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.RoleFilterDTO) error {
-	if err := ctx.QueryParser(filter); err != nil {
-		return fmt.Errorf("failed to parse query: %w", err)
-	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
-	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
-	}
-	return nil
-}
-
-func GetCategoryFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.CategoryFilterDTO) error {
-	if err := ctx.QueryParser(filter); err != nil {
-		return fmt.Errorf("failed to parse query: %w", err)
-	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
-	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
-	}
-	return nil
-}
-
-func GetTipFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.TipFilterDTO) error {
-	if err := ctx.QueryParser(filter); err != nil {
-		return fmt.Errorf("failed to parse query: %w", err)
-	}
-	if filter.Paging == nil {
-		filter.Paging = &dto.Paging{
-			Limit:  10,
-			Offset: 0,
-		}
-	}
-	if filter.Paging.Limit <= 0 {
-		filter.Paging.Limit = 10
-	}
-	if filter.Paging.Offset < 0 {
-		filter.Paging.Offset = 0
+	if filter.GetOffset() < 0 {
+		filter.SetOffset(0)
 	}
 	return nil
 }

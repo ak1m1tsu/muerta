@@ -19,8 +19,24 @@ type UpdateRecipeDTO struct {
 }
 
 type RecipeFilterDTO struct {
-	*Paging
+	Paging
 	Name string `query:"name"`
+}
+
+func (f *RecipeFilterDTO) GetLimit() int {
+	return f.Limit
+}
+
+func (f *RecipeFilterDTO) SetLimit(limit int) {
+	f.Limit = limit
+}
+
+func (f *RecipeFilterDTO) GetOffset() int {
+	return f.Offset
+}
+
+func (f *RecipeFilterDTO) SetOffset(offset int) {
+	f.Offset = offset
 }
 
 type FindStepDTO struct {

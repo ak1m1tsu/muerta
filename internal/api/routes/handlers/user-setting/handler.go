@@ -40,7 +40,7 @@ func (h *UserSettingHandler) FindByID(ctx *fiber.Ctx) error {
 
 func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.SettingFilterDTO)
-	if err := common.GetSettingFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

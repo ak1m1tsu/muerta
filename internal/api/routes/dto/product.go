@@ -1,8 +1,24 @@
 package dto
 
 type ProductFilterDTO struct {
-	*Paging
+	Paging
 	Name string `query:"name"`
+}
+
+func (f *ProductFilterDTO) GetLimit() int {
+	return f.Limit
+}
+
+func (f *ProductFilterDTO) SetLimit(limit int) {
+	f.Limit = limit
+}
+
+func (f *ProductFilterDTO) GetOffset() int {
+	return f.Offset
+}
+
+func (f *ProductFilterDTO) SetOffset(offset int) {
+	f.Offset = offset
 }
 
 type CreateProductDTO struct {

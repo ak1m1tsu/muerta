@@ -59,7 +59,7 @@ func (h *ProductHandler) FindProductByID(ctx *fiber.Ctx) error {
 
 func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
 	filter := new(dto.ProductFilterDTO)
-	if err := common.GetProductFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

@@ -59,7 +59,7 @@ func (h *TipHandler) FindTipByID(ctx *fiber.Ctx) error {
 
 func (h *TipHandler) FindTips(ctx *fiber.Ctx) error {
 	filter := new(dto.TipFilterDTO)
-	if err := common.GetTipFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

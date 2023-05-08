@@ -23,7 +23,7 @@ func New(svc service.RoleServicer, log *log.Logger) *RoleHandler {
 
 func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
 	filter := new(dto.RoleFilterDTO)
-	if err := common.GetRoleFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

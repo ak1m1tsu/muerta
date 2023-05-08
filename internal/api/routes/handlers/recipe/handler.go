@@ -59,7 +59,7 @@ func (h *RecipesHandler) FindRecipeByID(ctx *fiber.Ctx) error {
 
 func (h *RecipesHandler) FindRecipes(ctx *fiber.Ctx) error {
 	filter := new(dto.RecipeFilterDTO)
-	if err := common.GetRecipeFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

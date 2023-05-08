@@ -37,7 +37,7 @@ func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
 
 func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.UserFilterDTO)
-	if err := common.GetUserFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

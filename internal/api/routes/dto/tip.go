@@ -14,6 +14,22 @@ type CreateTipDTO struct {
 }
 
 type TipFilterDTO struct {
-	*Paging
+	Paging
 	Description string `query:"description"`
+}
+
+func (f *TipFilterDTO) GetLimit() int {
+	return f.Limit
+}
+
+func (f *TipFilterDTO) SetLimit(limit int) {
+	f.Limit = limit
+}
+
+func (f *TipFilterDTO) GetOffset() int {
+	return f.Offset
+}
+
+func (f *TipFilterDTO) SetOffset(offset int) {
+	f.Offset = offset
 }

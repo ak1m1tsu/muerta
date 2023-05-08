@@ -7,6 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/romankravchuk/muerta/internal/api/middleware/notfound"
+
+	// "github.com/romankravchuk/muerta/internal/api/routes/handlers/measure"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers/measure"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/product"
 	productcategory "github.com/romankravchuk/muerta/internal/api/routes/handlers/product-category"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipe"
@@ -34,6 +37,10 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 			JSONDecoder:           sonic.Unmarshal,
 		}),
 	}
+	// jwtware := jwtware.New(jwtware.Config{
+	// 	SigningMethod: "RS256",
+	// 	SigningKey:    cfg.RSAPublicKey,
+	// })
 	r.mountAPIMiddlewares(logger)
 	r.Route("/api/v1", func(r fiber.Router) {
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger))
@@ -45,11 +52,11 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 		r.Mount("/roles", role.NewRouter(client, logger))
 		r.Mount("/product-categories", productcategory.NewRouter(client, logger))
 		r.Mount("/tips", tip.NewRouter(client, logger))
-		// r.Mount("/auth", auth.NewRouter(cfg, db, logger))
-		// r.Use(jwtware.New(jwtware.Config{
-		// 	SigningMethod: "RS256",
-		// 	SigningKey:    cfg.RSAPublicKey,
-		// }))
+		r.Mount("/measures", measure.NewRouter(client, logger))
+		// r.Mount("/shelf-lives", shelflife.NewRouter(client, logger))
+		// r.Mount("/shelf-life-statuses", shelflifestatus.NewRouter(client, logger))
+		// r.Mount("/storage-types", storagetype.NewRouter(client, logger))
+		// r.Mount("/auth", auth.NewRouter(cfg, client, logger, jwtware))
 	})
 	r.Use(notfound.New())
 	return r
@@ -71,5 +78,4 @@ func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
 		},
 		Logger: logger.GetLogger(),
 	}))
-	// r.Use(csrf.New(csrf.Config{}))
 }

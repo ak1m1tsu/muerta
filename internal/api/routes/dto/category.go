@@ -3,8 +3,24 @@ package dto
 import "time"
 
 type CategoryFilterDTO struct {
-	*Paging
+	Paging
 	Name string `query:"name"`
+}
+
+func (f *CategoryFilterDTO) GetLimit() int {
+	return f.Limit
+}
+
+func (f *CategoryFilterDTO) SetLimit(limit int) {
+	f.Limit = limit
+}
+
+func (f *CategoryFilterDTO) GetOffset() int {
+	return f.Offset
+}
+
+func (f *CategoryFilterDTO) SetOffset(offset int) {
+	f.Offset = offset
 }
 
 type CreateCategoryDTO struct {

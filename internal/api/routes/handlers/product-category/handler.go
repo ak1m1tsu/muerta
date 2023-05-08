@@ -59,7 +59,7 @@ func (h *CategoryHandler) FindOne(ctx *fiber.Ctx) error {
 
 func (h *CategoryHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.CategoryFilterDTO)
-	if err := common.GetCategoryFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

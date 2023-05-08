@@ -46,11 +46,43 @@ type FindSettingDTO struct {
 }
 
 type UserFilterDTO struct {
-	*Paging
+	Paging
 	Name string `query:"name"`
 }
 
+func (f *UserFilterDTO) GetLimit() int {
+	return f.Limit
+}
+
+func (f *UserFilterDTO) SetLimit(limit int) {
+	f.Limit = limit
+}
+
+func (f *UserFilterDTO) GetOffset() int {
+	return f.Offset
+}
+
+func (f *UserFilterDTO) SetOffset(offset int) {
+	f.Offset = offset
+}
+
 type SettingFilterDTO struct {
-	*Paging
+	Paging
 	Name string `query:"name"`
+}
+
+func (f *SettingFilterDTO) GetLimit() int {
+	return f.Limit
+}
+
+func (f *SettingFilterDTO) SetLimit(limit int) {
+	f.Limit = limit
+}
+
+func (f *SettingFilterDTO) GetOffset() int {
+	return f.Offset
+}
+
+func (f *SettingFilterDTO) SetOffset(offset int) {
+	f.Offset = offset
 }

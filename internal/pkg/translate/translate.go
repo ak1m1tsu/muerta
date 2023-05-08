@@ -238,3 +238,24 @@ func TipModelsToFindTipDTOs(models []models.Tip) []dto.FindTipDTO {
 	}
 	return dtos
 }
+
+func CreateMeasureDTOToModel(dto *dto.CreateMeasureDTO) models.Measure {
+	return models.Measure{
+		Name: dto.Name,
+	}
+}
+
+func MeasureModelToFindDTO(model *models.Measure) dto.FindMeasureDTO {
+	return dto.FindMeasureDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+
+func MeasureModelsToFindDTOs(models []models.Measure) []dto.FindMeasureDTO {
+	dtos := make([]dto.FindMeasureDTO, len(models))
+	for i, model := range models {
+		dtos[i] = MeasureModelToFindDTO(&model)
+	}
+	return dtos
+}
