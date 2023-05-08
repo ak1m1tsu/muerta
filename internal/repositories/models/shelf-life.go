@@ -12,3 +12,8 @@ type ShelfLife struct {
 	EndDate      *time.Time `db:"end_date"`
 	CreatedAt    *time.Time `db:"created_at"`
 }
+
+type ShelfLifeStatus struct {
+	ID   int    `db:"id"`
+	Name string `db:"name"`
+}

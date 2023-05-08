@@ -326,3 +326,21 @@ func ShelfLifeModelsToFindDTOs(models []models.ShelfLife) []dto.FindShelfLifeDTO
 	}
 	return dtos
 }
+func CreateShelfLifeStatusDTOToModel(dto *dto.CreateShelfLifeStatusDTO) models.ShelfLifeStatus {
+	return models.ShelfLifeStatus{
+		Name: dto.Name,
+	}
+}
+func ShelfLifeStatusModelToFindDTO(model *models.ShelfLifeStatus) dto.FindShelfLifeStatusDTO {
+	return dto.FindShelfLifeStatusDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+func ShelfLifeStatusModelsToFindDTOs(models []models.ShelfLifeStatus) []dto.FindShelfLifeStatusDTO {
+	dtos := make([]dto.FindShelfLifeStatusDTO, len(models))
+	for i, model := range models {
+		dtos[i] = ShelfLifeStatusModelToFindDTO(&model)
+	}
+	return dtos
+}
