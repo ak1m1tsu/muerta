@@ -119,3 +119,41 @@ func GetProductFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.ProductFilterDTO) er
 	}
 	return nil
 }
+
+func GetRoleFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.RoleFilterDTO) error {
+	if err := ctx.QueryParser(filter); err != nil {
+		return fmt.Errorf("failed to parse query: %w", err)
+	}
+	if filter.Paging == nil {
+		filter.Paging = &dto.Paging{
+			Limit:  10,
+			Offset: 0,
+		}
+	}
+	if filter.Paging.Limit <= 0 {
+		filter.Paging.Limit = 10
+	}
+	if filter.Paging.Offset < 0 {
+		filter.Paging.Offset = 0
+	}
+	return nil
+}
+
+func GetCategoryFilterByFiberCtx(ctx *fiber.Ctx, filter *dto.CategoryFilterDTO) error {
+	if err := ctx.QueryParser(filter); err != nil {
+		return fmt.Errorf("failed to parse query: %w", err)
+	}
+	if filter.Paging == nil {
+		filter.Paging = &dto.Paging{
+			Limit:  10,
+			Offset: 0,
+		}
+	}
+	if filter.Paging.Limit <= 0 {
+		filter.Paging.Limit = 10
+	}
+	if filter.Paging.Offset < 0 {
+		filter.Paging.Offset = 0
+	}
+	return nil
+}

@@ -1,4 +1,4 @@
-package product
+package role
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,23 +6,57 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	service "github.com/romankravchuk/muerta/internal/services/product"
+	service "github.com/romankravchuk/muerta/internal/services/role"
 )
 
-type ProductHandler struct {
-	svc service.ProductServicer
+type RoleHandler struct {
+	svc service.RoleServicer
 	log *log.Logger
 }
 
-func New(svc service.ProductServicer, log *log.Logger) *ProductHandler {
-	return &ProductHandler{
+func New(svc service.RoleServicer, log *log.Logger) *RoleHandler {
+	return &RoleHandler{
 		svc: svc,
 		log: log,
 	}
 }
 
-func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
-	var payload *dto.CreateProductDTO
+func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
+	filter := new(dto.RoleFilterDTO)
+	if err := common.GetRoleFilterByFiberCtx(ctx, filter); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	roles, err := h.svc.FindRoles(ctx.Context(), filter)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"roles": roles},
+	})
+}
+
+func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	role, err := h.svc.FindRoleByID(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"role": role},
+	})
+}
+
+func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
+	var payload *dto.CreateRoleDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -31,7 +65,7 @@ func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.CreateProduct(ctx.Context(), payload); err != nil {
+	if err := h.svc.CreateRole(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -40,48 +74,14 @@ func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) FindProductByID(ctx *fiber.Ctx) error {
+func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	dto, err := h.svc.FindProductByID(ctx.Context(), id)
-	if err != nil {
-		h.log.ServerError(ctx, err)
-		return fiber.ErrNotFound
-	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"product": dto},
-	})
-}
-
-func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
-	filter := new(dto.ProductFilterDTO)
-	if err := common.GetProductFilterByFiberCtx(ctx, filter); err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrBadRequest
-	}
-	dtos, err := h.svc.FindProducts(ctx.Context(), filter)
-	if err != nil {
-		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
-	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"products": dtos},
-	})
-}
-
-func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
-	payload := new(dto.UpdateProductDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	var payload *dto.UpdateRoleDTO
+	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
@@ -89,7 +89,7 @@ func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.UpdateProduct(ctx.Context(), id, payload); err != nil {
+	if err := h.svc.UpdateRole(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -98,13 +98,13 @@ func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) DeleteProduct(ctx *fiber.Ctx) error {
+func (h *RoleHandler) DeleteRole(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	if err := h.svc.DeleteProduct(ctx.Context(), id); err != nil {
+	if err := h.svc.DeleteRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -113,13 +113,13 @@ func (h *ProductHandler) DeleteProduct(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) RestoreProduct(ctx *fiber.Ctx) error {
+func (h *RoleHandler) RestoreRole(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	if err := h.svc.RestoreProduct(ctx.Context(), id); err != nil {
+	if err := h.svc.RestoreRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}

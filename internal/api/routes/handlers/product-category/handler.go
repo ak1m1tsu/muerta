@@ -1,4 +1,4 @@
-package product
+package productcategory
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,23 +6,23 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	service "github.com/romankravchuk/muerta/internal/services/product"
+	service "github.com/romankravchuk/muerta/internal/services/category"
 )
 
-type ProductHandler struct {
-	svc service.ProductServicer
+type CategoryHandler struct {
+	svc service.CategoryServicer
 	log *log.Logger
 }
 
-func New(svc service.ProductServicer, log *log.Logger) *ProductHandler {
-	return &ProductHandler{
+func New(svc service.CategoryServicer, log *log.Logger) *CategoryHandler {
+	return &CategoryHandler{
 		svc: svc,
 		log: log,
 	}
 }
 
-func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
-	var payload *dto.CreateProductDTO
+func (h *CategoryHandler) Create(ctx *fiber.Ctx) error {
+	var payload *dto.CreateCategoryDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -31,7 +31,7 @@ func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.CreateProduct(ctx.Context(), payload); err != nil {
+	if err := h.svc.CreateCategory(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -40,47 +40,47 @@ func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) FindProductByID(ctx *fiber.Ctx) error {
+func (h *CategoryHandler) FindOne(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	dto, err := h.svc.FindProductByID(ctx.Context(), id)
+	dto, err := h.svc.FindCategoryByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrNotFound
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    fiber.Map{"product": dto},
+		"data":    fiber.Map{"category": dto},
 	})
 }
 
-func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
-	filter := new(dto.ProductFilterDTO)
-	if err := common.GetProductFilterByFiberCtx(ctx, filter); err != nil {
+func (h *CategoryHandler) FindMany(ctx *fiber.Ctx) error {
+	filter := new(dto.CategoryFilterDTO)
+	if err := common.GetCategoryFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	dtos, err := h.svc.FindProducts(ctx.Context(), filter)
+	dtos, err := h.svc.FindCategorys(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    fiber.Map{"products": dtos},
+		"data":    fiber.Map{"categorys": dtos},
 	})
 }
 
-func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
+func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	payload := new(dto.UpdateProductDTO)
+	payload := new(dto.UpdateCategoryDTO)
 	if err := ctx.BodyParser(payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -89,7 +89,7 @@ func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.UpdateProduct(ctx.Context(), id, payload); err != nil {
+	if err := h.svc.UpdateCategory(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -98,13 +98,13 @@ func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) DeleteProduct(ctx *fiber.Ctx) error {
+func (h *CategoryHandler) Delete(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	if err := h.svc.DeleteProduct(ctx.Context(), id); err != nil {
+	if err := h.svc.DeleteCategory(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
@@ -113,13 +113,13 @@ func (h *ProductHandler) DeleteProduct(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) RestoreProduct(ctx *fiber.Ctx) error {
+func (h *CategoryHandler) Restore(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	if err := h.svc.RestoreProduct(ctx.Context(), id); err != nil {
+	if err := h.svc.RestoreCategory(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}

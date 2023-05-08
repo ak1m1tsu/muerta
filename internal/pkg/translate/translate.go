@@ -118,7 +118,7 @@ func SettingModelsToFindDTOs(models []models.Setting) []dto.FindSettingDTO {
 func CreateSettingDTOToModel(dto *dto.CreateSettingDTO) models.Setting {
 	return models.Setting{
 		Name: dto.Name,
-		Category: models.Category{
+		Category: models.SettingCategory{
 			ID: dto.CategoryID,
 		},
 	}
@@ -171,6 +171,49 @@ func ProductModelsToFindDTOs(models []models.Product) []dto.FindProductDTO {
 
 func CreateProductDTOToModel(dto *dto.CreateProductDTO) models.Product {
 	return models.Product{
+		Name: dto.Name,
+	}
+}
+
+func RoleModelToFindRoleDTO(model *models.Role) dto.FindRoleDTO {
+	return dto.FindRoleDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+
+func RoleModelsToFindRoleDTOs(models []models.Role) []dto.FindRoleDTO {
+	roles := make([]dto.FindRoleDTO, len(models))
+	for i, model := range models {
+		roles[i] = RoleModelToFindRoleDTO(&model)
+	}
+	return roles
+}
+
+func CreateRoleDTOToModel(dto *dto.CreateRoleDTO) models.Role {
+	return models.Role{
+		Name: dto.Name,
+	}
+}
+
+func CategoryModelsToFindDTOs(model []models.ProductCategory) []dto.FindCategoryDTO {
+	categories := make([]dto.FindCategoryDTO, len(model))
+	for i, category := range model {
+		categories[i] = CategoryModelToFindDTO(&category)
+	}
+	return categories
+}
+
+func CategoryModelToFindDTO(model *models.ProductCategory) dto.FindCategoryDTO {
+	return dto.FindCategoryDTO{
+		ID:        model.ID,
+		Name:      model.Name,
+		CreatedAt: model.CreatedAt,
+	}
+}
+
+func CreateCategoryDTOToModel(dto *dto.CreateCategoryDTO) models.ProductCategory {
+	return models.ProductCategory{
 		Name: dto.Name,
 	}
 }

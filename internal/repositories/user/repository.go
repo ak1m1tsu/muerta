@@ -14,7 +14,7 @@ type UserRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.User, error)
 	FindByName(ctx context.Context, name string) (models.User, error)
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.User, error)
-	FindPassword(ctx context.Context, passhash string) error
+	FindPassword(ctx context.Context, passhash string) (models.Password, error)
 	Create(ctx context.Context, user models.User) error
 	Update(ctx context.Context, user models.User) error
 	Delete(ctx context.Context, id int) error
@@ -54,7 +54,7 @@ func (repo *userRepository) FindByID(ctx context.Context, id int) (models.User, 
 	}
 	defer rows.Close()
 	for rows.Next() {
-		setting := models.Setting{Category: models.Category{}}
+		setting := models.Setting{Category: models.SettingCategory{}}
 		if err := rows.Scan(&setting.Name, &setting.Value, &setting.Category.Name); err != nil {
 			return models.User{}, fmt.Errorf("failed to scan setting: %w", err)
 		}
@@ -126,8 +126,20 @@ func (repo *userRepository) FindMany(ctx context.Context, limit, offset int, nam
 	return users, nil
 }
 
-func (repo *userRepository) FindPassword(ctx context.Context, passhash string) error {
-	return nil
+func (repo *userRepository) FindPassword(ctx context.Context, passhash string) (models.Password, error) {
+	var (
+		query = `
+			SELECT passhash
+			FROM passwords
+			WHERE passhash = $1
+			LIMIT 1
+		`
+		password models.Password
+	)
+	if err := repo.client.QueryRow(ctx, query, passhash).Scan(&password.Hash); err != nil {
+		return models.Password{}, fmt.Errorf("failed to query password: %w", err)
+	}
+	return password, nil
 }
 
 func (repo *userRepository) Create(ctx context.Context, user models.User) error {

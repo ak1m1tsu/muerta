@@ -48,7 +48,7 @@ func (s *AuthService) FindUser(ctx context.Context, payload *dto.LoginUserPayloa
 		return models.User{}, fmt.Errorf("find user: %w", err)
 	}
 	hash := s.HashPassword(payload.Password + user.Salt)
-	if err := s.repo.FindPassword(ctx, hash); err != nil {
+	if _, err := s.repo.FindPassword(ctx, hash); err != nil {
 		return models.User{}, fmt.Errorf("find user: %w", err)
 	}
 	success, err := s.VerifyPassword(hash, payload.Password)

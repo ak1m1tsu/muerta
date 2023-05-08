@@ -46,14 +46,14 @@ func (repo *productRepository) FindMany(ctx context.Context, limit, offset int, 
 		query = `
 			SELECT id, name
 			FROM products
-			WHERE name LIKE $3
+			WHERE name ILIKE $3
 			ORDER BY name ASC
 			LIMIT $1
 			OFFSET $2
 		`
 		products = make([]models.Product, 0, limit)
 	)
-	rows, err := repo.client.Query(ctx, query, limit, offset, name)
+	rows, err := repo.client.Query(ctx, query, limit, offset, "%"+name+"%")
 	if err != nil {
 		return nil, fmt.Errorf("failed to find products: %w", err)
 	}
@@ -100,8 +100,8 @@ func (repo *productRepository) Delete(ctx context.Context, id int) error {
 	var (
 		query = `
 			UPDATE products
-			SET deleted_at = NOW()
-			SET updated_at = NOW()
+			SET deleted_at = NOW(),
+				updated_at = NOW()
 			WHERE id = $1
 		`
 	)
@@ -115,8 +115,8 @@ func (repo *productRepository) Restore(ctx context.Context, id int) error {
 	var (
 		query = `
 			UPDATE products
-			SET deleted_at = NULL
-			SET updated_at = NOW()
+			SET deleted_at = NULL,
+				updated_at = NOW()
 			WHERE id = $1
 		`
 	)

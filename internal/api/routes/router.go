@@ -8,7 +8,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/romankravchuk/muerta/internal/api/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/product"
+	productcategory "github.com/romankravchuk/muerta/internal/api/routes/handlers/product-category"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipe"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers/role"
 	shelflifedetector "github.com/romankravchuk/muerta/internal/api/routes/handlers/shelf-life-detector"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/storage"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/user"
@@ -39,6 +41,8 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 		r.Mount("/settings", usersetting.NewRouter(client, logger))
 		r.Mount("/storages", storage.NewRouter(client, logger))
 		r.Mount("/products", product.NewRouter(client, logger))
+		r.Mount("/roles", role.NewRouter(client, logger))
+		r.Mount("/product-categories", productcategory.NewRouter(client, logger))
 		// r.Mount("/auth", auth.NewRouter(cfg, db, logger))
 		// r.Use(jwtware.New(jwtware.Config{
 		// 	SigningMethod: "RS256",
