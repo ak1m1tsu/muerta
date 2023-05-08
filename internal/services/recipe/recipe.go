@@ -1,4 +1,4 @@
-package recipes
+package recipe
 
 import (
 	"context"
@@ -12,10 +12,10 @@ import (
 type RecipeServicer interface {
 	CreateRecipe(ctx context.Context, payload *dto.CreateRecipeDTO) error
 	FindRecipeByID(ctx context.Context, id int) (dto.FindRecipeDTO, error)
-	FindRecipeByName(ctx context.Context, name string) (dto.FindRecipeDTO, error)
 	FindRecipes(ctx context.Context, filter *dto.RecipeFilterDTO) ([]dto.FindRecipeDTO, error)
 	UpdateRecipe(ctx context.Context, id int, payload *dto.UpdateRecipeDTO) error
 	DeleteRecipe(ctx context.Context, id int) error
+	RestoreRecipe(ctx context.Context, id int) error
 }
 
 type RecipeService struct {
@@ -36,15 +36,6 @@ func (s *RecipeService) FindRecipeByID(ctx context.Context, id int) (dto.FindRec
 	recipe, err := s.repository.FindByID(ctx, id)
 	if err != nil {
 		return dto.FindRecipeDTO{}, fmt.Errorf("recipe not found by id: %w", err)
-	}
-	result := translate.RecipeModelToFindDTO(&recipe)
-	return result, nil
-}
-
-func (s *RecipeService) FindRecipeByName(ctx context.Context, name string) (dto.FindRecipeDTO, error) {
-	recipe, err := s.repository.FindByName(ctx, name)
-	if err != nil {
-		return dto.FindRecipeDTO{}, fmt.Errorf("recipe not found by name: %w", err)
 	}
 	result := translate.RecipeModelToFindDTO(&recipe)
 	return result, nil
@@ -79,6 +70,13 @@ func (s *RecipeService) UpdateRecipe(ctx context.Context, id int, payload *dto.U
 func (s *RecipeService) DeleteRecipe(ctx context.Context, id int) error {
 	if err := s.repository.Delete(ctx, id); err != nil {
 		return fmt.Errorf("delete recipe: %w", err)
+	}
+	return nil
+}
+
+func (s *RecipeService) RestoreRecipe(ctx context.Context, id int) error {
+	if err := s.repository.Restore(ctx, id); err != nil {
+		return fmt.Errorf("restore recipe: %w", err)
 	}
 	return nil
 }

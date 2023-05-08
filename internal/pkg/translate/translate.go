@@ -98,3 +98,28 @@ func CreateRecipeDTOToModel(dto *dto.CreateRecipeDTO) models.Recipe {
 		Steps:       steps,
 	}
 }
+
+func SettingModelToFindDTO(model *models.Setting) dto.FindSettingDTO {
+	return dto.FindSettingDTO{
+		ID:       model.ID,
+		Name:     model.Name,
+		Category: model.Category.Name,
+	}
+}
+
+func SettingModelsToFindDTOs(models []models.Setting) []dto.FindSettingDTO {
+	dtos := make([]dto.FindSettingDTO, len(models))
+	for i, model := range models {
+		dtos[i] = SettingModelToFindDTO(&model)
+	}
+	return dtos
+}
+
+func CreateSettingDTOToModel(dto *dto.CreateSettingDTO) models.Setting {
+	return models.Setting{
+		Name: dto.Name,
+		Category: models.Category{
+			ID: dto.CategoryID,
+		},
+	}
+}

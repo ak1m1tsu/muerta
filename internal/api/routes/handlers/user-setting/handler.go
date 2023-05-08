@@ -6,15 +6,15 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	usersettings "github.com/romankravchuk/muerta/internal/services/user-settings"
+	usersetting "github.com/romankravchuk/muerta/internal/services/user-setting"
 )
 
 type UserSettingHandler struct {
-	svc usersettings.UserSettingsServicer
+	svc usersetting.UserSettingsServicer
 	log *log.Logger
 }
 
-func New(svc usersettings.UserSettingsServicer, log *log.Logger) *UserSettingHandler {
+func New(svc usersetting.UserSettingsServicer, log *log.Logger) *UserSettingHandler {
 	return &UserSettingHandler{
 		svc: svc,
 		log: log,
@@ -74,5 +74,56 @@ func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
 	})
 }
 
-// func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {}
-// func (h *UserSettingHandler) Delete(ctx *fiber.Ctx) error {}
+func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	payload := new(dto.UpdateSettingDTO)
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return fiber.ErrBadRequest
+	}
+	if err := h.svc.UpdateSetting(ctx.Context(), id, payload); err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+	})
+}
+
+func (h *UserSettingHandler) Delete(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	if err := h.svc.DeleteSetting(ctx.Context(), id); err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+	})
+}
+
+func (h *UserSettingHandler) Restore(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	if err := h.svc.RestoreSetting(ctx.Context(), id); err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+	})
+}

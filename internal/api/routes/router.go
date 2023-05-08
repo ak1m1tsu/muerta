@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/romankravchuk/muerta/internal/api/middleware/notfound"
-	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipes"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers/recipe"
 	shelflifedetector "github.com/romankravchuk/muerta/internal/api/routes/handlers/shelf-life-detector"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/user"
 	usersetting "github.com/romankravchuk/muerta/internal/api/routes/handlers/user-setting"
@@ -32,7 +32,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 	r.mountAPIMiddlewares(logger)
 	r.Route("/api/v1", func(r fiber.Router) {
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger))
-		r.Mount("/recipes", recipes.NewRouter(client, logger))
+		r.Mount("/recipes", recipe.NewRouter(client, logger))
 		r.Mount("/users", user.NewRouter(client, logger))
 		r.Mount("/settings", usersetting.NewRouter(client, logger))
 		// r.Mount("/auth", auth.NewRouter(cfg, db, logger))
