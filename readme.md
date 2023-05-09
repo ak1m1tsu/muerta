@@ -7,9 +7,6 @@ Muerta - RESTful API for a term paper on "Web application to control the shelf l
 First, create an `.env` file and put the following environment variables in it:
 
 ```shell
-POSTGRES_USER=[psql_username]
-POSTGRES_DB=[psql_db_name]
-POSTGRES_PASSWORD=[psql_password]
 PORT=[port]
 NAME=[name]
 DB_NAME=[db_name]
