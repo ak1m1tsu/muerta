@@ -190,8 +190,8 @@ pyrightconfig.json
 .history
 .ionide
 
-### certificates ###
-cert/
-
 ### postman ###
 *postman_collection.json
+
+### certifications ###
+cert/*rsa*

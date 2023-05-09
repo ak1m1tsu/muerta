@@ -14,7 +14,6 @@ RUN go get -d -v ./...
 RUN GOOS=linux go build -o /bin/app -v ./cmd/muerta/
 RUN openssl genrsa -out ./cert/id_rsa.pem 4096
 RUN openssl rsa -in ./cert/id_rsa.pem -pubout -out ./cert/id_rsa.pub
-COPY ./cert /cert
-ENV CERT_PATH=/cert
+ENV CERT_PATH=/app/cert
 EXPOSE ${PORT}
 ENTRYPOINT [ "/bin/app" ]
