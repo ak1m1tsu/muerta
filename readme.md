@@ -10,11 +10,13 @@ First, create an `.env` file and put the following environment variables in it:
 POSTGRES_USER=[psql_username]
 POSTGRES_DB=[psql_db_name]
 POSTGRES_PASSWORD=[psql_password]
-API_PORT=[api_port]
-SERVICE_PORT=[service_port]
-SECRET=[api_secret]
-RSA_PRIVATE_KEY=[api_rsa_private_key]
-RSA_PUBLIC_KEY=[api_rsa_public_key]
+PORT=[port]
+NAME=[name]
+DB_NAME=[db_name]
+DB_PORT=[db_port]
+DB_HOST=[db_host]
+DB_PASSWORD=[db_password]
+DB_USER=[db_user]
 ```
 
 Then Start the Docker containers with this command:
@@ -29,5 +31,5 @@ docker compose up -d --build
 
 - [x] Python service to recognize shelf life on a picture
 - [ ] JWT Authentication
-- [ ] Logging in JSON format
+- [x] Logging in JSON format
 - [ ] Users with roles and groups
