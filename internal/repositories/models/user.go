@@ -7,6 +7,7 @@ type User struct {
 	Name      string `db:"name"`
 	Salt      string `db:"salt"`
 	Settings  []Setting
+	Roles     []Role
 	Password  Password
 	CreatedAt time.Time `db:"created_at"`
 	DeletedAt time.Time `db:"deleted_at"`

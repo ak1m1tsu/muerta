@@ -19,10 +19,19 @@ type UserRepositorer interface {
 	Update(ctx context.Context, user models.User) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	Exists(ctx context.Context, name string) bool
 }
 
 type userRepository struct {
 	client repositories.PostgresClient
+}
+
+// Exists implements UserRepositorer
+func (r *userRepository) Exists(ctx context.Context, name string) bool {
+	if _, err := r.FindByName(ctx, name); err == nil {
+		return true
+	}
+	return false
 }
 
 func New(client repositories.PostgresClient) UserRepositorer {
@@ -43,7 +52,18 @@ func (repo *userRepository) FindByID(ctx context.Context, id int) (models.User, 
 			JOIN settings_categories sc ON s.id_category = sc.id
 			WHERE us.id_user = $1
 		`
-		user models.User
+		queryRoles = `
+			SELECT r.id, r.name
+			FROM roles r
+			JOIN users_roles ur ON ur.id_role = r.id
+			JOIN users u ON u.id = ur.id_user
+			WHERE ur.id_user = $1
+			LIMIT 1
+		`
+		user = models.User{
+			Settings: make([]models.Setting, 0),
+			Roles:    make([]models.Role, 0),
+		}
 	)
 	if err := repo.client.QueryRow(ctx, query, id).Scan(&user.ID, &user.Name, &user.CreatedAt); err != nil {
 		return models.User{}, fmt.Errorf("failed to query user: %w", err)
@@ -60,40 +80,55 @@ func (repo *userRepository) FindByID(ctx context.Context, id int) (models.User, 
 		}
 		user.Settings = append(user.Settings, setting)
 	}
+	rows, err = repo.client.Query(ctx, queryRoles, user.ID)
+	if err != nil {
+		return models.User{}, fmt.Errorf("failed to query roles: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		role := models.Role{}
+		if err := rows.Scan(&role.ID, &role.Name); err != nil {
+			return models.User{}, fmt.Errorf("failed to query role: %w", err)
+		}
+		user.Roles = append(user.Roles, role)
+	}
 	return user, nil
 }
 
 func (repo *userRepository) FindByName(ctx context.Context, name string) (models.User, error) {
 	var (
 		query = `
-			SELECT id, name, created_at
+			SELECT id, name, salt, created_at
 			FROM users
 			WHERE name = $1
 			LIMIT 1
 		`
-		querySettings = `
-			SELECT s.name, s.value, sc.name FROM settings s
-			JOIN users_settings us ON s.id = us.id_setting
-			JOIN settings_categories sc ON s.id_category = sc.id
-			WHERE us.id_user = $1
+		queryRoles = `
+			SELECT r.id, r.name
+			FROM roles r
+			JOIN users_roles ur ON ur.id_role = r.id
+			JOIN users u ON u.id = ur.id_user
+			WHERE ur.id_user = $1
+			LIMIT 1
 		`
-		user = models.User{Settings: make([]models.Setting, 0)}
+		user = models.User{
+			Roles: make([]models.Role, 0),
+		}
 	)
-	if err := repo.client.QueryRow(ctx, query, name).Scan(&user.ID, &user.Name); err != nil {
+	if err := repo.client.QueryRow(ctx, query, name).Scan(&user.ID, &user.Name, &user.Salt, &user.CreatedAt); err != nil {
 		return models.User{}, fmt.Errorf("failed to query user: %w", err)
 	}
-	rows, err := repo.client.Query(ctx, querySettings, user.ID)
-
+	rows, err := repo.client.Query(ctx, queryRoles, user.ID)
 	if err != nil {
-		return models.User{}, fmt.Errorf("failed to query settings: %w", err)
+		return models.User{}, fmt.Errorf("failed to query roles: %w", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
-		setting := models.Setting{}
-		if err := rows.Scan(&setting.Name, &setting.Value, &setting.Category.Name); err != nil {
-			return models.User{}, fmt.Errorf("failed to scan setting: %w", err)
+		role := models.Role{}
+		if err := rows.Scan(&role.ID, &role.Name); err != nil {
+			return models.User{}, fmt.Errorf("failed to query role: %w", err)
 		}
-		user.Settings = append(user.Settings, setting)
+		user.Roles = append(user.Roles, role)
 	}
 	return user, nil
 }

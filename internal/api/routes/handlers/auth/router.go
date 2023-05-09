@@ -2,6 +2,8 @@ package auth
 
 import (
 	"github.com/gofiber/fiber/v2"
+
+	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -10,15 +12,14 @@ import (
 	"github.com/romankravchuk/muerta/internal/services/jwt"
 )
 
-func NewRouter(cfg *config.Config, client repositories.PostgresClient, logger *log.Logger) *fiber.App {
+func NewRouter(cfg *config.Config, client repositories.PostgresClient, logger *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
 	repo := user.New(client)
 	jsvc := jwt.New(cfg)
-	asvc := auth.New(jsvc, repo)
+	svc := auth.New(jsvc, repo)
 	r := fiber.New()
-	h := New(jsvc, asvc, logger)
+	h := New(cfg, svc, logger)
 	r.Post("/sign-up", h.SignUp)
 	r.Post("/login", h.Login)
-	r.Post("/logout", h.Logout)
-	r.Post("/refresh", h.Refresh)
+	r.Post("/logout", jware.DeserializeUser, h.Logout)
 	return r
 }
