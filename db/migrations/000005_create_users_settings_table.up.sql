@@ -1,5 +1,5 @@
 CREATE TABLE
-    users_settings (
+    IF NOT EXISTS users_settings (
         id_user integer NOT NULL,
         id_setting integer NOT NULL,
         "value" varchar NOT NULL,

@@ -1,5 +1,5 @@
 CREATE TABLE
-    users_storages (
+    IF NOT EXISTS users_storages (
         id_user integer NOT NULL,
         id_storage integer NOT NULL,
         CONSTRAINT unq_users_storages_id_storage UNIQUE (id_storage),

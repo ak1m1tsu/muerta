@@ -1,6 +1,6 @@
 CREATE TABLE
     IF NOT EXISTS recipes (
-        id integer DEFAULT nextval('recipes_id_seq' :: regclass) NOT NULL,
+        id serial NOT NULL,
         id_user integer NOT NULL,
         name varchar(100) NOT NULL,
         description text,

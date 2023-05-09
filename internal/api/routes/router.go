@@ -34,10 +34,9 @@ type Router struct {
 func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.Logger) *Router {
 	r := &Router{
 		App: fiber.New(fiber.Config{
-			AppName:               "Muerta API v1.0",
-			DisableStartupMessage: true,
-			JSONEncoder:           sonic.Marshal,
-			JSONDecoder:           sonic.Unmarshal,
+			AppName:     "Muerta API v1.0",
+			JSONEncoder: sonic.Marshal,
+			JSONDecoder: sonic.Unmarshal,
 		}),
 	}
 	// jwtware := jwtware.New(jwtware.Config{

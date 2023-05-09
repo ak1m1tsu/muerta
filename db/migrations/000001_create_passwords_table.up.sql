@@ -1,1 +1,2 @@
-CREATE TABLE passwords (passhash varchar(1024) NOT NULL);
+CREATE TABLE
+    IF NOT EXISTS passwords (passhash varchar(1024) NOT NULL);
