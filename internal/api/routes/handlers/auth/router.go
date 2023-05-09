@@ -12,10 +12,9 @@ import (
 	"github.com/romankravchuk/muerta/internal/services/jwt"
 )
 
-func NewRouter(cfg *config.Config, client repositories.PostgresClient, logger *log.Logger) *fiber.App {
+func NewRouter(cfg *config.Config, client repositories.PostgresClient, logger *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
 	repo := user.New(client)
 	jsvc := jwt.New(cfg)
-	jware := jware.New(jsvc, logger)
 	svc := auth.New(jsvc, repo)
 	r := fiber.New()
 	h := New(cfg, svc, logger)

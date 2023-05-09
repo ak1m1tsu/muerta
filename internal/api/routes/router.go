@@ -20,10 +20,12 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/tip"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/user"
 	usersetting "github.com/romankravchuk/muerta/internal/api/routes/handlers/user-setting"
+	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/services/jwt"
 )
 
 type Router struct {
@@ -38,22 +40,23 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 			JSONDecoder: sonic.Unmarshal,
 		}),
 	}
+	jware := jware.New(jwt.New(cfg), logger)
 	r.mountAPIMiddlewares(logger)
 	r.Route("/api/v1", func(r fiber.Router) {
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger))
-		r.Mount("/recipes", recipe.NewRouter(client, logger))
-		r.Mount("/users", user.NewRouter(client, logger))
-		r.Mount("/settings", usersetting.NewRouter(client, logger))
-		r.Mount("/storages", storage.NewRouter(client, logger))
-		r.Mount("/products", product.NewRouter(client, logger))
-		r.Mount("/roles", role.NewRouter(client, logger))
-		r.Mount("/product-categories", productcategory.NewRouter(client, logger))
-		r.Mount("/tips", tip.NewRouter(client, logger))
-		r.Mount("/measures", measure.NewRouter(client, logger))
-		r.Mount("/shelf-lives", shelflife.NewRouter(client, logger))
-		r.Mount("/shelf-life-statuses", shelflifestatus.NewRouter(client, logger))
-		r.Mount("/storage-types", storagetype.NewRouter(client, logger))
-		r.Mount("/auth", auth.NewRouter(cfg, client, logger))
+		r.Mount("/recipes", recipe.NewRouter(client, logger, jware))
+		r.Mount("/users", user.NewRouter(client, logger, jware))
+		r.Mount("/settings", usersetting.NewRouter(client, logger, jware))
+		r.Mount("/storages", storage.NewRouter(client, logger, jware))
+		r.Mount("/products", product.NewRouter(client, logger, jware))
+		r.Mount("/roles", role.NewRouter(client, logger, jware))
+		r.Mount("/product-categories", productcategory.NewRouter(client, logger, jware))
+		r.Mount("/tips", tip.NewRouter(client, logger, jware))
+		r.Mount("/measures", measure.NewRouter(client, logger, jware))
+		r.Mount("/shelf-lives", shelflife.NewRouter(client, logger, jware))
+		r.Mount("/shelf-life-statuses", shelflifestatus.NewRouter(client, logger, jware))
+		r.Mount("/storage-types", storagetype.NewRouter(client, logger, jware))
+		r.Mount("/auth", auth.NewRouter(cfg, client, logger, jware))
 	})
 	r.Use(notfound.New())
 	return r

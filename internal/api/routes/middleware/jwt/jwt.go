@@ -9,19 +9,19 @@ import (
 	"github.com/romankravchuk/muerta/internal/services/jwt"
 )
 
-type jwtMiddleware struct {
+type JWTMiddleware struct {
 	svc jwt.JWTServicer
 	log *log.Logger
 }
 
-func New(svc jwt.JWTServicer, log *log.Logger) *jwtMiddleware {
-	return &jwtMiddleware{
+func New(svc jwt.JWTServicer, log *log.Logger) *JWTMiddleware {
+	return &JWTMiddleware{
 		svc: svc,
 		log: log,
 	}
 }
 
-func (m *jwtMiddleware) DeserializeUser(ctx *fiber.Ctx) error {
+func (m *JWTMiddleware) DeserializeUser(ctx *fiber.Ctx) error {
 	var token string
 	authorization := ctx.Get("Authorization")
 

@@ -55,8 +55,8 @@ func (repo *userRepository) FindByID(ctx context.Context, id int) (models.User, 
 		queryRoles = `
 			SELECT r.id, r.name
 			FROM roles r
-			JOIN users_roles ur ON ur.id_role == r.id
-			JOIN users u ON u.id == ur.id_user
+			JOIN users_roles ur ON ur.id_role = r.id
+			JOIN users u ON u.id = ur.id_user
 			WHERE ur.id_user = $1
 			LIMIT 1
 		`
