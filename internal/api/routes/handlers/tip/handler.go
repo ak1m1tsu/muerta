@@ -127,3 +127,37 @@ func (h *TipHandler) RestoreTip(ctx *fiber.Ctx) error {
 		"success": true,
 	})
 }
+
+func (h *TipHandler) FindTipStorages(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	storages, err := h.svc.FindTipStorages(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrBadGateway
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"storages": storages},
+	})
+}
+
+func (h *TipHandler) FindTipProducts(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	products, err := h.svc.FindTipProducts(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrBadGateway
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"products": products},
+	})
+}

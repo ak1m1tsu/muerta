@@ -1,7 +1,7 @@
 package dto
 
 type Filter interface {
-	*CategoryFilterDTO |
+	*ProductCategoryFilterDTO |
 		*MeasureFilterDTO |
 		*ProductFilterDTO |
 		*RecipeFilterDTO |

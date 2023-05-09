@@ -9,8 +9,8 @@ type CreateRecipeDTO struct {
 type FindRecipeDTO struct {
 	ID          int           `json:"id"`
 	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Steps       []FindStepDTO `json:"steps"`
+	Description string        `json:"description,omitempty"`
+	Steps       []FindStepDTO `json:"steps,omitempty"`
 }
 
 type UpdateRecipeDTO struct {
@@ -42,7 +42,7 @@ func (f *RecipeFilterDTO) SetOffset(offset int) {
 type FindStepDTO struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
-	Place int    `json:"place"`
+	Place int    `json:"place,omitempty"`
 }
 
 type RecipeStepDTO struct {

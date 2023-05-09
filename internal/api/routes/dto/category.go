@@ -2,37 +2,37 @@ package dto
 
 import "time"
 
-type CategoryFilterDTO struct {
+type ProductCategoryFilterDTO struct {
 	Paging
 	Name string `query:"name"`
 }
 
-func (f *CategoryFilterDTO) GetLimit() int {
+func (f *ProductCategoryFilterDTO) GetLimit() int {
 	return f.Limit
 }
 
-func (f *CategoryFilterDTO) SetLimit(limit int) {
+func (f *ProductCategoryFilterDTO) SetLimit(limit int) {
 	f.Limit = limit
 }
 
-func (f *CategoryFilterDTO) GetOffset() int {
+func (f *ProductCategoryFilterDTO) GetOffset() int {
 	return f.Offset
 }
 
-func (f *CategoryFilterDTO) SetOffset(offset int) {
+func (f *ProductCategoryFilterDTO) SetOffset(offset int) {
 	f.Offset = offset
 }
 
-type CreateCategoryDTO struct {
+type CreateProductCategoryDTO struct {
 	Name string `json:"name" validate:"required"`
 }
 
-type UpdateCategoryDTO struct {
+type UpdateProductCategoryDTO struct {
 	Name string `json:"name" validate:"required"`
 }
 
-type FindCategoryDTO struct {
+type FindProductCategoryDTO struct {
 	ID        int        `json:"id"`
 	Name      string     `json:"name"`
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }

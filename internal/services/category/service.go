@@ -9,10 +9,10 @@ import (
 )
 
 type CategoryServicer interface {
-	FindCategoryByID(ctx context.Context, id int) (dto.FindCategoryDTO, error)
-	FindCategorys(ctx context.Context, filter *dto.CategoryFilterDTO) ([]dto.FindCategoryDTO, error)
-	CreateCategory(ctx context.Context, payload *dto.CreateCategoryDTO) error
-	UpdateCategory(ctx context.Context, id int, category *dto.UpdateCategoryDTO) error
+	FindCategoryByID(ctx context.Context, id int) (dto.FindProductCategoryDTO, error)
+	FindCategorys(ctx context.Context, filter *dto.ProductCategoryFilterDTO) ([]dto.FindProductCategoryDTO, error)
+	CreateCategory(ctx context.Context, payload *dto.CreateProductCategoryDTO) error
+	UpdateCategory(ctx context.Context, id int, category *dto.UpdateProductCategoryDTO) error
 	DeleteCategory(ctx context.Context, id int) error
 	RestoreCategory(ctx context.Context, id int) error
 }
@@ -22,7 +22,7 @@ type categoryService struct {
 }
 
 // CreateCategory implements CategoryServicer
-func (svc *categoryService) CreateCategory(ctx context.Context, payload *dto.CreateCategoryDTO) error {
+func (svc *categoryService) CreateCategory(ctx context.Context, payload *dto.CreateProductCategoryDTO) error {
 	model := translate.CreateCategoryDTOToModel(payload)
 	if err := svc.repo.Create(ctx, model); err != nil {
 		return err
@@ -39,17 +39,17 @@ func (svc *categoryService) DeleteCategory(ctx context.Context, id int) error {
 }
 
 // FindCategoryByID implements CategoryServicer
-func (svc *categoryService) FindCategoryByID(ctx context.Context, id int) (dto.FindCategoryDTO, error) {
+func (svc *categoryService) FindCategoryByID(ctx context.Context, id int) (dto.FindProductCategoryDTO, error) {
 	category, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
-		return dto.FindCategoryDTO{}, err
+		return dto.FindProductCategoryDTO{}, err
 	}
 	dto := translate.CategoryModelToFindDTO(&category)
 	return dto, nil
 }
 
 // FindCategorys implements CategoryServicer
-func (svc *categoryService) FindCategorys(ctx context.Context, filter *dto.CategoryFilterDTO) ([]dto.FindCategoryDTO, error) {
+func (svc *categoryService) FindCategorys(ctx context.Context, filter *dto.ProductCategoryFilterDTO) ([]dto.FindProductCategoryDTO, error) {
 	categories, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (svc *categoryService) RestoreCategory(ctx context.Context, id int) error {
 }
 
 // UpdateCategory implements CategoryServicer
-func (svc *categoryService) UpdateCategory(ctx context.Context, id int, category *dto.UpdateCategoryDTO) error {
+func (svc *categoryService) UpdateCategory(ctx context.Context, id int, category *dto.UpdateProductCategoryDTO) error {
 	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err

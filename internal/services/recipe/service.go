@@ -16,13 +16,14 @@ type RecipeServicer interface {
 	UpdateRecipe(ctx context.Context, id int, payload *dto.UpdateRecipeDTO) error
 	DeleteRecipe(ctx context.Context, id int) error
 	RestoreRecipe(ctx context.Context, id int) error
+	FindRecipeProducts(ctx context.Context, id int) ([]dto.FindProductDTO, error)
 }
 
 type RecipeService struct {
 	repository recipes.RecipesRepositorer
 }
 
-func New(repository recipes.RecipesRepositorer) *RecipeService {
+func New(repository recipes.RecipesRepositorer) RecipeServicer {
 	return &RecipeService{repository: repository}
 }
 
@@ -81,4 +82,13 @@ func (s *RecipeService) RestoreRecipe(ctx context.Context, id int) error {
 		return fmt.Errorf("restore recipe: %w", err)
 	}
 	return nil
+}
+
+func (s *RecipeService) FindRecipeProducts(ctx context.Context, id int) ([]dto.FindProductDTO, error) {
+	products, err := s.repository.FindProducts(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	dtos := translate.ProductModelsToFindDTOs(products)
+	return dtos, nil
 }

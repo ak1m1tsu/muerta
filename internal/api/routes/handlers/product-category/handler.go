@@ -22,7 +22,7 @@ func New(svc service.CategoryServicer, log *log.Logger) *CategoryHandler {
 }
 
 func (h *CategoryHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateCategoryDTO
+	var payload *dto.CreateProductCategoryDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -58,7 +58,7 @@ func (h *CategoryHandler) FindOne(ctx *fiber.Ctx) error {
 }
 
 func (h *CategoryHandler) FindMany(ctx *fiber.Ctx) error {
-	filter := new(dto.CategoryFilterDTO)
+	filter := new(dto.ProductCategoryFilterDTO)
 	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
@@ -80,7 +80,7 @@ func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	payload := new(dto.UpdateCategoryDTO)
+	payload := new(dto.UpdateProductCategoryDTO)
 	if err := ctx.BodyParser(payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
