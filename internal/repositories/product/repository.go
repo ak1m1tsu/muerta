@@ -15,6 +15,8 @@ type ProductRepositorer interface {
 	Update(ctx context.Context, product models.Product) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	FindCategories(ctx context.Context, id int) ([]models.ProductCategory, error)
+	FindRecipes(ctx context.Context, id int) ([]models.Recipe, error)
 }
 
 type productRepository struct {
@@ -23,6 +25,58 @@ type productRepository struct {
 
 func New(client repositories.PostgresClient) ProductRepositorer {
 	return &productRepository{client: client}
+}
+
+// FindCategories implements ProductRepositorer
+func (r *productRepository) FindCategories(ctx context.Context, id int) ([]models.ProductCategory, error) {
+	var (
+		query = `
+			SELECT c.id, c.name
+			FROM categories c
+			JOIN products_categories pc ON pc.id_category = c.id
+			WHERE pc.id_product = $1 AND c.deleted_at IS NULL
+		`
+		categories []models.ProductCategory
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find categories: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var category models.ProductCategory
+		if err := rows.Scan(&category.ID, &category.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan category: %w", err)
+		}
+		categories = append(categories, category)
+	}
+	return categories, nil
+}
+
+// FindRecipes implements ProductRepositorer
+func (r *productRepository) FindRecipes(ctx context.Context, id int) ([]models.Recipe, error) {
+	var (
+		query = `
+			SELECT r.id, r.name
+			FROM recipes r
+			JOIN products_recipes_measures prm ON prm.id_recipe = r.id
+			WHERE prm.id_product = $1 AND r.deleted_at IS NULL
+		`
+		recipes []models.Recipe
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find categories: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var category models.Recipe
+		if err := rows.Scan(&category.ID, &category.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan category: %w", err)
+		}
+		recipes = append(recipes, category)
+	}
+	return recipes, nil
 }
 
 func (repo *productRepository) FindByID(ctx context.Context, id int) (models.Product, error) {

@@ -15,6 +15,8 @@ type ProductServicer interface {
 	UpdateProduct(ctx context.Context, id int, payload *dto.UpdateProductDTO) error
 	DeleteProduct(ctx context.Context, id int) error
 	RestoreProduct(ctx context.Context, id int) error
+	FindProductCategories(ctx context.Context, id int) ([]dto.FindProductCategoryDTO, error)
+	FindProductRecipes(ctx context.Context, id int) ([]dto.FindRecipeDTO, error)
 }
 
 type productService struct {
@@ -79,4 +81,21 @@ func (svc *productService) RestoreProduct(ctx context.Context, id int) error {
 		return err
 	}
 	return nil
+}
+
+func (svc *productService) FindProductCategories(ctx context.Context, id int) ([]dto.FindProductCategoryDTO, error) {
+	categories, err := svc.repo.FindCategories(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	dtos := translate.CategoryModelsToFindDTOs(categories)
+	return dtos, nil
+}
+func (svc *productService) FindProductRecipes(ctx context.Context, id int) ([]dto.FindRecipeDTO, error) {
+	recipes, err := svc.repo.FindRecipes(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	dtos := translate.RecipeModelsToFindDTOs(recipes)
+	return dtos, nil
 }

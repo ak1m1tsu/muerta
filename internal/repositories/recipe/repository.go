@@ -18,13 +18,40 @@ type RecipesRepositorer interface {
 	Update(ctx context.Context, recipe *models.Recipe) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	FindProducts(ctx context.Context, id int) ([]models.Product, error)
 }
 
 type RecipesRepository struct {
 	client repositories.PostgresClient
 }
 
-func New(client repositories.PostgresClient) *RecipesRepository {
+// FindProducts implements RecipesRepositorer
+func (r *RecipesRepository) FindProducts(ctx context.Context, id int) ([]models.Product, error) {
+	var (
+		query = `
+			SELECT p.id, p.name
+			FROM products p
+			JOIN products_recipes_measures prm ON prm.id_product = p.id
+			WHERE prm.id_recipe = $1 AND p.deleted_at IS NULL
+		`
+		products []models.Product
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query products: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var product models.Product
+		if err := rows.Scan(&product.ID, &product.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan product: %w", err)
+		}
+		products = append(products, product)
+	}
+	return products, nil
+}
+
+func New(client repositories.PostgresClient) RecipesRepositorer {
 	return &RecipesRepository{client: client}
 }
 

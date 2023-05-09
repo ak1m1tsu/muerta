@@ -127,3 +127,20 @@ func (h *RecipesHandler) RestoreRecipe(ctx *fiber.Ctx) error {
 		"success": true,
 	})
 }
+
+func (h *RecipesHandler) FindRecipeProducts(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	products, err := h.svc.FindRecipeProducts(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrBadGateway
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"products": products},
+	})
+}

@@ -127,3 +127,37 @@ func (h *ProductHandler) RestoreProduct(ctx *fiber.Ctx) error {
 		"success": true,
 	})
 }
+
+func (h *ProductHandler) FindProductCategories(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	categories, err := h.svc.FindProductCategories(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"categories": categories},
+	})
+}
+
+func (h *ProductHandler) FindProductRecipes(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	recipes, err := h.svc.FindProductRecipes(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"recipes": recipes},
+	})
+}

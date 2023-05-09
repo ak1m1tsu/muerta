@@ -15,10 +15,38 @@ type TipServicer interface {
 	UpdateTip(ctx context.Context, id int, payload *dto.UpdateTipDTO) error
 	DeleteTip(ctx context.Context, id int) error
 	RestoreTip(ctx context.Context, id int) error
+	FindTipStorages(ctx context.Context, id int) ([]dto.FindStorageDTO, error)
+	FindTipProducts(ctx context.Context, id int) ([]dto.FindProductDTO, error)
 }
 
 type tipService struct {
 	repo repository.TipRepositorer
+}
+
+func New(repo repository.TipRepositorer) TipServicer {
+	return &tipService{
+		repo: repo,
+	}
+}
+
+// FindTipProducts implements TipServicer
+func (svc *tipService) FindTipProducts(ctx context.Context, id int) ([]dto.FindProductDTO, error) {
+	products, err := svc.repo.FindProducts(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	dtos := translate.ProductModelsToFindDTOs(products)
+	return dtos, nil
+}
+
+// FindTipStorages implements TipServicer
+func (sbc *tipService) FindTipStorages(ctx context.Context, id int) ([]dto.FindStorageDTO, error) {
+	storages, err := sbc.repo.FindStorages(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	dtos := translate.StorageModelsToFindDTOs(storages)
+	return dtos, nil
 }
 
 // CreateTip implements TipServicer
@@ -79,10 +107,4 @@ func (svc *tipService) UpdateTip(ctx context.Context, id int, payload *dto.Updat
 		return err
 	}
 	return nil
-}
-
-func New(repo repository.TipRepositorer) TipServicer {
-	return &tipService{
-		repo: repo,
-	}
 }
