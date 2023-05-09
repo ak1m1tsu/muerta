@@ -14,8 +14,8 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 	repository := repo.New(client)
 	service := svc.New(repository)
 	handler := New(service, log)
-	router.Post("/", handler.CreateRecipe)
-	router.Get("/", jware.DeserializeUser, handler.FindRecipes)
+	router.Get("/", handler.FindRecipes)
+	router.Post("/", jware.DeserializeUser, handler.CreateRecipe)
 	router.Route("/:id<int>", func(router fiber.Router) {
 		router.Get("/", handler.FindRecipeByID)
 		router.Put("/", jware.DeserializeUser, handler.UpdateRecipe)
