@@ -20,19 +20,21 @@ type Filter interface {
 	GetOffset() int
 }
 
-type LoginUserPayload struct {
-	Name     string `json:"name"`
-	Password string `json:"password"`
-}
-
-type SignUpUserPayload struct {
+type LoginDTO struct {
 	Name     string `json:"name" validate:"required"`
 	Password string `json:"password" validate:"required,min=8"`
 }
 
+type SignUpDTO struct {
+	Name            string `json:"name" validate:"required"`
+	Password        string `json:"password" validate:"required,min=8"`
+	PasswordConfirm string `json:"password_confirm" validate:"required,min=8"`
+}
+
 type TokenPayload struct {
+	ID    int
 	Name  string
-	Roles []string
+	Roles []interface{}
 }
 
 type Paging struct {

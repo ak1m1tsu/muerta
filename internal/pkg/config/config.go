@@ -19,11 +19,12 @@ type Config struct {
 	}
 	RSAPrivateKey []byte
 	RSAPublicKey  []byte
+	TokenMaxAge   int
 }
 
 func New() (*Config, error) {
 	certFolder := os.Getenv("CERT_PATH")
-	prvKey, err := os.ReadFile(fmt.Sprintf("%s/id_rsa", certFolder))
+	prvKey, err := os.ReadFile(fmt.Sprintf("%s/id_rsa.pem", certFolder))
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +55,7 @@ func New() (*Config, error) {
 		},
 		RSAPrivateKey: prvKey,
 		RSAPublicKey:  pubKey,
+		TokenMaxAge:   15,
 	}
 	return cfg, nil
 }

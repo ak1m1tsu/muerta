@@ -344,3 +344,8 @@ func ShelfLifeStatusModelsToFindDTOs(models []models.ShelfLifeStatus) []dto.Find
 	}
 	return dtos
 }
+func SignUpDTOToModel(payload *dto.SignUpDTO) models.User {
+	return models.User{
+		Name: payload.Name,
+	}
+}
