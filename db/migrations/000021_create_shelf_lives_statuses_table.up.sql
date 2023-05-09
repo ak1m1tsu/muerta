@@ -1,5 +1,5 @@
 CREATE TABLE
-    shelf_lives_statuses (
+    IF NOT EXISTS shelf_lives_statuses (
         id_shelf_life integer NOT NULL,
         id_status integer NOT NULL,
         CONSTRAINT pk_shelf_lives_statuses PRIMARY KEY (id_shelf_life, id_status),

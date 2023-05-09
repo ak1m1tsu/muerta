@@ -1,5 +1,5 @@
 CREATE TABLE
-    products_recipes_measures (
+    IF NOT EXISTS products_recipes_measures (
         id_product integer NOT NULL,
         id_recipe integer NOT NULL,
         id_measure integer NOT NULL,

@@ -1,6 +1,6 @@
 CREATE TABLE
-    users (
-        id integer DEFAULT nextval('users_id_seq' :: regclass) NOT NULL,
+    IF NOT EXISTS users (
+        id serial NOT NULL,
         name varchar(100) NOT NULL,
         salt varchar NOT NULL,
         created_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,

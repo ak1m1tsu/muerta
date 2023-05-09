@@ -1,5 +1,25 @@
 package dto
 
+type Filter interface {
+	*CategoryFilterDTO |
+		*MeasureFilterDTO |
+		*ProductFilterDTO |
+		*RecipeFilterDTO |
+		*RoleFilterDTO |
+		*StorageFilterDTO |
+		*SettingFilterDTO |
+		*TipFilterDTO |
+		*UserFilterDTO |
+		*StorageTypeFilterDTO |
+		*ShelfLifeFilterDTO |
+		*ShelfLifeStatusFilterDTO
+
+	SetLimit(int)
+	GetLimit() int
+	SetOffset(int)
+	GetOffset() int
+}
+
 type LoginUserPayload struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`

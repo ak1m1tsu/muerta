@@ -3,28 +3,25 @@ package config
 import (
 	"fmt"
 	"os"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
 	API struct {
-		Name string `yaml:"name"`
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
-	} `yaml:"api"`
+		Name string
+		Port string
+	}
 	Database struct {
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
-		User string `yaml:"user"`
-		Pass string `yaml:"pass"`
-		Name string `yaml:"name"`
-	} `yaml:"db"`
-	RSAPrivateKey []byte `yaml:"-"`
-	RSAPublicKey  []byte `yaml:"-"`
+		Host string
+		Port string
+		User string
+		Pass string
+		Name string
+	}
+	RSAPrivateKey []byte
+	RSAPublicKey  []byte
 }
 
-func New(path string) (*Config, error) {
+func New() (*Config, error) {
 	certFolder := os.Getenv("CERT_PATH")
 	prvKey, err := os.ReadFile(fmt.Sprintf("%s/id_rsa", certFolder))
 	if err != nil {
@@ -35,15 +32,28 @@ func New(path string) (*Config, error) {
 		return nil, err
 	}
 	cfg := &Config{
+		API: struct {
+			Name string
+			Port string
+		}{
+			Name: os.Getenv("NAME"),
+			Port: os.Getenv("PORT"),
+		},
+		Database: struct {
+			Host string
+			Port string
+			User string
+			Pass string
+			Name string
+		}{
+			Host: os.Getenv("DB_HOST"),
+			Port: os.Getenv("DB_PORT"),
+			User: os.Getenv("DB_USER"),
+			Pass: os.Getenv("DB_PASSWORD"),
+			Name: os.Getenv("DB_NAME"),
+		},
 		RSAPrivateKey: prvKey,
 		RSAPublicKey:  pubKey,
-	}
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	if err = yaml.Unmarshal(data, &cfg); err != nil {
-		return nil, err
 	}
 	return cfg, nil
 }

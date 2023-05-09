@@ -1,5 +1,5 @@
 CREATE TABLE
-    storages_tips (
+    IF NOT EXISTS storages_tips (
         id_storage integer NOT NULL,
         id_tip integer NOT NULL,
         CONSTRAINT pk_storages_tips PRIMARY KEY (id_storage, id_tip),

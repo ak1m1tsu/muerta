@@ -23,7 +23,7 @@ func New(svc service.StorageServicer, log *log.Logger) *StorageHandler {
 
 func (h *StorageHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.StorageFilterDTO)
-	if err := common.GetStorageFilterByFiberCtx(ctx, filter); err != nil {
+	if err := common.GetFilterByFiberCtx(ctx, filter); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

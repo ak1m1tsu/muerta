@@ -1,6 +1,6 @@
 CREATE TABLE
-    storages (
-        id integer DEFAULT nextval('storages_id_seq' :: regclass) NOT NULL,
+    IF NOT EXISTS storages (
+        id serial NOT NULL,
         id_type integer NOT NULL,
         name varchar(100) NOT NULL,
         temperature real,

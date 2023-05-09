@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
@@ -20,7 +19,7 @@ var (
 
 func init() {
 	var err error
-	cfg, err = config.New(os.Getenv("CONFIG_PATH"))
+	cfg, err = config.New()
 	if err != nil {
 		log.Fatalf("config create: %v", err)
 	}

@@ -1,5 +1,5 @@
 CREATE TABLE
-    products (
+    IF NOT EXISTS products (
         id serial NOT NULL,
         name varchar(100) NOT NULL,
         updated_at timestamp DEFAULT CURRENT_DATE NOT NULL,

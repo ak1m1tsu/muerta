@@ -118,7 +118,7 @@ func SettingModelsToFindDTOs(models []models.Setting) []dto.FindSettingDTO {
 func CreateSettingDTOToModel(dto *dto.CreateSettingDTO) models.Setting {
 	return models.Setting{
 		Name: dto.Name,
-		Category: models.Category{
+		Category: models.SettingCategory{
 			ID: dto.CategoryID,
 		},
 	}
@@ -148,8 +148,199 @@ func CreateStorageDTOToModel(dto *dto.CreateStorageDTO) models.Storage {
 		Name:        dto.Name,
 		Temperature: dto.Temperature,
 		Humidity:    dto.Humidity,
-		Type: models.Type{
+		Type: models.StorageType{
 			ID: dto.TypeID,
 		},
 	}
+}
+
+func ProductModelToFindDTO(model *models.Product) dto.FindProductDTO {
+	return dto.FindProductDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+
+func ProductModelsToFindDTOs(models []models.Product) []dto.FindProductDTO {
+	dtos := make([]dto.FindProductDTO, len(models))
+	for i, model := range models {
+		dtos[i] = ProductModelToFindDTO(&model)
+	}
+	return dtos
+}
+
+func CreateProductDTOToModel(dto *dto.CreateProductDTO) models.Product {
+	return models.Product{
+		Name: dto.Name,
+	}
+}
+
+func RoleModelToFindRoleDTO(model *models.Role) dto.FindRoleDTO {
+	return dto.FindRoleDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+
+func RoleModelsToFindRoleDTOs(models []models.Role) []dto.FindRoleDTO {
+	roles := make([]dto.FindRoleDTO, len(models))
+	for i, model := range models {
+		roles[i] = RoleModelToFindRoleDTO(&model)
+	}
+	return roles
+}
+
+func CreateRoleDTOToModel(dto *dto.CreateRoleDTO) models.Role {
+	return models.Role{
+		Name: dto.Name,
+	}
+}
+
+func CategoryModelsToFindDTOs(model []models.ProductCategory) []dto.FindCategoryDTO {
+	categories := make([]dto.FindCategoryDTO, len(model))
+	for i, category := range model {
+		categories[i] = CategoryModelToFindDTO(&category)
+	}
+	return categories
+}
+
+func CategoryModelToFindDTO(model *models.ProductCategory) dto.FindCategoryDTO {
+	return dto.FindCategoryDTO{
+		ID:        model.ID,
+		Name:      model.Name,
+		CreatedAt: model.CreatedAt,
+	}
+}
+
+func CreateCategoryDTOToModel(dto *dto.CreateCategoryDTO) models.ProductCategory {
+	return models.ProductCategory{
+		Name: dto.Name,
+	}
+}
+
+func CreateTipDTOToModel(dto *dto.CreateTipDTO) models.Tip {
+	return models.Tip{
+		Description: dto.Description,
+	}
+}
+
+func TipModelToFindTipDTO(model *models.Tip) dto.FindTipDTO {
+	return dto.FindTipDTO{
+		ID:          model.ID,
+		Description: model.Description,
+	}
+}
+
+func TipModelsToFindTipDTOs(models []models.Tip) []dto.FindTipDTO {
+	dtos := make([]dto.FindTipDTO, len(models))
+	for i, model := range models {
+		dtos[i] = TipModelToFindTipDTO(&model)
+	}
+	return dtos
+}
+
+func CreateMeasureDTOToModel(dto *dto.CreateMeasureDTO) models.Measure {
+	return models.Measure{
+		Name: dto.Name,
+	}
+}
+
+func MeasureModelToFindDTO(model *models.Measure) dto.FindMeasureDTO {
+	return dto.FindMeasureDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+
+func MeasureModelsToFindDTOs(models []models.Measure) []dto.FindMeasureDTO {
+	dtos := make([]dto.FindMeasureDTO, len(models))
+	for i, model := range models {
+		dtos[i] = MeasureModelToFindDTO(&model)
+	}
+	return dtos
+}
+
+func CreateStorageTypeDTOToModel(dto *dto.CreateStorageTypeDTO) models.StorageType {
+	return models.StorageType{
+		Name: dto.Name,
+	}
+}
+func StorageTypeModelToFindDTO(model *models.StorageType) dto.FindStorageTypeDTO {
+	return dto.FindStorageTypeDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+func StorageTypeModelsToFindDTOs(models []models.StorageType) []dto.FindStorageTypeDTO {
+	dtos := make([]dto.FindStorageTypeDTO, len(models))
+	for i, model := range models {
+		dtos[i] = StorageTypeModelToFindDTO(&model)
+	}
+	return dtos
+}
+
+func CreateShelfLifeDTOToModel(dto *dto.CreateShelfLifeDTO) models.ShelfLife {
+	return models.ShelfLife{
+		Product: models.Product{
+			ID: dto.ProductID,
+		},
+		Storage: models.Storage{
+			ID: dto.StorageID,
+		},
+		Measure: models.Measure{
+			ID: dto.MeasureID,
+		},
+		Quantity:     dto.Quantity,
+		PurchaseDate: dto.PurchaseDate,
+		EndDate:      dto.EndDate,
+	}
+}
+func ShelfLifeModelToFindDTO(model *models.ShelfLife) dto.FindShelfLifeDTO {
+	return dto.FindShelfLifeDTO{
+		ID: model.ID,
+		Product: dto.FindProductDTO{
+			ID:   model.Product.ID,
+			Name: model.Product.Name,
+		},
+		Storage: dto.FindStorageDTO{
+			ID:          model.Storage.ID,
+			Name:        model.Storage.Name,
+			Temperature: model.Storage.Temperature,
+			Humidity:    model.Storage.Humidity,
+			TypeName:    model.Storage.Type.Name,
+			CreatedAt:   model.Storage.CreatedAt,
+		},
+		Measure: dto.FindMeasureDTO{
+			ID:   model.Measure.ID,
+			Name: model.Measure.Name,
+		},
+		Quantity:     model.Quantity,
+		PurchaseDate: model.PurchaseDate,
+		EndDate:      model.EndDate,
+	}
+}
+func ShelfLifeModelsToFindDTOs(models []models.ShelfLife) []dto.FindShelfLifeDTO {
+	dtos := make([]dto.FindShelfLifeDTO, len(models))
+	for i, model := range models {
+		dtos[i] = ShelfLifeModelToFindDTO(&model)
+	}
+	return dtos
+}
+func CreateShelfLifeStatusDTOToModel(dto *dto.CreateShelfLifeStatusDTO) models.ShelfLifeStatus {
+	return models.ShelfLifeStatus{
+		Name: dto.Name,
+	}
+}
+func ShelfLifeStatusModelToFindDTO(model *models.ShelfLifeStatus) dto.FindShelfLifeStatusDTO {
+	return dto.FindShelfLifeStatusDTO{
+		ID:   model.ID,
+		Name: model.Name,
+	}
+}
+func ShelfLifeStatusModelsToFindDTOs(models []models.ShelfLifeStatus) []dto.FindShelfLifeStatusDTO {
+	dtos := make([]dto.FindShelfLifeStatusDTO, len(models))
+	for i, model := range models {
+		dtos[i] = ShelfLifeStatusModelToFindDTO(&model)
+	}
+	return dtos
 }

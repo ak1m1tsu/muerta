@@ -1,6 +1,6 @@
 CREATE TABLE
     IF NOT EXISTS settings (
-        id integer DEFAULT nextval('settings_id_seq':: regclass) NOT NULL,
+        id serial NOT NULL,
         id_category integer NOT NULL,
         name varchar(100) NOT NULL,
         updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,

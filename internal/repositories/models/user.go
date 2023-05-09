@@ -16,10 +16,10 @@ type Setting struct {
 	ID       int    `db:"id"`
 	Name     string `db:"name"`
 	Value    string `db:"value"`
-	Category Category
+	Category SettingCategory
 }
 
-type Category struct {
+type SettingCategory struct {
 	ID   int    `db:"id"`
 	Name string `db:"name"`
 }

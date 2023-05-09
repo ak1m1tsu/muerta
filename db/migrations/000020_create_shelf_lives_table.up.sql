@@ -1,8 +1,6 @@
 CREATE TABLE
-    shelf_lives (
-        id integer DEFAULT nextval(
-            'shelf_lives_id_seq' :: regclass
-        ) NOT NULL,
+    IF NOT EXISTS shelf_lives (
+        id serial NOT NULL,
         id_product integer NOT NULL,
         id_storage integer NOT NULL,
         id_measure integer NOT NULL,
