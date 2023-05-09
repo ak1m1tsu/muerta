@@ -15,8 +15,6 @@ RUN GOOS=linux go build -o /bin/app -v ./cmd/muerta/
 RUN openssl genrsa -out ./cert/id_rsa 4096
 RUN openssl rsa -in ./cert/id_rsa -pubout -out ./cert/id_rsa.pub
 COPY ./cert /cert
-COPY ./config/conf.dev.yaml /cfg/conf.yaml
-ENV CONFIG_PATH=/cfg/conf.yaml
 ENV CERT_PATH=/cert
-# EXPOSE 8000
+EXPOSE ${PORT}
 ENTRYPOINT [ "/bin/app" ]

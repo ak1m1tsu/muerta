@@ -17,7 +17,7 @@ type API struct {
 func New(client repositories.PostgresClient, cfg *config.Config, logger *log.Logger) *API {
 	return &API{
 		router:     routes.NewV1(client, cfg, logger),
-		listenAddr: fmt.Sprintf("%s:%s", cfg.API.Host, cfg.API.Port),
+		listenAddr: fmt.Sprintf(":%s", cfg.API.Port),
 	}
 }
 
