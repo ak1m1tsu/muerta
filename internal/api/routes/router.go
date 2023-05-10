@@ -4,6 +4,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/auth"
@@ -78,4 +79,5 @@ func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
 		},
 		Logger: logger.GetLogger(),
 	}))
+	r.Use(cors.New())
 }
