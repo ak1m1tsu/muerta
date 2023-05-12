@@ -1,0 +1,47 @@
+basePath: /api/v1
+definitions:
+  dto.SignUpDTO:
+    properties:
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      password_confirm:
+        minLength: 8
+        type: string
+    required:
+    - name
+    - password
+    - password_confirm
+    type: object
+info:
+  contact: {}
+  description: API for Muerta
+  title: Muerta API
+  version: "1.0"
+paths:
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Sign Up new User
+      parameters:
+      - description: User data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignUpDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+      summary: SignUp
+      tags:
+      - auth
+swagger: "2.0"

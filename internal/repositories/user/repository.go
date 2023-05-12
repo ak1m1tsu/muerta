@@ -155,7 +155,6 @@ func (repo *userRepository) FindMany(ctx context.Context, limit, offset int, nam
 		if err := rows.Scan(&user.ID, &user.Name, &user.CreatedAt); err != nil {
 			return nil, fmt.Errorf("failed to scan user: %w", err)
 		}
-		fmt.Println(user)
 		users = append(users, user)
 	}
 	return users, nil

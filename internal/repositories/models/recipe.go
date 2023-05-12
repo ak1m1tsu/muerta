@@ -16,3 +16,10 @@ type Step struct {
 	Name  string `db:"name"`
 	Place int    `db:"place"`
 }
+
+type RecipeIngredient struct {
+	Recipe   Recipe
+	Product  Product
+	Measure  Measure
+	Quantity int `db:"quantity"`
+}

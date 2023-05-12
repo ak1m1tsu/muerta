@@ -18,37 +18,114 @@ type RecipesRepositorer interface {
 	Update(ctx context.Context, recipe *models.Recipe) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
-	FindProducts(ctx context.Context, id int) ([]models.Product, error)
+	FindIngredients(ctx context.Context, id int) ([]models.RecipeIngredient, error)
+	CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
+	UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
+	DeleteRecipeIngredient(ctx context.Context, recipeId, productId int) error
 }
 
 type RecipesRepository struct {
 	client repositories.PostgresClient
 }
 
-// FindProducts implements RecipesRepositorer
-func (r *RecipesRepository) FindProducts(ctx context.Context, id int) ([]models.Product, error) {
+// CreateRecipeIngredient implements RecipesRepositorer
+func (r *RecipesRepository) CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
+	var (
+		queryInsert = `
+			INSERT INTO products_recipes_measures 
+				(id_product, id_recipe, id_measure, quantity)
+			VALUES
+				($1, $2, $3, $4)
+		`
+		querySelect = `
+			SELECT p.name, m.name
+			FROM products_recipes_measures prm
+			JOIN products p ON p.id = prm.id_product
+			JOIN measures m ON m.id = prm.id_measure
+			WHERE prm.id_recipe = $1 AND 
+				  prm.id_product = $2 AND 
+				  prm.id_measure = $3
+			LIMIT 1
+		`
+	)
+	if _, err := r.client.Exec(ctx, queryInsert, entity.Product.ID, id, entity.Measure.ID, entity.Quantity); err != nil {
+		return models.RecipeIngredient{}, fmt.Errorf("failed to create recipe ingredient: %w", err)
+	}
+	if err := r.client.QueryRow(ctx, querySelect, id, entity.Product.ID, entity.Measure.ID).Scan(&entity.Product.Name, &entity.Measure.Name); err != nil {
+		return models.RecipeIngredient{}, fmt.Errorf("failed to query recipe ingredient: %w", err)
+	}
+	return *entity, nil
+}
+
+// DeleteRecipeIngredient implements RecipesRepositorer
+func (r *RecipesRepository) DeleteRecipeIngredient(ctx context.Context, recipeId int, productId int) error {
 	var (
 		query = `
-			SELECT p.id, p.name
-			FROM products p
-			JOIN products_recipes_measures prm ON prm.id_product = p.id
-			WHERE prm.id_recipe = $1 AND p.deleted_at IS NULL
+			DELETE FROM products_recipes_measures
+			WHERE id_recipe = $1 AND id_product = $2
 		`
-		products []models.Product
+	)
+	if _, err := r.client.Exec(ctx, query, recipeId, productId); err != nil {
+		return fmt.Errorf("failed to delete recipe ingredient: %w", err)
+	}
+	return nil
+}
+
+// FindIngredients implements RecipesRepositorer
+func (r *RecipesRepository) FindIngredients(ctx context.Context, id int) ([]models.RecipeIngredient, error) {
+	var (
+		query = `
+		SELECT p.id, p.name, m.id, m.name, prm.quantity
+			FROM products_recipes_measures prm
+			JOIN products p ON p.id = prm.id_product
+			JOIN measures m ON m.id = prm.id_measure
+		WHERE prm.id_recipe = $1
+		`
+		entities []models.RecipeIngredient
 	)
 	rows, err := r.client.Query(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query products: %w", err)
+		return nil, fmt.Errorf("failed to query ingredients: %w", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var product models.Product
-		if err := rows.Scan(&product.ID, &product.Name); err != nil {
-			return nil, fmt.Errorf("failed to scan product: %w", err)
+		var entity models.RecipeIngredient
+		if err := rows.Scan(&entity.Product.ID, &entity.Product.Name, &entity.Measure.ID, &entity.Measure.Name, &entity.Quantity); err != nil {
+			return nil, fmt.Errorf("failed to scan ingredient: %w", err)
 		}
-		products = append(products, product)
+		entities = append(entities, entity)
 	}
-	return products, nil
+	return entities, nil
+}
+
+// UpdateRecipeIngredient implements RecipesRepositorer
+func (r *RecipesRepository) UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
+	var (
+		query = `
+			UPDATE products_recipes_measures
+			SET id_measure = $2, 
+				quantity = $3
+			WHERE id_recipe = $4 AND 
+				  id_product = $1
+		`
+		querySelect = `
+			SELECT m.name, prm.quantity
+			FROM products_recipes_measures prm
+			JOIN products p ON p.id = prm.id_product
+			JOIN measures m ON m.id = prm.id_measure
+			WHERE prm.id_recipe = $1 AND 
+				  prm.id_product = $2 AND 
+				  prm.id_measure = $3
+			LIMIT 1
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, entity.Product.ID, entity.Measure.ID, entity.Quantity, id); err != nil {
+		return models.RecipeIngredient{}, fmt.Errorf("failed to update recipe ingredient: %w", err)
+	}
+	if err := r.client.QueryRow(ctx, querySelect, id, entity.Product.ID, entity.Measure.ID).Scan(&entity.Measure.Name, &entity.Quantity); err != nil {
+		return models.RecipeIngredient{}, fmt.Errorf("failed to query recipe ingredient: %w", err)
+	}
+	return *entity, nil
 }
 
 func New(client repositories.PostgresClient) RecipesRepositorer {

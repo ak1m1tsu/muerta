@@ -7,6 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/swagger"
+	_ "github.com/romankravchuk/muerta/docs"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/auth"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/measure"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/product"
@@ -26,7 +28,6 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/services/jwt"
 )
 
 type Router struct {
@@ -41,9 +42,10 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 			JSONDecoder: sonic.Unmarshal,
 		}),
 	}
-	jware := jware.New(jwt.New(cfg), logger)
+	jware := jware.New(cfg, logger)
 	r.mountAPIMiddlewares(logger)
 	r.Route("/api/v1", func(r fiber.Router) {
+		r.Get("/swagger/*", swagger.HandlerDefault)
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger))
 		r.Mount("/recipes", recipe.NewRouter(client, logger, jware))
 		r.Mount("/users", user.NewRouter(client, logger, jware))
@@ -64,6 +66,10 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 }
 
 func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
+	r.Use(cors.New(cors.Config{
+		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
+		AllowCredentials: true,
+	}))
 	r.Use(requestid.New())
 	r.Use(recover.New())
 	r.Use(fiberzerolog.New(fiberzerolog.Config{
@@ -79,5 +85,4 @@ func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
 		},
 		Logger: logger.GetLogger(),
 	}))
-	r.Use(cors.New())
 }

@@ -349,3 +349,37 @@ func SignUpDTOToModel(payload *dto.SignUpDTO) models.User {
 		Name: payload.Name,
 	}
 }
+func CreateRecipeIngredientDTOToModel(payload *dto.CreateRecipeIngredientDTO) models.RecipeIngredient {
+	return models.RecipeIngredient{
+		Product:  models.Product{ID: payload.ProductID},
+		Measure:  models.Measure{ID: payload.MeasureID},
+		Quantity: payload.Quantity,
+	}
+}
+func UpdateRecipeIngredientDTOToModel(payload *dto.UpdateRecipeIngredientDTO) models.RecipeIngredient {
+	return models.RecipeIngredient{
+		Product:  models.Product{ID: payload.ProductID},
+		Measure:  models.Measure{ID: payload.MeasureID},
+		Quantity: payload.Quantity,
+	}
+}
+func RecipeIngredientModelToFindDTO(entity *models.RecipeIngredient) dto.FindRecipeIngredientDTO {
+	return dto.FindRecipeIngredientDTO{
+		Product: dto.FindProductDTO{
+			ID:   entity.Product.ID,
+			Name: entity.Product.Name,
+		},
+		Measure: dto.FindMeasureDTO{
+			ID:   entity.Measure.ID,
+			Name: entity.Measure.Name,
+		},
+		Quantity: entity.Quantity,
+	}
+}
+func RecipeIngredientModelsToFindDTOs(entities []models.RecipeIngredient) []dto.FindRecipeIngredientDTO {
+	payloads := make([]dto.FindRecipeIngredientDTO, len(entities))
+	for i, entity := range entities {
+		payloads[i] = RecipeIngredientModelToFindDTO(&entity)
+	}
+	return payloads
+}
