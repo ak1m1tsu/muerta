@@ -26,7 +26,6 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/services/jwt"
 )
 
 type Router struct {
@@ -41,7 +40,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 			JSONDecoder: sonic.Unmarshal,
 		}),
 	}
-	jware := jware.New(jwt.New(cfg), logger)
+	jware := jware.New(cfg, logger)
 	r.mountAPIMiddlewares(logger)
 	r.Route("/api/v1", func(r fiber.Router) {
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger))
@@ -64,6 +63,12 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 }
 
 func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
+	r.Use(cors.New(cors.Config{
+		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
+		AllowOrigins:     "*",
+		AllowCredentials: true,
+		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
+	}))
 	r.Use(requestid.New())
 	r.Use(recover.New())
 	r.Use(fiberzerolog.New(fiberzerolog.Config{
@@ -79,5 +84,4 @@ func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
 		},
 		Logger: logger.GetLogger(),
 	}))
-	r.Use(cors.New())
 }

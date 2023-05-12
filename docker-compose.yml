@@ -21,7 +21,7 @@ services:
       context: ./
       dockerfile: .docker/api/Dockerfile
     environment:
-      - NAME=${NAME}
+      - API_NAME=${API_NAME}
       - PORT=${PORT}
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
