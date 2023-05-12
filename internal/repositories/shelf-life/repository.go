@@ -129,7 +129,6 @@ func (r *shelfLifeRepository) Restore(ctx context.Context, id int) error {
 
 // Update implements ShelfLifeRepositorer
 func (r *shelfLifeRepository) Update(ctx context.Context, model models.ShelfLife) error {
-	fmt.Printf("%+v\n", model)
 	var (
 		query = `
 			UPDATE shelf_lives

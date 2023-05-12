@@ -33,6 +33,11 @@ func init() {
 	}
 }
 
+//	@title						Muerta API
+//	@version					1.0
+//	@description				API for Muerta
+//	@BasePath					/api/v1
+//	@securityDefinitions.jwt	BearerAuth
 func main() {
 	logger := logger.New()
 	api := api.New(client, cfg, logger)

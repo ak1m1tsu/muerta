@@ -59,7 +59,6 @@ func (s *storageService) UpdateStorage(ctx context.Context, id int, payload *dto
 	if err != nil {
 		return fmt.Errorf("failed to find storage: %w", err)
 	}
-	fmt.Printf("%+v\n", payload)
 	if payload.Name != "" {
 		model.Name = payload.Name
 	}
@@ -72,7 +71,6 @@ func (s *storageService) UpdateStorage(ctx context.Context, id int, payload *dto
 	if payload.TypeID != 0 {
 		model.Type.ID = payload.TypeID
 	}
-	fmt.Printf("%+v\n", model)
 	if err := s.repo.Update(ctx, &model); err != nil {
 		return fmt.Errorf("failed to update storage: %w", err)
 	}

@@ -49,3 +49,25 @@ type RecipeStepDTO struct {
 	ID    int `json:"id" validate:"required, unique"`
 	Place int `json:"place" validate:"required, unique"`
 }
+
+type CreateRecipeIngredientDTO struct {
+	ProductID int `json:"id_product" validate:"required"`
+	MeasureID int `json:"id_measure" validate:"required"`
+	Quantity  int `json:"quantity" validate:"required"`
+}
+
+type FindRecipeIngredientDTO struct {
+	Product  FindProductDTO `json:"product"`
+	Measure  FindMeasureDTO `json:"measure"`
+	Quantity int            `json:"quantity"`
+}
+
+type UpdateRecipeIngredientDTO struct {
+	ProductID int `json:"id_product" validate:"required"`
+	MeasureID int `json:"id_measure"`
+	Quantity  int `json:"quantity" validate:"required"`
+}
+
+type DeleteRecipeIngredientDTO struct {
+	ProductID int `json:"id_product" validate:"required"`
+}

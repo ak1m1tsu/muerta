@@ -7,6 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
+	"github.com/gofiber/swagger"
+	_ "github.com/romankravchuk/muerta/docs"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/auth"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/measure"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/product"
@@ -43,6 +45,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 	jware := jware.New(cfg, logger)
 	r.mountAPIMiddlewares(logger)
 	r.Route("/api/v1", func(r fiber.Router) {
+		r.Get("/swagger/*", swagger.HandlerDefault)
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger))
 		r.Mount("/recipes", recipe.NewRouter(client, logger, jware))
 		r.Mount("/users", user.NewRouter(client, logger, jware))
@@ -65,9 +68,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
 	r.Use(cors.New(cors.Config{
 		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
-		AllowOrigins:     "*",
 		AllowCredentials: true,
-		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
 	r.Use(requestid.New())
 	r.Use(recover.New())

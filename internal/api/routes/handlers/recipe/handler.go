@@ -128,19 +128,95 @@ func (h *RecipesHandler) RestoreRecipe(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *RecipesHandler) FindRecipeProducts(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) FindRecipeIngredients(ctx *fiber.Ctx) error {
 	id, err := common.GetIdByFiberCtx(ctx)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	products, err := h.svc.FindRecipeProducts(ctx.Context(), id)
+	dtos, err := h.svc.FindRecipeIngredients(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
-		"data":    fiber.Map{"products": products},
+		"data":    fiber.Map{"ingredients": dtos},
+	})
+}
+
+func (h *RecipesHandler) CreateRecipeIngredient(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	var payload *dto.CreateRecipeIngredientDTO
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return fiber.ErrBadRequest
+	}
+	dto, err := h.svc.CreateRecipeIngredient(ctx.Context(), id, payload)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrBadGateway
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"ingredient": dto},
+	})
+}
+
+func (h *RecipesHandler) UpdateRecipeIngredient(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	var payload *dto.UpdateRecipeIngredientDTO
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return fiber.ErrBadRequest
+	}
+	dto, err := h.svc.UpdateRecipeIngredient(ctx.Context(), id, payload)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrBadGateway
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"ingredient": dto},
+	})
+}
+
+func (h *RecipesHandler) DeleteRecipeIngredient(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrNotFound
+	}
+	var payload *dto.DeleteRecipeIngredientDTO
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return fiber.ErrBadRequest
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return fiber.ErrBadRequest
+	}
+	if err := h.svc.DeleteRecipeIngredient(ctx.Context(), id, payload); err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrBadGateway
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
 	})
 }
