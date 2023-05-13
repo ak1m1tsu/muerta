@@ -38,6 +38,10 @@ type UpdateSettingDTO struct {
 	CategoryID int    `json:"id_category"`
 }
 
+type UpdateUserSettingDTO struct {
+	Value string `json:"value" validate:"required"`
+}
+
 type FindSettingDTO struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -85,4 +89,8 @@ func (f *SettingFilterDTO) GetOffset() int {
 
 func (f *SettingFilterDTO) SetOffset(offset int) {
 	f.Offset = offset
+}
+
+type UserStorageDTO struct {
+	StorageID int `json:"id_storage" validate:"gt=0"`
 }

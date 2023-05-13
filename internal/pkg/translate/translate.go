@@ -104,6 +104,7 @@ func SettingModelToFindDTO(model *models.Setting) dto.FindSettingDTO {
 		ID:       model.ID,
 		Name:     model.Name,
 		Category: model.Category.Name,
+		Value:    model.Value,
 	}
 }
 
@@ -382,4 +383,16 @@ func RecipeIngredientModelsToFindDTOs(entities []models.RecipeIngredient) []dto.
 		payloads[i] = RecipeIngredientModelToFindDTO(&entity)
 	}
 	return payloads
+}
+
+func UpdateSettingDTOToModel(payload *dto.UpdateUserSettingDTO) models.Setting {
+	return models.Setting{
+		Value: payload.Value,
+	}
+}
+
+func UserStorageDTOToModel(payload *dto.UserStorageDTO) models.Storage {
+	return models.Storage{
+		ID: payload.StorageID,
+	}
 }

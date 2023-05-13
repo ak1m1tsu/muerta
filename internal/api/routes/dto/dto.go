@@ -41,3 +41,8 @@ type Paging struct {
 	Limit  int `query:"limit"`
 	Offset int `query:"offset"`
 }
+
+type Response struct {
+	Success bool `json:"success" example:"true"`
+	Data map[string]any `json:"data,omitempty"`
+}

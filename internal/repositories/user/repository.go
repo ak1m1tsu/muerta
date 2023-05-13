@@ -20,10 +20,167 @@ type UserRepositorer interface {
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
 	Exists(ctx context.Context, name string) bool
+	FindRoles(ctx context.Context, id int) ([]models.Role, error)
+	FindSettings(ctx context.Context, id int) ([]models.Setting, error)
+	UpdateSetting(ctx context.Context, id int, setting models.Setting) (models.Setting, error)
+	DeleteStorage(ctx context.Context, id int, entity models.Storage) error
+	CreateStorage(ctx context.Context, id int, entity models.Storage) (models.Storage, error)
+	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
 }
 
 type userRepository struct {
 	client repositories.PostgresClient
+}
+
+// CreateStorage implements UserRepositorer
+func (r *userRepository) CreateStorage(ctx context.Context, id int, entity models.Storage) (models.Storage, error) {
+	var (
+		query = `
+			INSERT INTO users_storages (id_user, id_storage)
+			VALUES ($1, $2)
+		`
+		querySelect = `
+			SELECT s.id, s.name, st.name, s.temperature, s.humidity
+			FROM storages s
+			JOIN storages_types st ON s.id_type = st.id
+			JOIN users_storages us ON us.id_storage = s.id
+			WHERE us.id_user = $1
+			LIMIT 1
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, id, entity.ID); err != nil {
+		return models.Storage{}, fmt.Errorf("failed to create storage: %w", err)
+	}
+	if err := r.client.QueryRow(ctx, querySelect, id).Scan(&entity.ID, &entity.Name, &entity.Type.Name, &entity.Temperature, &entity.Humidity); err != nil {
+		return models.Storage{}, fmt.Errorf("failed to scan storage: %w", err)
+	}
+	return entity, nil
+}
+
+// DeleteStorage implements UserRepositorer
+func (r *userRepository) DeleteStorage(ctx context.Context, id int, entity models.Storage) error {
+	var (
+		query = `
+			DELETE FROM users_storages
+			WHERE id_user = $1 AND id_storage = $2
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, id, entity.ID); err != nil {
+		return fmt.Errorf("failed to create storage: %w", err)
+	}
+	return nil
+}
+
+// FindStorages implements UserRepositorer
+func (r *userRepository) FindStorages(ctx context.Context, id int) ([]models.Storage, error) {
+	var (
+		query = `
+			SELECT s.id, s.name, st.name, s.temperature, s.humidity
+			FROM storages s
+			JOIN storages_types st ON s.id_type = st.id
+			JOIN users_storages us ON us.id_storage = s.id
+			WHERE us.id_user = $1
+		`
+		entities = make([]models.Storage, 0)
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query storages: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var entity models.Storage
+		if err := rows.Scan(&entity.ID, &entity.Name, &entity.Type.Name, &entity.Temperature, &entity.Humidity); err != nil {
+			return nil, fmt.Errorf("failed to scan storage: %w", err)
+		}
+		entities = append(entities, entity)
+	}
+	return entities, nil
+}
+
+// FindRoles implements UserRepositorer
+func (r *userRepository) FindRoles(ctx context.Context, id int) ([]models.Role, error) {
+	var (
+		query = `
+			SELECT r.id, r.name
+			FROM roles r
+			JOIN users_roles ur ON ur.id_role = r.id
+			WHERE ur.id_user = $1
+		`
+		roles = make([]models.Role, 0)
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query roles: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var role models.Role
+		if err := rows.Scan(&role.ID, &role.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan role: %w", err)
+		}
+		roles = append(roles, role)
+	}
+	return roles, nil
+}
+
+// FindSettings implements UserRepositorer
+func (r *userRepository) FindSettings(ctx context.Context, id int) ([]models.Setting, error) {
+	var (
+		query = `
+			SELECT s.id, s.name, us.value, sc.name
+			FROM settings s
+			JOIN users_settings us ON s.id = us.id_setting
+			JOIN settings_categories sc ON s.id_category = sc.id
+			WHERE us.id_user = $1
+		`
+		settings = make([]models.Setting, 0)
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query roles: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var setting models.Setting
+		if err := rows.Scan(&setting.ID, &setting.Name, &setting.Value, &setting.Category.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan setting: %w", err)
+		}
+		settings = append(settings, setting)
+	}
+	return settings, nil
+}
+
+// UpdateSetting implements UserRepositorer
+func (r *userRepository) UpdateSetting(ctx context.Context, id int, setting models.Setting) (models.Setting, error) {
+	var (
+		query = `
+			UPDATE users_settings
+			SET value = $2
+			WHERE id_user = $1 AND id_setting = $3
+		`
+		querySettings = `
+			SELECT s.name, us.value, sc.name FROM settings s
+			JOIN users_settings us ON s.id = us.id_setting
+			JOIN settings_categories sc ON s.id_category = sc.id
+			WHERE us.id_user = $1
+			LIMIT 1
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, id, setting.Value, setting.ID); err != nil {
+		return models.Setting{}, fmt.Errorf("failed to update setting: %w", err)
+	}
+	rows, err := r.client.Query(ctx, querySettings, id)
+	if err != nil {
+		return models.Setting{}, fmt.Errorf("failed to query settings: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err := rows.Scan(&setting.Name, &setting.Value, &setting.Category.Name); err != nil {
+			return models.Setting{}, fmt.Errorf("failed to scan setting: %w", err)
+		}
+	}
+	return setting, nil
 }
 
 // Exists implements UserRepositorer

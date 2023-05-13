@@ -34,10 +34,15 @@ func init() {
 }
 
 //	@title						Muerta API
-//	@version					1.0
-//	@description				API for Muerta
+//	@version					1.0.0
+//	@description				Web API to control the shelf life of products using computer vision
+//	@termsOfService				http://swagger.io/terms
+//
 //	@BasePath					/api/v1
-//	@securityDefinitions.jwt	BearerAuth
+//
+//	@securitydefinitions.apiKey	BearerAuth
+//	@in							header
+//	@name						Authrization
 func main() {
 	logger := logger.New()
 	api := api.New(client, cfg, logger)

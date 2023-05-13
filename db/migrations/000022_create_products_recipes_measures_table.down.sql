@@ -1,1 +1,0 @@
-DROP TABLE products_recipes_measures CASCADE;

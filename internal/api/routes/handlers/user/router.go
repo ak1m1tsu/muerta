@@ -21,6 +21,23 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 		r.Put("/", jware.DeserializeUser, h.Update)
 		r.Patch("/", jware.DeserializeUser, h.Restore)
 		r.Delete("/", jware.DeserializeUser, h.Delete)
+		// r.Route("/shelf-lives", func(router fiber.Router) {
+		// 	router.Get("/", h.FindShelfLives)
+		// 	router.Post("/", jware.DeserializeUser, h.CreateShelfLife)
+		// 	router.Put("/", jware.DeserializeUser, h.UpdateShelfLife)
+		// 	router.Patch("/", jware.DeserializeUser, h.RestoreShelfLife)
+		// 	router.Delete("/", jware.DeserializeUser, h.DeleteShelfLife)
+		// })
+		r.Route("/settings", func(router fiber.Router) {
+			router.Get("/", h.FindSettings)
+			router.Put("/", jware.DeserializeUser, h.UpdateSetting)
+		})
+		r.Get("/roles", h.FindRoles)
+		r.Route("/storages", func(router fiber.Router) {
+			router.Get("/", h.FindStorages)
+			router.Post("/", jware.DeserializeUser, h.CreateStorage)
+			router.Delete("/", jware.DeserializeUser, h.DeleteStorage)
+		})
 	})
 	return r
 }
