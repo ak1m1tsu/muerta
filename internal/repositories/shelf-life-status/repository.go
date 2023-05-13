@@ -9,6 +9,7 @@ import (
 )
 
 type ShelfLifeStatusRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.ShelfLifeStatus, error)
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.ShelfLifeStatus, error)
 	Create(ctx context.Context, shelfLifeStatus models.ShelfLifeStatus) error
@@ -18,6 +19,19 @@ type ShelfLifeStatusRepositorer interface {
 
 type shelfLifeStatusRepository struct {
 	client repositories.PostgresClient
+}
+
+func (r *shelfLifeStatusRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM statuses
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count statuses: %w", err)
+	}
+	return count, nil
 }
 
 // Create implements ShelfLifeStatusRepositorer

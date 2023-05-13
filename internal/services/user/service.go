@@ -7,6 +7,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repo "github.com/romankravchuk/muerta/internal/repositories/user"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type UserServicer interface {
@@ -27,10 +28,20 @@ type UserServicer interface {
 	UpdateShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error)
 	RestoreShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error)
 	DeleteShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) error
+	services.Counter
 }
 
 type userService struct {
 	repo repo.UserRepositorer
+}
+
+// Count implements UserServicer
+func (s *userService) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting users: %w", err)
+	}
+	return count, nil
 }
 
 func New(repo repo.UserRepositorer) UserServicer {

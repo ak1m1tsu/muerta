@@ -12,7 +12,8 @@ type Filter interface {
 		*UserFilterDTO |
 		*StorageTypeFilterDTO |
 		*ShelfLifeFilterDTO |
-		*ShelfLifeStatusFilterDTO
+		*ShelfLifeStatusFilterDTO |
+		*StepFilterDTO
 
 	SetLimit(int)
 	GetLimit() int
@@ -43,6 +44,6 @@ type Paging struct {
 }
 
 type Response struct {
-	Success bool `json:"success" example:"true"`
-	Data map[string]any `json:"data,omitempty"`
+	Success bool           `json:"success" example:"true"`
+	Data    map[string]any `json:"data,omitempty"`
 }

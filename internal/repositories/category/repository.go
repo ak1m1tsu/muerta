@@ -15,10 +15,24 @@ type CategoryRepositorer interface {
 	Update(ctx context.Context, role models.ProductCategory) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	repositories.Repository
 }
 
 type categoryRepository struct {
 	client repositories.PostgresClient
+}
+
+func (r *categoryRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM categories WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count categories: %w", err)
+	}
+	return count, nil
 }
 
 // Create implements CategoryRepositorer

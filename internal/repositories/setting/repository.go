@@ -9,6 +9,7 @@ import (
 )
 
 type SettingsRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Setting, error)
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Setting, error)
 	Create(ctx context.Context, setting models.Setting) error
@@ -25,6 +26,19 @@ func New(client repositories.PostgresClient) SettingsRepositorer {
 	return &settingsRepository{
 		client: client,
 	}
+}
+
+func (r *settingsRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM settings WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count settings: %w", err)
+	}
+	return count, nil
 }
 
 func (r *settingsRepository) FindByID(ctx context.Context, id int) (models.Setting, error) {

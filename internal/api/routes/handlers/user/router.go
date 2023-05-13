@@ -2,6 +2,7 @@ package user
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -16,7 +17,8 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 	h := New(svc, log)
 	r.Get("/", h.FindMany)
 	r.Post("/", jware.DeserializeUser, h.Create)
-	r.Route("/:id<int>", func(r fiber.Router) {
+	r.Route(context.UserID.Path(), func(r fiber.Router) {
+		r.Use(context.New(log, context.UserID))
 		r.Get("/", h.FindByID)
 		r.Put("/", jware.DeserializeUser, h.Update)
 		r.Patch("/", jware.DeserializeUser, h.Restore)
@@ -24,9 +26,12 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 		r.Route("/shelf-lives", func(router fiber.Router) {
 			router.Get("/", h.FindShelfLives)
 			router.Post("/", jware.DeserializeUser, h.CreateShelfLife)
-			router.Put("/", jware.DeserializeUser, h.UpdateShelfLife)
-			router.Patch("/", jware.DeserializeUser, h.RestoreShelfLife)
-			router.Delete("/", jware.DeserializeUser, h.DeleteShelfLife)
+			router.Route(context.ShelfLifeID.Path(), func(router fiber.Router) {
+				router.Use(context.New(log, context.ShelfLifeID))
+				router.Put("/", jware.DeserializeUser, h.UpdateShelfLife)
+				router.Patch("/", jware.DeserializeUser, h.RestoreShelfLife)
+				router.Delete("/", jware.DeserializeUser, h.DeleteShelfLife)
+			})
 		})
 		r.Route("/settings", func(router fiber.Router) {
 			router.Get("/", h.FindSettings)
@@ -35,8 +40,11 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 		r.Get("/roles", h.FindRoles)
 		r.Route("/storages", func(router fiber.Router) {
 			router.Get("/", h.FindStorages)
-			router.Post("/", jware.DeserializeUser, h.CreateStorage)
-			router.Delete("/", jware.DeserializeUser, h.DeleteStorage)
+			router.Route(context.RoleID.Path(), func(router fiber.Router) {
+				router.Use(context.New(log, context.RoleID))
+				router.Post("/", jware.DeserializeUser, h.CreateStorage)
+				router.Delete("/", jware.DeserializeUser, h.DeleteStorage)
+			})
 		})
 	})
 	return r

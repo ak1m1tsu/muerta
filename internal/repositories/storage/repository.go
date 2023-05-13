@@ -9,16 +9,96 @@ import (
 )
 
 type StorageRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Storage, error)
 	FindMany(ctx context.Context, limit, offset int) ([]models.Storage, error)
 	Create(ctx context.Context, storage *models.Storage) error
 	Update(ctx context.Context, storage *models.Storage) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	CreateTip(ctx context.Context, id, tipID int) (models.Tip, error)
+	DeleteTip(ctx context.Context, id, tipID int) error
+	FindTips(ctx context.Context, id int) ([]models.Tip, error)
 }
 
 type storageRepository struct {
 	client repositories.PostgresClient
+}
+
+func (r *storageRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM storages WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count storages: %w", err)
+	}
+	return count, nil
+}
+
+// CreateTip implements StorageRepositorer
+func (r *storageRepository) CreateTip(ctx context.Context, id int, tipID int) (models.Tip, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO storages_tips (id_storage, id_tip)
+				VALUES ($1, $2)
+				RETURNING id_storage, id_tip
+			)
+			SELECT t.id, t.description
+			FROM tips t
+			JOIN inserted i ON i.id_tip = t.id
+			WHERE t.id = $2 AND t.deleted_at IS NULL
+			LIMIT 1
+		`
+		tip models.Tip
+	)
+	if err := r.client.QueryRow(ctx, query, id, tipID).Scan(&tip.ID, &tip.Description); err != nil {
+		return models.Tip{}, fmt.Errorf("create tip: %w", err)
+	}
+	return tip, nil
+}
+
+// DeleteTip implements StorageRepositorer
+func (r *storageRepository) DeleteTip(ctx context.Context, id int, tipID int) error {
+	var (
+		query = `
+			DELETE FROM storages_tips
+			WHERE id_storage = $1 AND id_tip = $2
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, id, tipID); err != nil {
+		return fmt.Errorf("delete tip: %w", err)
+	}
+	return nil
+}
+
+// FindTips implements StorageRepositorer
+func (r *storageRepository) FindTips(ctx context.Context, id int) ([]models.Tip, error) {
+	var (
+		query = `
+			SELECT t.id, t.description
+			FROM tips t
+			JOIN storages_tips st ON st.id_tip = t.id
+			WHERE st.id_storage = $1 AND t.deleted_at IS NULL
+		`
+		tips []models.Tip
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("find tips: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tip models.Tip
+		if err := rows.Scan(&tip.ID, &tip.Description); err != nil {
+			return nil, fmt.Errorf("find tips: %w", err)
+		}
+		tips = append(tips, tip)
+	}
+	return tips, nil
 }
 
 func New(client repositories.PostgresClient) StorageRepositorer {
@@ -36,7 +116,7 @@ func (r *storageRepository) FindByID(ctx context.Context, id int) (models.Storag
 				s.created_at, st.id, st.name
 			FROM storages s
 			JOIN storages_types st ON st.id = s.id_type
-			WHERE s.id = $1
+			WHERE s.id = $1 AND s.deleted_at IS NULL
 			LIMIT 1
 		`
 		storage models.Storage
@@ -56,6 +136,7 @@ func (r *storageRepository) FindMany(ctx context.Context, limit, offset int) ([]
 				s.created_at, st.name
 			FROM storages s
 			JOIN storages_types st ON st.id = s.id_type
+			WHERE s.deleted_at IS NULL
 			ORDER BY s.created_at DESC
 			LIMIT $1 OFFSET $2
 		`

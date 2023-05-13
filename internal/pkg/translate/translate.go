@@ -203,12 +203,12 @@ func CreateRoleDTOToModel(dto *dto.CreateRoleDTO) models.Role {
 func CategoryModelsToFindDTOs(model []models.ProductCategory) []dto.FindProductCategoryDTO {
 	categories := make([]dto.FindProductCategoryDTO, len(model))
 	for i, category := range model {
-		categories[i] = CategoryModelToFindDTO(&category)
+		categories[i] = ProductCategoryModelToFindDTO(&category)
 	}
 	return categories
 }
 
-func CategoryModelToFindDTO(model *models.ProductCategory) dto.FindProductCategoryDTO {
+func ProductCategoryModelToFindDTO(model *models.ProductCategory) dto.FindProductCategoryDTO {
 	return dto.FindProductCategoryDTO{
 		ID:        model.ID,
 		Name:      model.Name,
@@ -228,17 +228,17 @@ func CreateTipDTOToModel(dto *dto.CreateTipDTO) models.Tip {
 	}
 }
 
-func TipModelToFindTipDTO(model *models.Tip) dto.FindTipDTO {
+func TipModelToFindDTO(model *models.Tip) dto.FindTipDTO {
 	return dto.FindTipDTO{
 		ID:          model.ID,
 		Description: model.Description,
 	}
 }
 
-func TipModelsToFindTipDTOs(models []models.Tip) []dto.FindTipDTO {
+func TipModelsToFindDTOs(models []models.Tip) []dto.FindTipDTO {
 	dtos := make([]dto.FindTipDTO, len(models))
 	for i, model := range models {
-		dtos[i] = TipModelToFindTipDTO(&model)
+		dtos[i] = TipModelToFindDTO(&model)
 	}
 	return dtos
 }
@@ -400,5 +400,27 @@ func UpdateSettingDTOToModel(payload *dto.UpdateUserSettingDTO) models.Setting {
 func UserStorageDTOToModel(payload *dto.UserStorageDTO) models.Storage {
 	return models.Storage{
 		ID: payload.StorageID,
+	}
+}
+
+func StepModelToFindDTO(model models.Step) dto.FindStepDTO {
+	return dto.FindStepDTO{
+		ID:    model.ID,
+		Name:  model.Name,
+		Place: model.Place,
+	}
+}
+
+func StepModelsToFindDTOs(models []models.Step) []dto.FindStepDTO {
+	payloads := make([]dto.FindStepDTO, len(models))
+	for i, model := range models {
+		payloads[i] = StepModelToFindDTO(model)
+	}
+	return payloads
+}
+
+func CreateDTOToStepModel(dto *dto.CreateStepDTO) models.Step {
+	return models.Step{
+		Name: dto.Name,
 	}
 }

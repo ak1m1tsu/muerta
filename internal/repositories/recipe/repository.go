@@ -2,14 +2,25 @@ package recipes
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/romankravchuk/muerta/internal/repositories"
 	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
+
+type RecipeIngredientsRepositorer interface {
+	FindIngredients(ctx context.Context, id int) ([]models.RecipeIngredient, error)
+	CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
+	UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
+	DeleteRecipeIngredient(ctx context.Context, recipeId, productId int) error
+}
+
+type RecipeStepsRepositorer interface {
+	FindSteps(ctx context.Context, recipeID int) ([]models.Step, error)
+	CreateStep(ctx context.Context, recipeID, stepID, place int) (models.Step, error)
+	DeleteStep(ctx context.Context, recipeID, stepID, place int) error
+}
 
 type RecipesRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.Recipe, error)
@@ -18,18 +29,93 @@ type RecipesRepositorer interface {
 	Update(ctx context.Context, recipe *models.Recipe) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
-	FindIngredients(ctx context.Context, id int) ([]models.RecipeIngredient, error)
-	CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
-	UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
-	DeleteRecipeIngredient(ctx context.Context, recipeId, productId int) error
+	RecipeIngredientsRepositorer
+	RecipeStepsRepositorer
+	repositories.Repository
 }
 
-type RecipesRepository struct {
+type recipesRepository struct {
 	client repositories.PostgresClient
 }
 
+func (r *recipesRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM recipes WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count recipes: %w", err)
+	}
+	return count, nil
+}
+
+// CreateStep implements RecipesRepositorer
+func (r *recipesRepository) CreateStep(ctx context.Context, recipeID, stepID, place int) (models.Step, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO recipes_steps (id_recipe, id_step, place) 
+				VALUES ($1, $2, $3)
+				RETURNING id_recipe, id_step, place
+			)
+			SELECT s.id, s.name, i.place
+			FROM steps s
+			JOIN inserted i ON i.id_step = s.id
+			WHERE s.id = $2
+			LIMIT 1
+		`
+		result models.Step
+	)
+	if err := r.client.QueryRow(ctx, query, recipeID, stepID, place).Scan(&result.ID, &result.Name, &result.Place); err != nil {
+		return models.Step{}, fmt.Errorf("failed to create step: %w", err)
+	}
+	return result, nil
+}
+
+// DeleteStep implements RecipesRepositorer
+func (r *recipesRepository) DeleteStep(ctx context.Context, recipeID, stepID, place int) error {
+	query := `
+		DELETE FROM recipes_steps 
+		WHERE id_recipe = $1 AND 
+			id_step = $2 AND 
+			place = $3
+	`
+	if _, err := r.client.Exec(ctx, query, recipeID, stepID, place); err != nil {
+		return fmt.Errorf("failed to delete step: %w", err)
+	}
+	return nil
+}
+
+// FindSteps implements RecipesRepositorer
+func (r *recipesRepository) FindSteps(ctx context.Context, recipeID int) ([]models.Step, error) {
+	var (
+		query = `
+			SELECT s.id, s.name, rs.place
+			FROM steps s
+			JOIN recipes_steps rs ON rs.id_step = s.id
+			WHERE rs.id_recipe = $1
+		`
+		result []models.Step
+	)
+	rows, err := r.client.Query(ctx, query, recipeID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find steps: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var step models.Step
+		if err := rows.Scan(&step.ID, &step.Name, &step.Place); err != nil {
+			return nil, fmt.Errorf("failed to scan step: %w", err)
+		}
+		result = append(result, step)
+	}
+	return result, nil
+}
+
 // CreateRecipeIngredient implements RecipesRepositorer
-func (r *RecipesRepository) CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
+func (r *recipesRepository) CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
 	var (
 		queryInsert = `
 			INSERT INTO products_recipes_measures 
@@ -58,7 +144,7 @@ func (r *RecipesRepository) CreateRecipeIngredient(ctx context.Context, id int, 
 }
 
 // DeleteRecipeIngredient implements RecipesRepositorer
-func (r *RecipesRepository) DeleteRecipeIngredient(ctx context.Context, recipeId int, productId int) error {
+func (r *recipesRepository) DeleteRecipeIngredient(ctx context.Context, recipeId int, productId int) error {
 	var (
 		query = `
 			DELETE FROM products_recipes_measures
@@ -72,7 +158,7 @@ func (r *RecipesRepository) DeleteRecipeIngredient(ctx context.Context, recipeId
 }
 
 // FindIngredients implements RecipesRepositorer
-func (r *RecipesRepository) FindIngredients(ctx context.Context, id int) ([]models.RecipeIngredient, error) {
+func (r *recipesRepository) FindIngredients(ctx context.Context, id int) ([]models.RecipeIngredient, error) {
 	var (
 		query = `
 		SELECT p.id, p.name, m.id, m.name, prm.quantity
@@ -99,7 +185,7 @@ func (r *RecipesRepository) FindIngredients(ctx context.Context, id int) ([]mode
 }
 
 // UpdateRecipeIngredient implements RecipesRepositorer
-func (r *RecipesRepository) UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
+func (r *recipesRepository) UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
 	var (
 		query = `
 			UPDATE products_recipes_measures
@@ -129,10 +215,10 @@ func (r *RecipesRepository) UpdateRecipeIngredient(ctx context.Context, id int, 
 }
 
 func New(client repositories.PostgresClient) RecipesRepositorer {
-	return &RecipesRepository{client: client}
+	return &recipesRepository{client: client}
 }
 
-func (r *RecipesRepository) FindByID(ctx context.Context, id int) (models.Recipe, error) {
+func (r *recipesRepository) FindByID(ctx context.Context, id int) (models.Recipe, error) {
 	var (
 		query = `
 			SELECT id, name, description 
@@ -166,7 +252,7 @@ func (r *RecipesRepository) FindByID(ctx context.Context, id int) (models.Recipe
 	return recipe, nil
 }
 
-func (r *RecipesRepository) FindMany(ctx context.Context, limit, offset int, name string) ([]models.Recipe, error) {
+func (r *recipesRepository) FindMany(ctx context.Context, limit, offset int, name string) ([]models.Recipe, error) {
 	var (
 		query = `
 			SELECT id, name, description
@@ -195,13 +281,13 @@ func (r *RecipesRepository) FindMany(ctx context.Context, limit, offset int, nam
 	return recipes, nil
 }
 
-func (r *RecipesRepository) Create(ctx context.Context, recipe *models.Recipe) error {
+func (r *recipesRepository) Create(ctx context.Context, recipe *models.Recipe) error {
 	var (
 		query = `
 			INSERT INTO recipes
-				(name, description)
+				(name, description, id_user)
 			VALUES
-				($1, $2)
+				($1, $2, $3)
 			RETURNING id
 		`
 	)
@@ -210,20 +296,8 @@ func (r *RecipesRepository) Create(ctx context.Context, recipe *models.Recipe) e
 		return err
 	}
 	defer tx.Rollback(ctx)
-	if err := tx.QueryRow(ctx, query, recipe.Name, recipe.Description).Scan(&recipe.ID); err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			pgErr = err.(*pgconn.PgError)
-			return fmt.Errorf(fmt.Sprintf(
-				"SQL Error: %s, Detail: %s, Where: %s, Code: %s, SQLState: %s",
-				pgErr.Message,
-				pgErr.Detail,
-				pgErr.Where,
-				pgErr.Code,
-				pgErr.SQLState(),
-			))
-		}
-		return err
+	if err := tx.QueryRow(ctx, query, recipe.Name, recipe.Description, recipe.User.ID).Scan(&recipe.ID); err != nil {
+		return fmt.Errorf("failed to create recipe: %w", err)
 	}
 	if _, err = tx.CopyFrom(ctx,
 		pgx.Identifier{"recipes_steps"},
@@ -240,7 +314,7 @@ func (r *RecipesRepository) Create(ctx context.Context, recipe *models.Recipe) e
 	return nil
 }
 
-func (r *RecipesRepository) Update(ctx context.Context, recipe *models.Recipe) error {
+func (r *recipesRepository) Update(ctx context.Context, recipe *models.Recipe) error {
 	var (
 		query = `
 			UPDATE recipes
@@ -256,7 +330,7 @@ func (r *RecipesRepository) Update(ctx context.Context, recipe *models.Recipe) e
 	return nil
 }
 
-func (r *RecipesRepository) Delete(ctx context.Context, id int) error {
+func (r *recipesRepository) Delete(ctx context.Context, id int) error {
 	var (
 		query = `
 			UPDATE recipes
@@ -271,7 +345,7 @@ func (r *RecipesRepository) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *RecipesRepository) Restore(ctx context.Context, id int) error {
+func (r *recipesRepository) Restore(ctx context.Context, id int) error {
 	var (
 		query = `
 			UPDATE recipes

@@ -1,6 +1,7 @@
 package dto
 
 type CreateRecipeDTO struct {
+	UserID      int             `json:"id_user" validate:"required"`
 	Name        string          `json:"name" validate:"required,max=100"`
 	Description string          `json:"description,omitempty" validate:"max=200"`
 	Steps       []RecipeStepDTO `json:"steps" validate:"required"`
@@ -70,4 +71,12 @@ type UpdateRecipeIngredientDTO struct {
 
 type DeleteRecipeIngredientDTO struct {
 	ProductID int `json:"id_product" validate:"required"`
+}
+
+type DeleteRecipeStepDTO struct {
+	Place int `json:"place" validate:"required"`
+}
+
+type CreateRecipeStepDTO struct {
+	Place int `json:"place" validate:"required"`
 }

@@ -14,10 +14,24 @@ type MeasureRepositorer interface {
 	Create(ctx context.Context, measure models.Measure) error
 	Update(ctx context.Context, measure models.Measure) error
 	Delete(ctx context.Context, id int) error
+	repositories.Repository
 }
 
 type measureRepository struct {
 	client repositories.PostgresClient
+}
+
+func (r *measureRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM measures
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count measures: %w", err)
+	}
+	return count, nil
 }
 
 // Create implements MeasureRepositorer

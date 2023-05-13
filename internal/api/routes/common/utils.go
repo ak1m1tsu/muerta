@@ -8,8 +8,14 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 )
 
-func GetIdByFiberCtx(ctx *fiber.Ctx) (int, error) {
-	param := ctx.Params("id", "")
+var DefaultIdKey = "id"
+
+func GetIdByFiberCtx(ctx *fiber.Ctx, idKey ...string) (int, error) {
+	key := DefaultIdKey
+	if len(idKey) != 0 {
+		key = idKey[0]
+	}
+	param := ctx.Params(key, "")
 	id, err := strconv.Atoi(param)
 	if err != nil {
 		return -1, err
@@ -37,3 +43,4 @@ func GetFilterByFiberCtx[T dto.Filter](ctx *fiber.Ctx, filter T) error {
 	}
 	return nil
 }
+

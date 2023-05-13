@@ -2,6 +2,7 @@ package tip
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -16,7 +17,8 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 	handler := New(svc, log)
 	router.Get("/", handler.FindTips)
 	router.Post("/", jware.DeserializeUser, handler.CreateTip)
-	router.Route("/:id<int>", func(router fiber.Router) {
+	router.Route(context.TipID.Path(), func(router fiber.Router) {
+		router.Use(context.New(log, context.TipID))
 		router.Get("/", handler.FindTipByID)
 		router.Route("/products", func(router fiber.Router) {
 			router.Get("/", handler.FindTipProducts)

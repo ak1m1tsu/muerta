@@ -9,6 +9,7 @@ import (
 )
 
 type ProductRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Product, error)
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Product, error)
 	Create(ctx context.Context, product models.Product) error
@@ -17,10 +18,63 @@ type ProductRepositorer interface {
 	Restore(ctx context.Context, id int) error
 	FindCategories(ctx context.Context, id int) ([]models.ProductCategory, error)
 	FindRecipes(ctx context.Context, id int) ([]models.Recipe, error)
+	AddProductCategory(ctx context.Context, productID, categoryID int) (models.ProductCategory, error)
+	RemoveProductCategory(ctx context.Context, productID, categoryID int) error
 }
 
 type productRepository struct {
 	client repositories.PostgresClient
+}
+
+// Count implements ProductRepositorer
+func (r *productRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM products WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count products: %w", err)
+	}
+	return count, nil
+}
+
+// AddProductCategory implements ProductRepositorer
+func (r *productRepository) AddProductCategory(ctx context.Context, productID int, categoryID int) (models.ProductCategory, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO products_categories (id_product, id_category)
+				VALUES ($1, $2)
+				RETURNING id_product, id_category
+			)
+			SELECT c.id, c.name
+			FROM categories c
+			JOIN inserted i ON i.id_category = c.id
+			WHERE c.id = $2
+			LIMIT 1
+		`
+		result models.ProductCategory
+	)
+	if err := r.client.QueryRow(ctx, query, productID, categoryID).Scan(&result.ID, &result.Name); err != nil {
+		return models.ProductCategory{}, fmt.Errorf("failed to add product category: %w", err)
+	}
+	return result, nil
+}
+
+// RemoveProductCategory implements ProductRepositorer
+func (r *productRepository) RemoveProductCategory(ctx context.Context, productID int, categoryID int) error {
+	var (
+		query = `
+			DELETE FROM products_categories
+			WHERE id_product = $1 AND id_category = $2
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, productID, categoryID); err != nil {
+		return fmt.Errorf("failed to remove product category: %w", err)
+	}
+	return nil
 }
 
 func New(client repositories.PostgresClient) ProductRepositorer {

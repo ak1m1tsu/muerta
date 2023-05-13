@@ -7,6 +7,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	"github.com/romankravchuk/muerta/internal/repositories/storage"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type StorageServicer interface {
@@ -16,10 +17,48 @@ type StorageServicer interface {
 	UpdateStorage(ctx context.Context, id int, payload *dto.UpdateStorageDTO) error
 	DeleteStorage(ctx context.Context, id int) error
 	RestoreStorage(ctx context.Context, id int) error
+	FindTips(ctx context.Context, id int) ([]dto.FindTipDTO, error)
+	CreateTip(ctx context.Context, id, tipID int) (dto.FindTipDTO, error)
+	DeleteTip(ctx context.Context, id, tipID int) error
+	services.Counter
 }
 
 type storageService struct {
 	repo storage.StorageRepositorer
+}
+
+func (s *storageService) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting storages: %w", err)
+	}
+	return count, nil
+}
+
+// CreateTip implements StorageServicer
+func (s *storageService) CreateTip(ctx context.Context, id int, tipID int) (dto.FindTipDTO, error) {
+	result, err := s.repo.CreateTip(ctx, id, tipID)
+	if err != nil {
+		return dto.FindTipDTO{}, fmt.Errorf("failed to create tip: %w", err)
+	}
+	return translate.TipModelToFindDTO(&result), nil
+}
+
+// DeleteTip implements StorageServicer
+func (s *storageService) DeleteTip(ctx context.Context, id int, tipID int) error {
+	if err := s.repo.DeleteTip(ctx, id, tipID); err != nil {
+		return fmt.Errorf("failed to delete tip: %w", err)
+	}
+	return nil
+}
+
+// FindTips implements StorageServicer
+func (s *storageService) FindTips(ctx context.Context, id int) ([]dto.FindTipDTO, error) {
+	result, err := s.repo.FindTips(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find tips: %w", err)
+	}
+	return translate.TipModelsToFindDTOs(result), nil
 }
 
 func New(repo storage.StorageRepositorer) StorageServicer {

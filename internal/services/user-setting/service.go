@@ -7,6 +7,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	"github.com/romankravchuk/muerta/internal/repositories/setting"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type UserSettingsServicer interface {
@@ -16,10 +17,16 @@ type UserSettingsServicer interface {
 	UpdateSetting(ctx context.Context, id int, setting *dto.UpdateSettingDTO) error
 	DeleteSetting(ctx context.Context, id int) error
 	RestoreSetting(ctx context.Context, id int) error
+	services.Counter
 }
 
 type userSettingsService struct {
 	repo setting.SettingsRepositorer
+}
+
+// Count implements UserSettingsServicer
+func (s *userSettingsService) Count(ctx context.Context) (int, error) {
+	return s.repo.Count(ctx)
 }
 
 func New(repo setting.SettingsRepositorer) UserSettingsServicer {

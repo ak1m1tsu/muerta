@@ -2,10 +2,12 @@ package category
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repository "github.com/romankravchuk/muerta/internal/repositories/category"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type CategoryServicer interface {
@@ -15,10 +17,19 @@ type CategoryServicer interface {
 	UpdateCategory(ctx context.Context, id int, category *dto.UpdateProductCategoryDTO) error
 	DeleteCategory(ctx context.Context, id int) error
 	RestoreCategory(ctx context.Context, id int) error
+	services.Counter
 }
 
 type categoryService struct {
 	repo repository.CategoryRepositorer
+}
+
+func (s *categoryService) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting users: %w", err)
+	}
+	return count, nil
 }
 
 // CreateCategory implements CategoryServicer
@@ -44,7 +55,7 @@ func (svc *categoryService) FindCategoryByID(ctx context.Context, id int) (dto.F
 	if err != nil {
 		return dto.FindProductCategoryDTO{}, err
 	}
-	dto := translate.CategoryModelToFindDTO(&category)
+	dto := translate.ProductCategoryModelToFindDTO(&category)
 	return dto, nil
 }
 
