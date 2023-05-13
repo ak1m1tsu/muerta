@@ -22,10 +22,88 @@ type UserServicer interface {
 	CreateStorage(ctx context.Context, id int, payload *dto.UserStorageDTO) (dto.FindStorageDTO, error)
 	DeleteStorage(ctx context.Context, id int, payload *dto.UserStorageDTO) error
 	FindStorages(ctx context.Context, id int) ([]dto.FindStorageDTO, error)
+	FindShelfLives(ctx context.Context, id int) ([]dto.FindShelfLifeDTO, error)
+	CreateShelfLife(ctx context.Context, id int, payload *dto.CreateShelfLifeDTO) (dto.FindShelfLifeDTO, error)
+	UpdateShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error)
+	RestoreShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error)
+	DeleteShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) error
 }
 
 type userService struct {
 	repo repo.UserRepositorer
+}
+
+func New(repo repo.UserRepositorer) UserServicer {
+	return &userService{
+		repo: repo,
+	}
+}
+
+// CreateShelfLife implements UserServicer
+func (svc *userService) CreateShelfLife(ctx context.Context, id int, payload *dto.CreateShelfLifeDTO) (dto.FindShelfLifeDTO, error) {
+	model := translate.CreateShelfLifeDTOToModel(payload)
+	createdModel, err := svc.repo.CreateShelfLife(ctx, id, model)
+	if err != nil {
+		return dto.FindShelfLifeDTO{}, fmt.Errorf("error creating shelf life: %w", err)
+	}
+	return translate.ShelfLifeModelToFindDTO(&createdModel), nil
+}
+
+// DeleteShelfLife implements UserServicer
+func (svc *userService) DeleteShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) error {
+	if err := svc.repo.DeleteShelfLife(ctx, id, payload.ShelfLifeID); err != nil {
+		return fmt.Errorf("error deleting shelf life: %w", err)
+	}
+	return nil
+}
+
+// FindShelfLives implements UserServicer
+func (svc *userService) FindShelfLives(ctx context.Context, id int) ([]dto.FindShelfLifeDTO, error) {
+	models, err := svc.repo.FindShelfLives(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("error finding shelf lives: %w", err)
+	}
+	return translate.ShelfLifeModelsToFindDTOs(models), nil
+}
+
+// RestoreShelfLife implements UserServicer
+func (svc *userService) RestoreShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error) {
+	model, err := svc.repo.RestoreShelfLife(ctx, id, payload.ShelfLifeID)
+	if err != nil {
+		return dto.FindShelfLifeDTO{}, fmt.Errorf("error restoring shelf life: %w", err)
+	}
+	return translate.ShelfLifeModelToFindDTO(&model), nil
+}
+
+// UpdateShelfLife implements UserServicer
+func (svc *userService) UpdateShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error) {
+	model, err := svc.repo.FindShelfLife(ctx, id, payload.ShelfLifeID)
+	if err != nil {
+		return dto.FindShelfLifeDTO{}, fmt.Errorf("error finding shelf life: %w", err)
+	}
+	if payload.MeasureID != 0 {
+		model.Measure.ID = payload.MeasureID
+	}
+	if payload.ProductID != 0 {
+		model.Product.ID = payload.ProductID
+	}
+	if payload.StorageID != 0 {
+		model.Storage.ID = payload.StorageID
+	}
+	if payload.Quantity != 0 {
+		model.Quantity = payload.Quantity
+	}
+	if payload.PurchaseDate != nil {
+		model.PurchaseDate = payload.PurchaseDate
+	}
+	if payload.EndDate != nil {
+		model.EndDate = payload.EndDate
+	}
+	result, err := svc.repo.UpdateShelfLife(ctx, id, model)
+	if err != nil {
+		return dto.FindShelfLifeDTO{}, fmt.Errorf("error updating shelf life: %w", err)
+	}
+	return translate.ShelfLifeModelToFindDTO(&result), nil
 }
 
 // DeleteStorage implements UserServicer
@@ -95,12 +173,6 @@ func (svc *userService) UpdateSetting(ctx context.Context, id int, payload *dto.
 	}
 	dto := translate.SettingModelToFindDTO(&result)
 	return dto, nil
-}
-
-func New(repo repo.UserRepositorer) UserServicer {
-	return &userService{
-		repo: repo,
-	}
 }
 
 func (svc *userService) FindUserByID(ctx context.Context, id int) (dto.FindUserDTO, error) {

@@ -24,11 +24,12 @@ func (f *ShelfLifeFilterDTO) SetOffset(offset int) {
 
 type CreateShelfLifeDTO struct {
 	ProductID    int        `json:"id_product" validate:"required"`
+	UserID       int        `json:"id_user" validate:"required"`
 	StorageID    int        `json:"id_storage" validate:"required"`
 	MeasureID    int        `json:"id_measure" validate:"required"`
 	Quantity     int        `json:"quantity" validate:"required"`
 	PurchaseDate *time.Time `json:"purchase_date" validate:"required"`
-	EndDate      *time.Time `json:"end_date" validate:"required"`
+	EndDate      *time.Time `json:"end_date" validate:"required,gtfield=PurchaseDate"`
 }
 
 type FindShelfLifeDTO struct {

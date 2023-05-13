@@ -7,6 +7,7 @@ type ShelfLife struct {
 	Product      Product
 	Storage      Storage
 	Measure      Measure
+	User         User
 	Quantity     int        `db:"quantity"`
 	PurchaseDate *time.Time `db:"purchase_date"`
 	EndDate      *time.Time `db:"end_date"`
