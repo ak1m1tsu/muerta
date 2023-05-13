@@ -10,6 +10,7 @@ import (
 )
 
 type UserRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.User, error)
 	FindByName(ctx context.Context, name string) (models.User, error)
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.User, error)
@@ -41,6 +42,19 @@ func New(client repositories.PostgresClient) UserRepositorer {
 	return &userRepository{client: client}
 }
 
+func (r *userRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM users WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count users: %w", err)
+	}
+	return count, nil
+}
+
 // CreateShelfLife implements UserRepositorer
 func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error) {
 	var (
@@ -56,6 +70,8 @@ func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model 
 			JOIN products p ON i.id_product = p.id
 			JOIN storages s ON i.id_storage = s.id
 			JOIN measures m ON i.id_measure = m.id
+			WHERE p.deleted_at IS NULL AND 
+				s.deleted_at IS NULL AND 
 			LIMIT 1
 		`
 	)
@@ -95,7 +111,9 @@ func (r *userRepository) FindShelfLife(ctx context.Context, userId int, shelfLif
 			JOIN products p ON sl.id_product = p.id
 			JOIN storages s ON sl.id_storage = s.id
 			JOIN measures m ON sl.id_measure = m.id
-			WHERE sl.id_user = $1 AND sl.id = $2
+			WHERE sl.id_user = $1 AND 
+				sl.id = $2 AND
+				sl.deleted_at IS NULL
 			LIMIT 1
 		`
 		model models.ShelfLife
@@ -123,7 +141,8 @@ func (r *userRepository) FindShelfLives(ctx context.Context, userId int) ([]mode
 			JOIN products p ON sl.id_product = p.id
 			JOIN storages s ON sl.id_storage = s.id
 			JOIN measures m ON sl.id_measure = m.id
-			WHERE sl.id_user = $1 AND sl.deleted_at IS NULL
+			WHERE sl.id_user = $1 AND 
+				sl.deleted_at IS NULL
 			ORDER BY sl.end_date DESC
 		`
 		entities []models.ShelfLife
@@ -167,6 +186,9 @@ func (r *userRepository) RestoreShelfLife(ctx context.Context, userId int, shelf
 			JOIN products p ON u.id_product = p.id
 			JOIN storages s ON u.id_storage = s.id
 			JOIN measures m ON u.id_measure = m.id
+			WHERE p.deleted_at IS NULL AND
+				s.deleted_at IS NULL AND
+			LIMIT 1
 		`
 		model models.ShelfLife
 	)
@@ -212,6 +234,9 @@ func (r *userRepository) UpdateShelfLife(ctx context.Context, userId int, model 
 			JOIN products p ON u.id_product = p.id
 			JOIN storages s ON u.id_storage = s.id
 			JOIN measures m ON u.id_measure = m.id
+			WHERE p.deleted_at IS NULL AND
+				s.deleted_at IS NULL AND
+			LIMIT 1
 		`
 	)
 	if err := r.client.QueryRow(ctx, query, userId, model.ID, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate).
@@ -235,22 +260,29 @@ func (r *userRepository) UpdateShelfLife(ctx context.Context, userId int, model 
 func (r *userRepository) CreateStorage(ctx context.Context, id int, entity models.Storage) (models.Storage, error) {
 	var (
 		query = `
-			INSERT INTO users_storages (id_user, id_storage)
-			VALUES ($1, $2)
-		`
-		querySelect = `
-			SELECT s.id, s.name, st.name, s.temperature, s.humidity
+			WITH inserted AS (
+				INSERT INTO users_storages (id_user, id_storage)
+				VALUES ($1, $2)
+				RETURNING id_user, id_storage
+			)
+			SELECT s.id, s.name, s.temperature, s.humidity, st.id, st.name
 			FROM storages s
 			JOIN storages_types st ON s.id_type = st.id
-			JOIN users_storages us ON us.id_storage = s.id
-			WHERE us.id_user = $1
+			JOIN inserted i ON i.id_storage = s.id
+			WHERE i.id_user = $1 AND 
+				s.id = i.id_storage AND
+				s.deleted_at IS NULL
 			LIMIT 1
 		`
 	)
-	if _, err := r.client.Exec(ctx, query, id, entity.ID); err != nil {
-		return models.Storage{}, fmt.Errorf("failed to create storage: %w", err)
-	}
-	if err := r.client.QueryRow(ctx, querySelect, id).Scan(&entity.ID, &entity.Name, &entity.Type.Name, &entity.Temperature, &entity.Humidity); err != nil {
+	if err := r.client.QueryRow(ctx, query, id, entity.ID).Scan(
+		&entity.ID,
+		&entity.Name,
+		&entity.Temperature,
+		&entity.Humidity,
+		&entity.Type.ID,
+		&entity.Type.Name,
+	); err != nil {
 		return models.Storage{}, fmt.Errorf("failed to scan storage: %w", err)
 	}
 	return entity, nil

@@ -4,6 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	usersetting "github.com/romankravchuk/muerta/internal/services/user-setting"
@@ -22,20 +24,15 @@ func New(svc usersetting.UserSettingsServicer, log *log.Logger) *UserSettingHand
 }
 
 func (h *UserSettingHandler) FindByID(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
-	setting, err := h.svc.FindSettingByID(ctx.Context(), id)
+	id := ctx.Locals(context.SettingID).(int)
+	result, err := h.svc.FindSettingByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"setting": setting},
-	})
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"setting": result},
+	))
 }
 
 func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
@@ -44,15 +41,19 @@ func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	settings, err := h.svc.FindSettings(ctx.Context(), filter)
+	result, err := h.svc.FindSettings(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"settings": settings},
-	})
+	count, err := h.svc.Count(ctx.Context())
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"settings": result, "count": count},
+	))
 }
 
 func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
@@ -69,17 +70,11 @@ func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.SettingID).(int)
 	payload := new(dto.UpdateSettingDTO)
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
@@ -93,37 +88,23 @@ func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *UserSettingHandler) Delete(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.SettingID).(int)
 	if err := h.svc.DeleteSetting(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *UserSettingHandler) Restore(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.SettingID).(int)
 	if err := h.svc.RestoreSetting(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }

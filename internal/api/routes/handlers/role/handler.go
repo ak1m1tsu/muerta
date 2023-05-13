@@ -4,6 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	service "github.com/romankravchuk/muerta/internal/services/role"
@@ -27,32 +29,31 @@ func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	roles, err := h.svc.FindRoles(ctx.Context(), filter)
+	result, err := h.svc.FindRoles(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"roles": roles},
-	})
+	count, err := h.svc.Count(ctx.Context())
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"roles": result, "count": count},
+	))
 }
 
 func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
-	role, err := h.svc.FindRoleByID(ctx.Context(), id)
+	id := ctx.Locals(context.RoleID).(int)
+	result, err := h.svc.FindRoleByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"role": role},
-	})
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"roles": result},
+	))
 }
 
 func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
@@ -69,17 +70,11 @@ func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.RoleID).(int)
 	var payload *dto.UpdateRoleDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
@@ -93,37 +88,23 @@ func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *RoleHandler) DeleteRole(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.DeleteRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *RoleHandler) RestoreRole(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.RestoreRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }

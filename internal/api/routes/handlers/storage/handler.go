@@ -4,6 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	service "github.com/romankravchuk/muerta/internal/services/storage"
@@ -27,32 +29,31 @@ func (h *StorageHandler) FindMany(ctx *fiber.Ctx) error {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	storages, err := h.svc.FindStorages(ctx.Context(), filter)
+	result, err := h.svc.FindStorages(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"storages": storages},
-	})
+	count, err := h.svc.Count(ctx.Context())
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"storages": result, "count": count},
+	))
 }
 
 func (h *StorageHandler) FindOne(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
-	storage, err := h.svc.FindStorageByID(ctx.Context(), id)
+	id := ctx.Locals(context.StorageID).(int)
+	result, err := h.svc.FindStorageByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"storage": storage},
-	})
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"storage": result},
+	))
 }
 
 func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
@@ -69,17 +70,11 @@ func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.StorageID).(int)
 	var payload *dto.UpdateStorageDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
@@ -93,37 +88,58 @@ func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *StorageHandler) Delete(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.DeleteStorage(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *StorageHandler) Restore(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.RestoreStorage(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
+}
+
+func (h *StorageHandler) FindTips(ctx *fiber.Ctx) error {
+	id := ctx.Locals(context.StorageID).(int)
+	result, err := h.svc.FindTips(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"tips": result},
+	))
+}
+
+func (h *StorageHandler) CreateTip(ctx *fiber.Ctx) error {
+	id := ctx.Locals(context.StorageID).(int)
+	tipID := ctx.Locals(context.TipID).(int)
+	result, err := h.svc.CreateTip(ctx.Context(), id, tipID)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"tip": result},
+	))
+}
+
+func (h *StorageHandler) DeleteTip(ctx *fiber.Ctx) error {
+	id := ctx.Locals(context.StorageID).(int)
+	tipID := ctx.Locals(context.TipID).(int)
+	if err := h.svc.DeleteTip(ctx.Context(), id, tipID); err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(handlers.SuccessResponse())
 }

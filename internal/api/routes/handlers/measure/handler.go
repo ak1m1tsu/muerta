@@ -4,6 +4,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	service "github.com/romankravchuk/muerta/internal/services/measure"
@@ -35,26 +37,19 @@ func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.MeasureID).(int)
 	dto, err := h.svc.FindMeasureByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrNotFound
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"measure": dto},
-	})
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"measure": dto},
+	))
 }
 
 func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
@@ -63,23 +58,23 @@ func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
-	dtos, err := h.svc.FindMeasures(ctx.Context(), filter)
+	result, err := h.svc.FindMeasures(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-		"data":    fiber.Map{"measures": dtos},
-	})
+	count, err := h.svc.Count(ctx.Context())
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"measures": result, "count": count},
+	))
 }
 
 func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.MeasureID).(int)
 	payload := new(dto.UpdateMeasureDTO)
 	if err := ctx.BodyParser(payload); err != nil {
 		h.log.ClientError(ctx, err)
@@ -93,22 +88,14 @@ func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }
 
 func (h *MeasureHandler) DeleteMeasure(ctx *fiber.Ctx) error {
-	id, err := common.GetIdByFiberCtx(ctx)
-	if err != nil {
-		h.log.ClientError(ctx, err)
-		return fiber.ErrNotFound
-	}
+	id := ctx.Locals(context.MeasureID).(int)
 	if err := h.svc.DeleteMeasure(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
 	}
-	return ctx.JSON(fiber.Map{
-		"success": true,
-	})
+	return ctx.JSON(handlers.SuccessResponse())
 }

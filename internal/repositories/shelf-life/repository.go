@@ -9,16 +9,94 @@ import (
 )
 
 type ShelfLifeRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.ShelfLife, error)
 	FindMany(ctx context.Context, limit, offset int) ([]models.ShelfLife, error)
 	Create(ctx context.Context, measure models.ShelfLife) error
 	Update(ctx context.Context, measure models.ShelfLife) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	CreateStatus(ctx context.Context, id, statusID int) (models.ShelfLifeStatus, error)
+	DeleteStatus(ctx context.Context, id, statusID int) error
+	FindStatuses(ctx context.Context, id int) ([]models.ShelfLifeStatus, error)
 }
 
 type shelfLifeRepository struct {
 	client repositories.PostgresClient
+}
+
+func (r *shelfLifeRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM shelf_lives WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count shelf lives: %w", err)
+	}
+	return count, nil
+}
+
+// CreateStatus implements ShelfLifeRepositorer
+func (r *shelfLifeRepository) CreateStatus(ctx context.Context, id int, statusID int) (models.ShelfLifeStatus, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO shelf_lives_statuses (id_shelf_life, id_status)
+				VALUES ($1, $2)
+				RETURNING id_shelf_life, id_status
+			)
+			SELECT s.id, s.name
+			FROM statuses s
+			JOIN inserted i ON i.id_status = s.id
+			WHERE s.id = $2
+			LIMIT 1
+		`
+		result models.ShelfLifeStatus
+	)
+	if err := r.client.QueryRow(ctx, query, id, statusID).Scan(&result.ID, &result.Name); err != nil {
+		return models.ShelfLifeStatus{}, fmt.Errorf("failed to create shelf life status: %w", err)
+	}
+	return result, nil
+}
+
+// DeleteStatus implements ShelfLifeRepositorer
+func (r *shelfLifeRepository) DeleteStatus(ctx context.Context, id int, statusID int) error {
+	var query = `
+		DELETE FROM shelf_lives_statuses
+		WHERE id_shelf_life = $1 AND id_status = $2
+	`
+	if _, err := r.client.Exec(ctx, query, id, statusID); err != nil {
+		return fmt.Errorf("failed to delete shelf life status: %w", err)
+	}
+	return nil
+}
+
+// FindStatuses implements ShelfLifeRepositorer
+func (r *shelfLifeRepository) FindStatuses(ctx context.Context, id int) ([]models.ShelfLifeStatus, error) {
+	var (
+		query = `
+			SELECT s.id, s.name
+			FROM statuses s
+			JOIN shelf_lives_statuses sl ON sl.id_status = s.id
+			WHERE sl.id_shelf_life = $1
+		`
+		result []models.ShelfLifeStatus
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find shelf life statuses: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var status models.ShelfLifeStatus
+		if err := rows.Scan(&status.ID, &status.Name); err != nil {
+			return nil, fmt.Errorf("failed to scan shelf life status: %w", err)
+		}
+		result = append(result, status)
+	}
+	return result, nil
 }
 
 // Create implements ShelfLifeRepositorer

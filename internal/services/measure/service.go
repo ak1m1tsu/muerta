@@ -2,10 +2,12 @@ package measure
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repository "github.com/romankravchuk/muerta/internal/repositories/measure"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type MeasureServicer interface {
@@ -14,10 +16,19 @@ type MeasureServicer interface {
 	CreateMeasure(ctx context.Context, payload *dto.CreateMeasureDTO) error
 	UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasureDTO) error
 	DeleteMeasure(ctx context.Context, id int) error
+	services.Counter
 }
 
 type measureService struct {
 	repo repository.MeasureRepositorer
+}
+
+func (s *measureService) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting measures: %w", err)
+	}
+	return count, nil
 }
 
 // CreateMeasure implements MeasureServicer
@@ -56,7 +67,6 @@ func (svc *measureService) FindMeasures(ctx context.Context, filter *dto.Measure
 	}
 	return dtos, nil
 }
-
 
 // UpdateMeasure implements MeasureServicer
 func (svc *measureService) UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasureDTO) error {

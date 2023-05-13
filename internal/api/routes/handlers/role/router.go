@@ -2,6 +2,7 @@ package role
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -16,7 +17,8 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 	handler := New(svc, log)
 	router.Get("/", handler.FindRoles)
 	router.Post("/", jware.DeserializeUser, handler.CreateRole)
-	router.Route("/:id<int>", func(router fiber.Router) {
+	router.Route(context.RoleID.Path(), func(router fiber.Router) {
+		router.Use(context.New(log, context.RoleID))
 		router.Get("/", handler.FindRole)
 		router.Put("/", jware.DeserializeUser, handler.UpdateRole)
 		router.Patch("/", jware.DeserializeUser, handler.RestoreRole)

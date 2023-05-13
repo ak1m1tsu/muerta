@@ -2,10 +2,12 @@ package product
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repo "github.com/romankravchuk/muerta/internal/repositories/product"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type ProductServicer interface {
@@ -17,10 +19,38 @@ type ProductServicer interface {
 	RestoreProduct(ctx context.Context, id int) error
 	FindProductCategories(ctx context.Context, id int) ([]dto.FindProductCategoryDTO, error)
 	FindProductRecipes(ctx context.Context, id int) ([]dto.FindRecipeDTO, error)
+	AddProductCategory(ctx context.Context, productId int, categoryId int) (dto.FindProductCategoryDTO, error)
+	RemoveProductCategory(ctx context.Context, productId int, categoryId int) error
+	services.Counter
 }
 
 type productService struct {
 	repo repo.ProductRepositorer
+}
+
+func (s *productService) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting products: %w", err)
+	}
+	return count, nil
+}
+
+// AddProductCategory implements ProductServicer
+func (s *productService) AddProductCategory(ctx context.Context, productId int, categoryId int) (dto.FindProductCategoryDTO, error) {
+	model, err := s.repo.AddProductCategory(ctx, productId, categoryId)
+	if err != nil {
+		return dto.FindProductCategoryDTO{}, fmt.Errorf("error adding product category: %w", err)
+	}
+	return translate.ProductCategoryModelToFindDTO(&model), nil
+}
+
+// RemoveProductCategory implements ProductServicer
+func (s *productService) RemoveProductCategory(ctx context.Context, productId int, categoryId int) error {
+	if err := s.repo.RemoveProductCategory(ctx, productId, categoryId); err != nil {
+		return fmt.Errorf("error removing product category: %w", err)
+	}
+	return nil
 }
 
 func New(repo repo.ProductRepositorer) ProductServicer {

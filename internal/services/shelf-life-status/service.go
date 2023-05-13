@@ -2,10 +2,12 @@ package shelflifestatus
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repository "github.com/romankravchuk/muerta/internal/repositories/shelf-life-status"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type ShelfLifeStatusServicer interface {
@@ -14,10 +16,19 @@ type ShelfLifeStatusServicer interface {
 	CreateShelfLifeStatus(ctx context.Context, payload *dto.CreateShelfLifeStatusDTO) error
 	UpdateShelfLifeStatus(ctx context.Context, id int, payload *dto.UpdateShelfLifeStatusDTO) error
 	DeleteShelfLifeStatus(ctx context.Context, id int) error
+	services.Counter
 }
 
 type shelfLifeStatusService struct {
 	repo repository.ShelfLifeStatusRepositorer
+}
+
+func (s *shelfLifeStatusService) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting shelf life statuses: %w", err)
+	}
+	return count, nil
 }
 
 // CreateShelfLifeStatus implements ShelfLifeStatusServicer

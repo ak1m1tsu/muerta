@@ -9,6 +9,7 @@ import (
 )
 
 type RoleRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Role, error)
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Role, error)
 	Create(ctx context.Context, role models.Role) error
@@ -25,6 +26,19 @@ func New(client repositories.PostgresClient) RoleRepositorer {
 	return &roleRepository{
 		client: client,
 	}
+}
+
+func (r *roleRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM roles WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count roles: %w", err)
+	}
+	return count, nil
 }
 
 // Create implements RoleRepositorer

@@ -2,6 +2,7 @@ package product
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -14,12 +15,18 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 	repository := repo.New(client)
 	service := svc.New(repository)
 	handler := New(service, log)
-	router.Post("/", jware.DeserializeUser, handler.CreateProduct)
 	router.Get("/", handler.FindProducts)
-	router.Route("/:id<int>", func(router fiber.Router) {
+	router.Post("/", jware.DeserializeUser, handler.CreateProduct)
+	router.Route(context.ProductID.Path(), func(router fiber.Router) {
+		router.Use(context.New(log, context.ProductID))
 		router.Get("/", handler.FindProductByID)
 		router.Route("/categories", func(router fiber.Router) {
 			router.Get("/", handler.FindProductCategories)
+			router.Route(context.CategoryID.Path(), func(router fiber.Router) {
+				router.Use(context.New(log, context.CategoryID))
+				router.Post("/", handler.AddProductCategory)
+				router.Delete("/", handler.RemoveProductCategory)
+			})
 		})
 		router.Route("/recipes", func(router fiber.Router) {
 			router.Get("/", handler.FindProductRecipes)

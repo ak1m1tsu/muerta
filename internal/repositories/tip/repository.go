@@ -9,6 +9,7 @@ import (
 )
 
 type TipRepositorer interface {
+	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Tip, error)
 	FindMany(ctx context.Context, limit, offset int, description string) ([]models.Tip, error)
 	Create(ctx context.Context, tip models.Tip) error
@@ -27,6 +28,19 @@ func New(client repositories.PostgresClient) TipRepositorer {
 	return &tipRepository{
 		client: client,
 	}
+}
+
+func (r *tipRepository) Count(ctx context.Context) (int, error) {
+	var (
+		query = `
+			SELECT COUNT(*) FROM tips WHERE deleted_at IS NULL
+		`
+		count int
+	)
+	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+		return 0, fmt.Errorf("failed to count tips: %w", err)
+	}
+	return count, nil
 }
 
 // FindProducts implements TipRepositorer

@@ -2,10 +2,12 @@ package shelflife
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repository "github.com/romankravchuk/muerta/internal/repositories/shelf-life"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type ShelfLifeServicer interface {
@@ -15,10 +17,48 @@ type ShelfLifeServicer interface {
 	UpdateShelfLife(ctx context.Context, id int, payload *dto.UpdateShelfLifeDTO) error
 	DeleteShelfLife(ctx context.Context, id int) error
 	RestoreShelfLife(ctx context.Context, id int) error
+	FindShelfLifeStatuses(ctx context.Context, id int) ([]dto.FindShelfLifeStatusDTO, error)
+	CreateShelfLifeStatus(ctx context.Context, id, status int) (dto.FindShelfLifeStatusDTO, error)
+	DeleteShelfLifeStatus(ctx context.Context, id, status int) error
+	services.Counter
 }
 
 type shelfLifeSerivce struct {
 	repo repository.ShelfLifeRepositorer
+}
+
+func (s *shelfLifeSerivce) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting shelf lives: %w", err)
+	}
+	return count, nil
+}
+
+// CreateShelfLifeStatus implements ShelfLifeServicer
+func (s *shelfLifeSerivce) CreateShelfLifeStatus(ctx context.Context, id int, status int) (dto.FindShelfLifeStatusDTO, error) {
+	model, err := s.repo.CreateStatus(ctx, id, status)
+	if err != nil {
+		return dto.FindShelfLifeStatusDTO{}, err
+	}
+	return translate.ShelfLifeStatusModelToFindDTO(&model), nil
+}
+
+// DeleteShelfLifeStatus implements ShelfLifeServicer
+func (s *shelfLifeSerivce) DeleteShelfLifeStatus(ctx context.Context, id int, status int) error {
+	if err := s.repo.DeleteStatus(ctx, id, status); err != nil {
+		return err
+	}
+	return nil
+}
+
+// FindShelfLifeStatuses implements ShelfLifeServicer
+func (s *shelfLifeSerivce) FindShelfLifeStatuses(ctx context.Context, id int) ([]dto.FindShelfLifeStatusDTO, error) {
+	models, err := s.repo.FindStatuses(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return translate.ShelfLifeStatusModelsToFindDTOs(models), nil
 }
 
 // CreateShelfLife implements ShelfLifeServicer

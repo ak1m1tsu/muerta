@@ -7,6 +7,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repository "github.com/romankravchuk/muerta/internal/repositories/role"
+	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type RoleServicer interface {
@@ -16,6 +17,7 @@ type RoleServicer interface {
 	UpdateRole(ctx context.Context, id int, payload *dto.UpdateRoleDTO) error
 	DeleteRole(ctx context.Context, id int) error
 	RestoreRole(ctx context.Context, id int) error
+	services.Counter
 }
 
 type roleService struct {
@@ -26,6 +28,14 @@ func New(repo repository.RoleRepositorer) RoleServicer {
 	return &roleService{
 		repo: repo,
 	}
+}
+
+func (s *roleService) Count(ctx context.Context) (int, error) {
+	count, err := s.repo.Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("error counting roles: %w", err)
+	}
+	return count, nil
 }
 
 // CreateRole implements RoleServicer
