@@ -3,9 +3,7 @@ version: '3.7'
 services:
   db:
     container_name: muerta-db
-    build:
-      context: ./
-      dockerfile: .docker/db/Dockerfile
+    image: ak1m1tsu/muerta-db:latest
     restart: always
     environment:
       - POSTGRES_USER=${DB_USER}
@@ -19,7 +17,7 @@ services:
     container_name: muerta-api
     build:
       context: ./
-      dockerfile: .docker/api/Dockerfile
+      dockerfile: ./Dockerfile
     environment:
       - API_NAME=${API_NAME}
       - PORT=${PORT}
@@ -31,7 +29,7 @@ services:
     depends_on:
       - db
     ports:
-      - '8000:8000'
+      - '0372:${PORT}'
     links:
       - db
     volumes:

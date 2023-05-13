@@ -9,7 +9,7 @@ import (
 )
 
 func GetIdByFiberCtx(ctx *fiber.Ctx) (int, error) {
-	param := ctx.Params("id")
+	param := ctx.Params("id", "")
 	id, err := strconv.Atoi(param)
 	if err != nil {
 		return -1, err

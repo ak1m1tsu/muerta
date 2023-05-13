@@ -31,14 +31,12 @@ func New(cfg *config.Config, svc service.AuthServicer, log *log.Logger) *AuthHan
 
 // SignUp godoc
 //
-//	@Summary		SignUp
-//	@Description	Sign Up new User
-//	@Tags			auth
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		dto.SignUpDTO	true	"User data"
-//	@Success		201		{object}	map[string]interface{}
-//	@Router			/auth/sign-up [post]
+//	@Summary	Sign Up user
+//	@Tags		auth
+//	@Accept		json
+//	@Produce	json
+//	@Success	200	{object}	dto.Response
+//	@Router		/auth/sign-up [post]
 func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
 	var payload *dto.SignUpDTO
 	if err := ctx.BodyParser(&payload); err != nil {

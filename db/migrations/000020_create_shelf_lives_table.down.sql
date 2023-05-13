@@ -1,1 +1,0 @@
-DROP TABLE shelf_lives CASCADE;

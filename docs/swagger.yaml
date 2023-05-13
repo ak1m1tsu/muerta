@@ -1,47 +1,38 @@
 basePath: /api/v1
 definitions:
-  dto.SignUpDTO:
+  dto.Response:
     properties:
-      name:
-        type: string
-      password:
-        minLength: 8
-        type: string
-      password_confirm:
-        minLength: 8
-        type: string
-    required:
-    - name
-    - password
-    - password_confirm
+      data:
+        additionalProperties: {}
+        type: object
+      success:
+        example: true
+        type: boolean
     type: object
 info:
   contact: {}
-  description: API for Muerta
+  description: Web API to control the shelf life of products using computer vision
+  termsOfService: http://swagger.io/terms
   title: Muerta API
-  version: "1.0"
+  version: 1.0.0
 paths:
   /auth/sign-up:
     post:
       consumes:
       - application/json
-      description: Sign Up new User
-      parameters:
-      - description: User data
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/dto.SignUpDTO'
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
-            additionalProperties: true
-            type: object
-      summary: SignUp
+            $ref: '#/definitions/dto.Response'
+      summary: Sign Up user
       tags:
       - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authrization
+    type: apiKey
 swagger: "2.0"

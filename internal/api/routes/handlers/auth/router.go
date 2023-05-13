@@ -19,6 +19,6 @@ func NewRouter(cfg *config.Config, client repositories.PostgresClient, logger *l
 	r.Post("/sign-up", h.SignUp)
 	r.Post("/login", h.Login)
 	r.Post("/logout", jware.DeserializeUser, h.Logout)
-	r.Post("/refresh", jware.DeserializeUser, h.RefreshAccessToken)
+	r.Post("/refresh", h.RefreshAccessToken)
 	return r
 }

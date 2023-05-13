@@ -1,1 +1,0 @@
-DROP TABLE storages_types CASCADE;

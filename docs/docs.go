@@ -10,6 +10,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
+        "termsOfService": "http://swagger.io/terms",
         "contact": {},
         "version": "{{.Version}}"
     },
@@ -18,7 +19,6 @@ const docTemplate = `{
     "paths": {
         "/auth/sign-up": {
             "post": {
-                "description": "Sign Up new User",
                 "consumes": [
                     "application/json"
                 ],
@@ -28,24 +28,12 @@ const docTemplate = `{
                 "tags": [
                     "auth"
                 ],
-                "summary": "SignUp",
-                "parameters": [
-                    {
-                        "description": "User data",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.SignUpDTO"
-                        }
-                    }
-                ],
+                "summary": "Sign Up user",
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/dto.Response"
                         }
                     }
                 }
@@ -53,38 +41,37 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.SignUpDTO": {
+        "dto.Response": {
             "type": "object",
-            "required": [
-                "name",
-                "password",
-                "password_confirm"
-            ],
             "properties": {
-                "name": {
-                    "type": "string"
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {}
                 },
-                "password": {
-                    "type": "string",
-                    "minLength": 8
-                },
-                "password_confirm": {
-                    "type": "string",
-                    "minLength": 8
+                "success": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authrization",
+            "in": "header"
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "1.0.0",
 	Host:             "",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Muerta API",
-	Description:      "API for Muerta",
+	Description:      "Web API to control the shelf life of products using computer vision",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

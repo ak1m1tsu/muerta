@@ -1,6 +1,8 @@
 package user
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
@@ -118,6 +120,147 @@ func (h *UserHanlder) Restore(ctx *fiber.Ctx) error {
 	if err := h.svc.RestoreUser(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrInternalServerError
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+	})
+}
+
+func (h *UserHanlder) FindSettings(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusBadRequest).
+			SendString("User not Found")
+	}
+	result, err := h.svc.FindSettings(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			SendString("Bad Gateway")
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"settings": result},
+	})
+}
+func (h *UserHanlder) UpdateSetting(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusNotFound).
+			SendString("User not Found")
+	}
+	var payload *dto.UpdateUserSettingDTO
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusBadRequest).
+			SendString("Bad payload provided")
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return ctx.Status(http.StatusBadRequest).
+			SendString("Validation error")
+	}
+	result, err := h.svc.UpdateSetting(ctx.Context(), id, payload)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			SendString("Bad Gateway")
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"setting": result},
+	})
+}
+func (h *UserHanlder) FindRoles(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusBadRequest).
+			SendString("User not Found")
+	}
+	result, err := h.svc.FindRoles(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			SendString("Bad Gateway")
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"roles": result},
+	})
+}
+func (h *UserHanlder) FindStorages(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusNotFound).
+			SendString("User not Found")
+	}
+	result, err := h.svc.FindStorages(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			SendString("Bad Gateway")
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"storages": result},
+	})
+}
+func (h *UserHanlder) CreateStorage(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusNotFound).
+			SendString("User not Found")
+	}
+	var payload *dto.UserStorageDTO
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusBadRequest).
+			SendString("Bad payload provided")
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return ctx.Status(http.StatusBadRequest).
+			SendString(errs.Error())
+	}
+	result, err := h.svc.CreateStorage(ctx.Context(), id, payload)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			SendString("Bad Gateway")
+	}
+	return ctx.JSON(fiber.Map{
+		"success": true,
+		"data":    fiber.Map{"storage": result},
+	})
+}
+func (h *UserHanlder) DeleteStorage(ctx *fiber.Ctx) error {
+	id, err := common.GetIdByFiberCtx(ctx)
+	if err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusNotFound).
+			SendString("User not Found")
+	}
+	var payload *dto.UserStorageDTO
+	if err := ctx.BodyParser(&payload); err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusBadRequest).
+			SendString("Bad payload provided")
+	}
+	if errs := validator.Validate(payload); errs != nil {
+		h.log.ValidationError(ctx, errs)
+		return ctx.Status(http.StatusBadRequest).
+			SendString(errs.Error())
+	}
+	err = h.svc.DeleteStorage(ctx.Context(), id, payload)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			SendString("Bad Gateway")
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
