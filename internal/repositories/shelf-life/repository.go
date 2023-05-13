@@ -26,12 +26,12 @@ func (r *shelfLifeRepository) Create(ctx context.Context, model models.ShelfLife
 	var (
 		query = `
 			INSERT INTO shelf_lives
-				(id, id_product, id_storage, id_measure, quantity, purchase_date, end_date)
+				(id, id_product, id_storage, id_measure, id_user, quantity, purchase_date, end_date)
 			VALUES
-				($1, $2, $3, $4, $5, $6, $7)
+				($1, $2, $3, $4, $5, $6, $7, $8)
 		`
 	)
-	if _, err := r.client.Exec(ctx, query, model.ID, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate); err != nil {
+	if _, err := r.client.Exec(ctx, query, model.ID, model.Product.ID, model.Storage.ID, model.Measure.ID, model.User.ID, model.Quantity, model.PurchaseDate, model.EndDate); err != nil {
 		return fmt.Errorf("failed to create shelf life: %w", err)
 	}
 	return nil

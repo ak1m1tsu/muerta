@@ -7,13 +7,15 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/repositories/role"
 	"github.com/romankravchuk/muerta/internal/repositories/user"
 	"github.com/romankravchuk/muerta/internal/services/auth"
 )
 
 func NewRouter(cfg *config.Config, client repositories.PostgresClient, logger *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
-	repo := user.New(client)
-	svc := auth.New(cfg, repo)
+	userRepo := user.New(client)
+	roleRepo := role.New(client)
+	svc := auth.New(cfg, userRepo, roleRepo)
 	r := fiber.New()
 	h := New(cfg, svc, logger)
 	r.Post("/sign-up", h.SignUp)

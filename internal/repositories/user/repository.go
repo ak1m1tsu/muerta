@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -26,10 +25,210 @@ type UserRepositorer interface {
 	DeleteStorage(ctx context.Context, id int, entity models.Storage) error
 	CreateStorage(ctx context.Context, id int, entity models.Storage) (models.Storage, error)
 	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
+	FindShelfLives(ctx context.Context, userId int) ([]models.ShelfLife, error)
+	CreateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error)
+	FindShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error)
+	UpdateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error)
+	DeleteShelfLife(ctx context.Context, userId int, shelfLifeId int) error
+	RestoreShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error)
 }
 
 type userRepository struct {
 	client repositories.PostgresClient
+}
+
+func New(client repositories.PostgresClient) UserRepositorer {
+	return &userRepository{client: client}
+}
+
+// CreateShelfLife implements UserRepositorer
+func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO shelf_lives (id_user, id_product, id_storage, id_measure, quantity, purchase_date, end_date)
+				VALUES ($1, $2, $3, $4, $5, $6, $7)
+				RETURNING id, id_product, id_storage, id_measure, quantity, purchase_date, end_date
+			)
+			SELECT 
+				i.id, p.name, s.name, m.name
+			FROM inserted i
+			JOIN products p ON i.id_product = p.id
+			JOIN storages s ON i.id_storage = s.id
+			JOIN measures m ON i.id_measure = m.id
+			LIMIT 1
+		`
+	)
+	err := r.client.QueryRow(ctx, query, userId, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate).
+		Scan(&model.ID, &model.Product.Name, &model.Storage.Name, &model.Measure.Name)
+	if err != nil {
+		return models.ShelfLife{}, fmt.Errorf("failed to create shelf life: %w", err)
+	}
+	return model, nil
+}
+
+// DeleteShelfLife implements UserRepositorer
+func (r *userRepository) DeleteShelfLife(ctx context.Context, userId int, shelfLifeId int) error {
+	var (
+		query = `
+			UPDATE shelf_lives
+			SET deleted_at = NOW(),
+				updated_at = NOW()
+			WHERE id_user = $1 AND id = $2
+		`
+	)
+	if _, err := r.client.Exec(ctx, query, userId, shelfLifeId); err != nil {
+		return fmt.Errorf("failed to delete shelf life: %w", err)
+	}
+	return nil
+}
+
+// FindShelfLife implements UserRepositorer
+func (r *userRepository) FindShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error) {
+	var (
+		query = `
+			SELECT 
+				sl.id, sl.id_product, sl.id_storage, sl.id_measure, 
+				sl.quantity, sl.purchase_date, sl.end_date,
+				p.name, s.name, m.name
+			FROM shelf_lives sl
+			JOIN products p ON sl.id_product = p.id
+			JOIN storages s ON sl.id_storage = s.id
+			JOIN measures m ON sl.id_measure = m.id
+			WHERE sl.id_user = $1 AND sl.id = $2
+			LIMIT 1
+		`
+		model models.ShelfLife
+	)
+	if err := r.client.QueryRow(ctx, query, userId, shelfLifeId).Scan(
+		&model.ID, &model.Product.ID, &model.Storage.ID,
+		&model.Measure.ID, &model.Quantity, &model.PurchaseDate,
+		&model.EndDate, &model.Product.Name, &model.Storage.Name,
+		&model.Measure.Name,
+	); err != nil {
+		return models.ShelfLife{}, fmt.Errorf("failed to find shelf life: %w", err)
+	}
+	return model, nil
+}
+
+// FindShelfLives implements UserRepositorer
+func (r *userRepository) FindShelfLives(ctx context.Context, userId int) ([]models.ShelfLife, error) {
+	var (
+		query = `
+			SELECT 
+				sl.id, sl.id_product, sl.id_storage, sl.id_measure, 
+				sl.quantity, sl.purchase_date, sl.end_date,
+				p.name, s.name, m.name
+			FROM shelf_lives sl
+			JOIN products p ON sl.id_product = p.id
+			JOIN storages s ON sl.id_storage = s.id
+			JOIN measures m ON sl.id_measure = m.id
+			WHERE sl.id_user = $1 AND sl.deleted_at IS NULL
+			ORDER BY sl.end_date DESC
+		`
+		entities []models.ShelfLife
+	)
+	rows, err := r.client.Query(ctx, query, userId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query shelf lives: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var entity models.ShelfLife
+		if err := rows.Scan(
+			&entity.ID, &entity.Product.ID, &entity.Storage.ID, &entity.Measure.ID,
+			&entity.Quantity, &entity.PurchaseDate,
+			&entity.EndDate, &entity.Product.Name, &entity.Storage.Name,
+			&entity.Measure.Name,
+		); err != nil {
+			return nil, fmt.Errorf("failed to scan shelf life: %w", err)
+		}
+		entities = append(entities, entity)
+	}
+	return entities, nil
+}
+
+// RestoreShelfLife implements UserRepositorer
+func (r *userRepository) RestoreShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error) {
+	var (
+		query = `
+			WITH updated AS (
+				UPDATE shelf_lives
+				SET deleted_at = NULL,
+					updated_at = NOW()
+				WHERE id_user = $1 AND id = $2
+				RETURNING id, id_product, id_storage, id_measure, quantity, purchase_date, end_date
+			)
+			SELECT 
+				u.id, u.id_product, u.id_storage, u.id_measure, 
+				u.quantity, u.purchase_date, u.end_date,
+				p.name, s.name, m.name
+			FROM updated u
+			JOIN products p ON u.id_product = p.id
+			JOIN storages s ON u.id_storage = s.id
+			JOIN measures m ON u.id_measure = m.id
+		`
+		model models.ShelfLife
+	)
+	if err := r.client.QueryRow(ctx, query, userId, shelfLifeId).
+		Scan(
+			&model.ID,
+			&model.Product.ID,
+			&model.Storage.ID,
+			&model.Measure.ID,
+			&model.Quantity,
+			&model.PurchaseDate,
+			&model.EndDate,
+			&model.Product.Name,
+			&model.Storage.Name,
+			&model.Measure.Name,
+		); err != nil {
+		return models.ShelfLife{}, fmt.Errorf("failed to scan shelf life: %w", err)
+	}
+	return model, nil
+}
+
+// UpdateShelfLife implements UserRepositorer
+func (r *userRepository) UpdateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error) {
+	var (
+		query = `
+			WITH updated AS (
+				UPDATE shelf_lives
+				SET id_product = $3,
+					id_storage = $4,
+					id_measure = $5,
+					quantity = $6,
+					purchase_date = $7,
+					end_date = $8,
+					updated_at = NOW()
+				WHERE id_user = $1 AND id = $2
+				RETURNING id_product, id_storage, id_measure, quantity, purchase_date, end_date
+			)
+			SELECT 
+				u.id_product, u.id_storage, u.id_measure, 
+				u.quantity, u.purchase_date, u.end_date,
+				p.name, s.name, m.name
+			FROM updated u
+			JOIN products p ON u.id_product = p.id
+			JOIN storages s ON u.id_storage = s.id
+			JOIN measures m ON u.id_measure = m.id
+		`
+	)
+	if err := r.client.QueryRow(ctx, query, userId, model.ID, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate).
+		Scan(
+			&model.Product.ID,
+			&model.Storage.ID,
+			&model.Measure.ID,
+			&model.Quantity,
+			&model.PurchaseDate,
+			&model.EndDate,
+			&model.Product.Name,
+			&model.Storage.Name,
+			&model.Measure.Name,
+		); err != nil {
+		return models.ShelfLife{}, fmt.Errorf("failed to scan shelf life: %w", err)
+	}
+	return model, nil
 }
 
 // CreateStorage implements UserRepositorer
@@ -191,30 +390,12 @@ func (r *userRepository) Exists(ctx context.Context, name string) bool {
 	return false
 }
 
-func New(client repositories.PostgresClient) UserRepositorer {
-	return &userRepository{client: client}
-}
-
 func (repo *userRepository) FindByID(ctx context.Context, id int) (models.User, error) {
 	var (
 		query = `
 			SELECT id, name, created_at
 			FROM users
 			WHERE id = $1
-			LIMIT 1
-		`
-		querySettings = `
-			SELECT s.name, us.value, sc.name FROM settings s
-			JOIN users_settings us ON s.id = us.id_setting
-			JOIN settings_categories sc ON s.id_category = sc.id
-			WHERE us.id_user = $1
-		`
-		queryRoles = `
-			SELECT r.id, r.name
-			FROM roles r
-			JOIN users_roles ur ON ur.id_role = r.id
-			JOIN users u ON u.id = ur.id_user
-			WHERE ur.id_user = $1
 			LIMIT 1
 		`
 		user = models.User{
@@ -224,30 +405,6 @@ func (repo *userRepository) FindByID(ctx context.Context, id int) (models.User, 
 	)
 	if err := repo.client.QueryRow(ctx, query, id).Scan(&user.ID, &user.Name, &user.CreatedAt); err != nil {
 		return models.User{}, fmt.Errorf("failed to query user: %w", err)
-	}
-	rows, err := repo.client.Query(ctx, querySettings, id)
-	if err != nil {
-		return models.User{}, fmt.Errorf("failed to query settings: %w", err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		setting := models.Setting{Category: models.SettingCategory{}}
-		if err := rows.Scan(&setting.Name, &setting.Value, &setting.Category.Name); err != nil {
-			return models.User{}, fmt.Errorf("failed to scan setting: %w", err)
-		}
-		user.Settings = append(user.Settings, setting)
-	}
-	rows, err = repo.client.Query(ctx, queryRoles, user.ID)
-	if err != nil {
-		return models.User{}, fmt.Errorf("failed to query roles: %w", err)
-	}
-	defer rows.Close()
-	for rows.Next() {
-		role := models.Role{}
-		if err := rows.Scan(&role.ID, &role.Name); err != nil {
-			return models.User{}, fmt.Errorf("failed to query role: %w", err)
-		}
-		user.Roles = append(user.Roles, role)
 	}
 	return user, nil
 }
@@ -336,7 +493,6 @@ func (repo *userRepository) FindPassword(ctx context.Context, passhash string) (
 func (repo *userRepository) Create(ctx context.Context, user models.User) error {
 	var (
 		err   error
-		buf   strings.Builder
 		query = `
 			INSERT INTO users 
 				(name, salt)
@@ -349,16 +505,6 @@ func (repo *userRepository) Create(ctx context.Context, user models.User) error 
 			VALUES ($1)
 		`
 	)
-	for i, s := range user.Settings {
-		if i == len(user.Settings)-1 {
-			_, err = buf.WriteString(fmt.Sprintf("(%d, %d, '%s')", user.ID, s.ID, s.Value))
-		} else {
-			_, err = buf.WriteString(fmt.Sprintf("(%d, %d, '%s'), ", user.ID, s.ID, s.Value))
-		}
-		if err != nil {
-			return fmt.Errorf("failed to write settings: %w", err)
-		}
-	}
 	tx, err := repo.client.Begin(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -378,6 +524,15 @@ func (repo *userRepository) Create(ctx context.Context, user models.User) error 
 		}),
 	); err != nil {
 		return fmt.Errorf("failed to copy settings: %w", err)
+	}
+	if _, err := tx.CopyFrom(ctx,
+		pgx.Identifier{"users_roles"},
+		[]string{"id_user", "id_role"},
+		pgx.CopyFromSlice(len(user.Roles), func(i int) ([]any, error) {
+			return []any{user.ID, user.Roles[i].ID}, nil
+		}),
+	); err != nil {
+		return fmt.Errorf("failed to copy roles: %w", err)
 	}
 	if err := tx.Commit(ctx); err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)

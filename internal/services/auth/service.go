@@ -11,6 +11,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/jwt"
 	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/repositories/role"
 	"github.com/romankravchuk/muerta/internal/repositories/user"
 )
 
@@ -27,9 +28,10 @@ type AuthServicer interface {
 }
 
 type AuthService struct {
-	repo    user.UserRepositorer
-	refresh JWTCredential
-	access  JWTCredential
+	userRepository user.UserRepositorer
+	roleRepository role.RoleRepositorer
+	refresh        JWTCredential
+	access         JWTCredential
 }
 
 // RefreshAccessToken implements AuthServicer
@@ -47,7 +49,7 @@ func (s *AuthService) RefreshAccessToken(refreshToken string) (*dto.TokenDetails
 
 // LoginUser implements AuthServicer
 func (s *AuthService) LoginUser(ctx context.Context, payload *dto.LoginDTO) (*dto.TokenDetails, *dto.TokenDetails, error) {
-	model, err := s.repo.FindByName(ctx, payload.Name)
+	model, err := s.userRepository.FindByName(ctx, payload.Name)
 	if err != nil {
 		return nil, nil, fmt.Errorf("user not found: %w", err)
 	}
@@ -76,27 +78,33 @@ func (s *AuthService) LoginUser(ctx context.Context, payload *dto.LoginDTO) (*dt
 
 // SignUpUser implements AuthServicer
 func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUpDTO) error {
-	if _, err := s.repo.FindByName(ctx, payload.Name); err == nil {
+	if _, err := s.userRepository.FindByName(ctx, payload.Name); err == nil {
 		return fmt.Errorf("user already exists")
+	}
+	roles, err := s.roleRepository.FindMany(ctx, 1, 0, "user")
+	if err != nil {
+		return fmt.Errorf("failed to find roles: %w", err)
 	}
 	salt := uuid.New().String()
 	hash := auth.GenerateHashFromPassword(payload.Password, salt)
 	model := models.User{
-		Name: payload.Name,
-		Salt: salt,
+		Name:  payload.Name,
+		Salt:  salt,
+		Roles: roles,
 		Password: models.Password{
 			Hash: hash,
 		},
 	}
-	if err := s.repo.Create(ctx, model); err != nil {
+	if err := s.userRepository.Create(ctx, model); err != nil {
 		return err
 	}
 	return nil
 }
 
-func New(cfg *config.Config, repo user.UserRepositorer) AuthServicer {
+func New(cfg *config.Config, repo user.UserRepositorer, roleRepository role.RoleRepositorer) AuthServicer {
 	return &AuthService{
-		repo: repo,
+		userRepository: repo,
+		roleRepository: roleRepository,
 		refresh: JWTCredential{
 			PrivateKey: cfg.RefreshTokenPrivateKey,
 			PublicKey:  cfg.RefreshTokenPublicKey,

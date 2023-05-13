@@ -68,11 +68,15 @@ func UserModelsToFindDTOs(models []models.User) []dto.FindUserDTO {
 
 func CreateUserDTOToModel(dto *dto.CreateUserDTO) models.User {
 	settings := make([]models.Setting, len(dto.Settings))
+	roles := make([]models.Role, len(dto.Roles))
 	for i, setting := range dto.Settings {
 		settings[i] = models.Setting{
 			ID:    setting.ID,
 			Value: setting.Value,
 		}
+	}
+	for i, role := range dto.Roles {
+		roles[i] = models.Role{ID: role.ID}
 	}
 	salt := uuid.New().String()
 	return models.User{
@@ -80,9 +84,8 @@ func CreateUserDTOToModel(dto *dto.CreateUserDTO) models.User {
 		Name:     dto.Name,
 		Salt:     salt,
 		Settings: settings,
-		Password: models.Password{
-			Hash: auth.GenerateHashFromPassword(dto.Password, salt),
-		},
+		Roles:    roles,
+		Password: models.Password{Hash: auth.GenerateHashFromPassword(dto.Password, salt)},
 	}
 }
 
@@ -290,6 +293,9 @@ func CreateShelfLifeDTOToModel(dto *dto.CreateShelfLifeDTO) models.ShelfLife {
 		},
 		Measure: models.Measure{
 			ID: dto.MeasureID,
+		},
+		User: models.User{
+			ID: dto.UserID,
 		},
 		Quantity:     dto.Quantity,
 		PurchaseDate: dto.PurchaseDate,

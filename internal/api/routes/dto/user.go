@@ -20,10 +20,20 @@ type UpdateUserDTO struct {
 }
 
 type CreateUserDTO struct {
-	ID       int                `json:"_"`
-	Name     string             `json:"name" validate:"required"`
-	Password string             `json:"password" validate:"required,min=8"`
-	Settings []CreateSettingDTO `json:"settings"`
+	ID       int              `json:"_"`
+	Name     string           `json:"name" validate:"required"`
+	Password string           `json:"password" validate:"required,min=8"`
+	Settings []UserSettingDTO `json:"settings"`
+	Roles    []UserRoleDTO    `json:"roles"`
+}
+
+type UserSettingDTO struct {
+	ID    int    `json:"id"`
+	Value string `json:"value"`
+}
+
+type UserRoleDTO struct {
+	ID int `json:"id"`
 }
 
 type CreateSettingDTO struct {
@@ -93,4 +103,14 @@ func (f *SettingFilterDTO) SetOffset(offset int) {
 
 type UserStorageDTO struct {
 	StorageID int `json:"id_storage" validate:"gt=0"`
+}
+
+type UserShelfLifeDTO struct {
+	ShelfLifeID  int        `json:"id_shelf_life" validate:"gt=0"`
+	ProductID    int        `json:"id_product"`
+	StorageID    int        `json:"id_storage"`
+	MeasureID    int        `json:"id_measure"`
+	Quantity     int        `json:"quantity"`
+	PurchaseDate *time.Time `json:"purchase_date"`
+	EndDate      *time.Time `json:"end_date"`
 }
