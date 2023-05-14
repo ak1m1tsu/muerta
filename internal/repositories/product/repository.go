@@ -39,6 +39,7 @@ func (r *productRepository) CreateTip(ctx context.Context, productID int, tipID 
 				RETURNING id_product, id_tip
 			)
 			SELECT t.id, t.description
+			FROM tips t
 			JOIN inserted i ON i.id_tip = t.id
 			WHERE t.id = $2
 		`
@@ -216,7 +217,7 @@ func (repo *productRepository) FindMany(ctx context.Context, limit, offset int, 
 		query = `
 			SELECT id, name
 			FROM products
-			WHERE name ILIKE $3
+			WHERE name ILIKE $3 AND deleted_at IS NULL
 			ORDER BY name ASC
 			LIMIT $1
 			OFFSET $2

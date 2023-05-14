@@ -15,7 +15,7 @@ type CreateTipDTO struct {
 
 type TipFilterDTO struct {
 	Paging
-	Description string `query:"description" validate:"omitempty,gte=1,alphaunicode"`
+	Description string `query:"description" validate:"omitempty,gte=1,notblank"`
 }
 
 func (f *TipFilterDTO) GetLimit() int {

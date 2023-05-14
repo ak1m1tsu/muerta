@@ -282,10 +282,11 @@ func (r *recipesRepository) FindMany(ctx context.Context, limit, offset int, nam
 }
 
 func (r *recipesRepository) Create(ctx context.Context, recipe *models.Recipe) error {
+	fmt.Printf("%#v\n",recipe)
 	var (
 		query = `
 			INSERT INTO recipes
-				(name, description, id_user)
+				(id_user, name, description)
 			VALUES
 				($1, $2, $3)
 			RETURNING id
@@ -296,7 +297,7 @@ func (r *recipesRepository) Create(ctx context.Context, recipe *models.Recipe) e
 		return err
 	}
 	defer tx.Rollback(ctx)
-	if err := tx.QueryRow(ctx, query, recipe.Name, recipe.Description, recipe.User.ID).Scan(&recipe.ID); err != nil {
+	if err := tx.QueryRow(ctx, query, recipe.User.ID, recipe.Name, recipe.Description).Scan(&recipe.ID); err != nil {
 		return fmt.Errorf("failed to create recipe: %w", err)
 	}
 	if _, err = tx.CopyFrom(ctx,

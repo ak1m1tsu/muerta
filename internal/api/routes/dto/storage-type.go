@@ -7,7 +7,7 @@ type FindStorageTypeDTO struct {
 
 type StorageTypeFilterDTO struct {
 	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
+	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
 }
 
 func (f *StorageTypeFilterDTO) GetLimit() int {
@@ -27,9 +27,9 @@ func (f *StorageTypeFilterDTO) SetOffset(offset int) {
 }
 
 type UpdateStorageTypeDTO struct {
-	Name string `json:"name" validate:"required,gte=3,alphanumunicode"`
+	Name string `json:"name" validate:"required,gte=3,notblank"`
 }
 
 type CreateStorageTypeDTO struct {
-	Name string `json:"name" validate:"required,gte=3,alphanumunicode"`
+	Name string `json:"name" validate:"required,gte=3,notblank"`
 }

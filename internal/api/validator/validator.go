@@ -2,13 +2,27 @@ package validator
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog"
 )
 
-var validate = validator.New()
+var validate *validator.Validate
+
+func notBlank(fl validator.FieldLevel) bool {
+	ok, err := regexp.Match(`^[a-zA-Zа-яА-Я][a-zA-Zа-яА-Я\s]+$`, []byte(fl.Field().String()))
+	if !ok || err != nil {
+		return false
+	}
+	return true
+}
+
+func init() {
+	validate = validator.New()
+	validate.RegisterValidation("notblank", notBlank)
+}
 
 const (
 	KeyErrResponses string = "errorResponses"
