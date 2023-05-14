@@ -282,7 +282,6 @@ func (r *recipesRepository) FindMany(ctx context.Context, limit, offset int, nam
 }
 
 func (r *recipesRepository) Create(ctx context.Context, recipe *models.Recipe) error {
-	fmt.Printf("%#v\n", recipe)
 	var (
 		query = `
 			INSERT INTO recipes
