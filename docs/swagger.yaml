@@ -1,12 +1,153 @@
 basePath: /api/v1
 definitions:
-  dto.Response:
+  dto.CreateMeasureDTO:
+    properties:
+      name:
+        example: кг
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateProductCategoryDTO:
+    properties:
+      name:
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateRecipeDTO:
+    properties:
+      description:
+        maxLength: 200
+        type: string
+      id_user:
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      steps:
+        items:
+          $ref: '#/definitions/dto.RecipeStepDTO'
+        type: array
+    required:
+    - id_user
+    - name
+    - steps
+    type: object
+  dto.CreateRecipeStepDTO:
+    properties:
+      place:
+        type: integer
+    required:
+    - place
+    type: object
+  dto.DeleteIngredientDTO:
+    properties:
+      id_product:
+        type: integer
+    required:
+    - id_product
+    type: object
+  dto.LoginDTO:
+    properties:
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+    required:
+    - name
+    - password
+    type: object
+  dto.RecipeStepDTO:
+    properties:
+      id:
+        type: integer
+      place:
+        type: integer
+    required:
+    - id
+    - place
+    type: object
+  dto.SignUpDTO:
+    properties:
+      name:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      password_confirm:
+        minLength: 8
+        type: string
+    required:
+    - name
+    - password
+    - password_confirm
+    type: object
+  dto.UpdateIngredientDTO:
+    properties:
+      id_measure:
+        type: integer
+      id_product:
+        type: integer
+      quantity:
+        type: integer
+    type: object
+  dto.UpdateMeasureDTO:
+    properties:
+      name:
+        example: л
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateProductCategoryDTO:
+    properties:
+      name:
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateRecipeDTO:
+    properties:
+      description:
+        maxLength: 200
+        type: string
+      name:
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  handlers.apiResponse:
     properties:
       data:
-        additionalProperties: {}
+        additionalProperties:
+          type: string
+        example:
+          key: value
+          key2: value
         type: object
       success:
-        example: true
+        type: boolean
+    type: object
+  handlers.errorResponse:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        example:
+          key: value
+          key2: value
+        type: object
+      error:
+        example: error message
+        type: string
+      success:
         type: boolean
     type: object
 info:
@@ -16,20 +157,819 @@ info:
   title: Muerta API
   version: 1.0.0
 paths:
-  /auth/sign-up:
+  /auth/login:
     post:
       consumes:
       - application/json
+      description: Login handles the user login request and returns access and refresh
+        tokens.
+      parameters:
+      - description: User credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginDTO'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.Response'
-      summary: Sign Up user
+            $ref: '#/definitions/handlers.apiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Login handles the user login request and returns access and refresh
+        tokens.
       tags:
-      - auth
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidates access and refresh tokens, logs out user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+      summary: Logout user
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the access token using a refresh token cookie.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: sign up a new user with the given information
+      parameters:
+      - description: the sign up information
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignUpDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Sign up a new user
+      tags:
+      - Authentication
+  /categories:
+    get:
+      consumes:
+      - application/json
+      description: Find product categories with optional filters
+      operationId: find-product-categories
+      parameters:
+      - example: 10
+        in: query
+        minimum: 0
+        name: limit
+        type: integer
+      - in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - description: Limit the number of results returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find product categories
+      tags:
+      - Product Categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new product category
+      parameters:
+      - description: Payload for creating product category
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProductCategoryDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Create product category
+      tags:
+      - Product Categories
+  /categories/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a product category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Delete a product category
+      tags:
+      - Product Categories
+    get:
+      consumes:
+      - application/json
+      description: Get a product category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find a product category by ID
+      tags:
+      - Product Categories
+    patch:
+      description: Restores a previously deleted product category with the given ID
+      parameters:
+      - description: Product category ID to be restored
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Restore a deleted product category
+      tags:
+      - Product Categories
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product category by providing the ID and updated
+        fields in the request body
+      parameters:
+      - description: Product Category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Product Category Fields
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProductCategoryDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Update an existing product category by ID
+      tags:
+      - Product Categories
+  /measures:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of measures and their count based on the given filter.
+      operationId: find-measures
+      parameters:
+      - example: 10
+        in: query
+        minimum: 0
+        name: limit
+        type: integer
+      - example: кг
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find measures
+      tags:
+      - Measures
+    post:
+      consumes:
+      - application/json
+      description: Create a new measure record based on the given payload.
+      parameters:
+      - description: Payload of the measure record to create
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateMeasureDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Create a new measure record
+      tags:
+      - Measures
+  /measures/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a measure by ID.
+      parameters:
+      - description: Measure ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Delete a measure
+      tags:
+      - Measures
+    get:
+      consumes:
+      - application/json
+      description: Find a measure by ID
+      parameters:
+      - description: Measure ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find a measure by ID
+      tags:
+      - Measures
+    put:
+      consumes:
+      - application/json
+      description: Update a measure with the given ID
+      parameters:
+      - description: Measure ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Measure payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMeasureDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Update a measure
+      tags:
+      - Measures
+  /recipes:
+    get:
+      consumes:
+      - application/json
+      description: Find recipes based on the provided filter
+      parameters:
+      - description: Filter recipes by name, category, or ingredients
+        in: query
+        name: filter
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find recipes
+      tags:
+      - Recipes
+    post:
+      consumes:
+      - application/json
+      description: Creates a new recipe with the provided data
+      parameters:
+      - description: Recipe data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRecipeDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Create a new recipe
+      tags:
+      - Recipes
+  /recipes/{recipe_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a recipe by ID
+      operationId: delete-recipe-by-id
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Delete a recipe
+      tags:
+      - Recipes
+    get:
+      consumes:
+      - application/json
+      description: Find a recipe by its ID
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find recipe by ID
+      tags:
+      - Recipes
+    put:
+      consumes:
+      - application/json
+      description: Update a recipe by its ID.
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Recipe data to update
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateRecipeDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Update a recipe
+      tags:
+      - Recipes
+  /recipes/{recipe_id}/ingredients:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an ingredient from a recipe
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Delete ingredient payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteIngredientDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Delete an ingredient from a recipe
+      tags:
+      - Recipes
+    get:
+      description: Find recipe ingredients by recipe ID
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find recipe ingredients by recipe ID
+      tags:
+      - Recipes
+    put:
+      consumes:
+      - application/json
+      description: Update an ingredient of a recipe
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Update ingredient payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateIngredientDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Update an ingredient of a recipe
+      tags:
+      - Recipes
+  /recipes/{recipe_id}/restore:
+    patch:
+      consumes:
+      - application/json
+      description: Restores a deleted recipe by ID
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Restore a deleted recipe by ID
+      tags:
+      - Recipes
+  /recipes/{recipe_id}/steps:
+    get:
+      consumes:
+      - application/json
+      description: Find all steps for a recipe by recipe ID
+      operationId: find-recipe-steps
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Find all recipe steps
+      tags:
+      - Recipes
+  /recipes/{recipe_id}/steps/{step_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the specified recipe step of a recipe.
+      parameters:
+      - description: Recipe ID.
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Step ID.
+        in: path
+        name: step_id
+        required: true
+        type: integer
+      - description: Step place.
+        in: body
+        name: place
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Delete a recipe step.
+      tags:
+      - Recipes
+    post:
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Step ID
+        in: path
+        name: step_id
+        required: true
+        type: integer
+      - description: Request body
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRecipeStepDTO'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.apiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.errorResponse'
+      summary: Create a recipe step
+      tags:
+      - Recipes
 securityDefinitions:
   BearerAuth:
     in: header

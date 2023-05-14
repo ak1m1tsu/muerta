@@ -11,7 +11,7 @@ import (
 type StepRepositorer interface {
 	repositories.Repository
 	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Step, error)
-	Create(ctx context.Context, model models.Step) error
+	Create(ctx context.Context, model *models.Step) error
 	Update(ctx context.Context, id int, model models.Step) error
 	FindByID(ctx context.Context, id int) (models.Step, error)
 	Delete(ctx context.Context, id int) error
@@ -36,12 +36,13 @@ func (r *stepRepository) Count(ctx context.Context) (int, error) {
 }
 
 // Create implements StepRepositorer
-func (r *stepRepository) Create(ctx context.Context, model models.Step) error {
+func (r *stepRepository) Create(ctx context.Context, model *models.Step) error {
 	var query = `
 		INSERT INTO steps (name)
 		VALUES ($1)
+		RETURNING id
 	`
-	if _, err := r.client.Exec(ctx, query, model.Name); err != nil {
+	if err := r.client.QueryRow(ctx, query, model.Name).Scan(&model.ID); err != nil {
 		return fmt.Errorf("failed to create step: %w", err)
 	}
 	return nil

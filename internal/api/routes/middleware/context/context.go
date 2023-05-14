@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 )
 
@@ -15,7 +16,7 @@ func New(log *log.Logger, key idKey) func(ctx *fiber.Ctx) error {
 		if err != nil {
 			log.ClientError(ctx, err)
 			return ctx.Status(http.StatusNotFound).
-				SendString("Not Found")
+				JSON(handlers.ErrorResponse(fiber.ErrNotFound))
 		}
 		ctx.Locals(key, id)
 		return ctx.Next()

@@ -18,12 +18,74 @@ type ProductRepositorer interface {
 	Restore(ctx context.Context, id int) error
 	FindCategories(ctx context.Context, id int) ([]models.ProductCategory, error)
 	FindRecipes(ctx context.Context, id int) ([]models.Recipe, error)
-	AddProductCategory(ctx context.Context, productID, categoryID int) (models.ProductCategory, error)
-	RemoveProductCategory(ctx context.Context, productID, categoryID int) error
+	CreateCategory(ctx context.Context, productID, categoryID int) (models.ProductCategory, error)
+	DeleteCategory(ctx context.Context, productID, categoryID int) error
+	FindTips(ctx context.Context, id int) ([]models.Tip, error)
+	CreateTip(ctx context.Context, productID, tipID int) (models.Tip, error)
+	DeleteTip(ctx context.Context, productID, tipID int) error
 }
 
 type productRepository struct {
 	client repositories.PostgresClient
+}
+
+// CreateTip implements ProductRepositorer
+func (r *productRepository) CreateTip(ctx context.Context, productID int, tipID int) (models.Tip, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO products_tips (id_product, id_tip)
+				VALUES ($1, $2)
+				RETURNING id_product, id_tip
+			)
+			SELECT t.id, t.description
+			JOIN inserted i ON i.id_tip = t.id
+			WHERE t.id = $2
+		`
+		model models.Tip
+	)
+	if err := r.client.QueryRow(ctx, query, productID, tipID).Scan(&model.ID, &model.Description); err != nil {
+		return models.Tip{}, fmt.Errorf("failed to add product tip: %w", err)
+	}
+	return model, nil
+}
+
+// DeleteTip implements ProductRepositorer
+func (r *productRepository) DeleteTip(ctx context.Context, productID int, tipID int) error {
+	var query = `
+		DELETE FROM products_tips
+		WHERE id_product = $1 AND id_tip = $2
+	`
+	if _, err := r.client.Exec(ctx, query, productID, tipID); err != nil {
+		return fmt.Errorf("failed to remove product tip: %w", err)
+	}
+	return nil
+}
+
+// FindTips implements ProductRepositorer
+func (r *productRepository) FindTips(ctx context.Context, id int) ([]models.Tip, error) {
+	var (
+		query = `
+			SELECT t.id, t.description
+			FROM tips t
+			JOIN products_tips pt ON pt.id_tip = t.id
+			WHERE pt.id_product = $1
+		`
+		tips []models.Tip
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find tips: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tip models.Tip
+		if err := rows.Scan(&tip.ID, &tip.Description); err != nil {
+			return nil, fmt.Errorf("failed to scan tip: %w", err)
+		}
+		tips = append(tips, tip)
+	}
+	return tips, nil
 }
 
 // Count implements ProductRepositorer
@@ -40,8 +102,8 @@ func (r *productRepository) Count(ctx context.Context) (int, error) {
 	return count, nil
 }
 
-// AddProductCategory implements ProductRepositorer
-func (r *productRepository) AddProductCategory(ctx context.Context, productID int, categoryID int) (models.ProductCategory, error) {
+// CreateCategory implements ProductRepositorer
+func (r *productRepository) CreateCategory(ctx context.Context, productID int, categoryID int) (models.ProductCategory, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -63,8 +125,8 @@ func (r *productRepository) AddProductCategory(ctx context.Context, productID in
 	return result, nil
 }
 
-// RemoveProductCategory implements ProductRepositorer
-func (r *productRepository) RemoveProductCategory(ctx context.Context, productID int, categoryID int) error {
+// DeleteCategory implements ProductRepositorer
+func (r *productRepository) DeleteCategory(ctx context.Context, productID int, categoryID int) error {
 	var (
 		query = `
 			DELETE FROM products_categories

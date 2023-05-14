@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/repositories/errors"
 	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
 
@@ -50,7 +51,7 @@ func (r *userRepository) Count(ctx context.Context) (int, error) {
 		count int
 	)
 	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
-		return 0, fmt.Errorf("failed to count users: %w", err)
+		return 0, errors.ErrFailedToCountModels.With(err)
 	}
 	return count, nil
 }
@@ -78,7 +79,7 @@ func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model 
 	err := r.client.QueryRow(ctx, query, userId, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate).
 		Scan(&model.ID, &model.Product.Name, &model.Storage.Name, &model.Measure.Name)
 	if err != nil {
-		return models.ShelfLife{}, fmt.Errorf("failed to create shelf life: %w", err)
+		return models.ShelfLife{}, errors.ErrFailedToInsertShelfLife.With(err)
 	}
 	return model, nil
 }
@@ -94,7 +95,7 @@ func (r *userRepository) DeleteShelfLife(ctx context.Context, userId int, shelfL
 		`
 	)
 	if _, err := r.client.Exec(ctx, query, userId, shelfLifeId); err != nil {
-		return fmt.Errorf("failed to delete shelf life: %w", err)
+		return errors.ErrFailedToDeleteShelfLife.With(err)
 	}
 	return nil
 }
@@ -124,7 +125,7 @@ func (r *userRepository) FindShelfLife(ctx context.Context, userId int, shelfLif
 		&model.EndDate, &model.Product.Name, &model.Storage.Name,
 		&model.Measure.Name,
 	); err != nil {
-		return models.ShelfLife{}, fmt.Errorf("failed to find shelf life: %w", err)
+		return models.ShelfLife{}, errors.ErrFailedToSelectShelfLife.With(err)
 	}
 	return model, nil
 }
@@ -149,7 +150,7 @@ func (r *userRepository) FindShelfLives(ctx context.Context, userId int) ([]mode
 	)
 	rows, err := r.client.Query(ctx, query, userId)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query shelf lives: %w", err)
+		return nil, errors.ErrFailedToSelectShelfLives.With(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -462,7 +463,7 @@ func (repo *userRepository) FindByName(ctx context.Context, name string) (models
 		}
 	)
 	if err := repo.client.QueryRow(ctx, query, name).Scan(&user.ID, &user.Name, &user.Salt, &user.CreatedAt); err != nil {
-		return models.User{}, fmt.Errorf("failed to query user: %w", err)
+		return models.User{}, errors.ErrFailedToSelectUser.With(err)
 	}
 	rows, err := repo.client.Query(ctx, queryRoles, user.ID)
 	if err != nil {
@@ -493,13 +494,13 @@ func (repo *userRepository) FindMany(ctx context.Context, limit, offset int, nam
 	)
 	rows, err := repo.client.Query(ctx, query, "%"+name+"%", limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to query users: %w", err)
+		return nil, errors.ErrFailedToSelectUsers.With(err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		user := models.User{}
 		if err := rows.Scan(&user.ID, &user.Name, &user.CreatedAt); err != nil {
-			return nil, fmt.Errorf("failed to scan user: %w", err)
+			return nil, errors.ErrFailedToSelectUser.With(err)
 		}
 		users = append(users, user)
 	}
@@ -517,7 +518,7 @@ func (repo *userRepository) FindPassword(ctx context.Context, passhash string) (
 		password models.Password
 	)
 	if err := repo.client.QueryRow(ctx, query, passhash).Scan(&password.Hash); err != nil {
-		return models.Password{}, fmt.Errorf("failed to query password: %w", err)
+		return models.Password{}, errors.ErrFailedToSelectPassword.With(err)
 	}
 	return password, nil
 }
@@ -539,14 +540,14 @@ func (repo *userRepository) Create(ctx context.Context, user models.User) error 
 	)
 	tx, err := repo.client.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %w", err)
+		return errors.ErrFailedToBeginTransaction.With(err)
 	}
 	defer tx.Rollback(ctx)
 	if err := tx.QueryRow(ctx, query, user.Name, user.Salt).Scan(&user.ID); err != nil {
-		return fmt.Errorf("failed to insert user: %w", err)
+		return errors.ErrFailedToInsertUser.With(err)
 	}
 	if _, err := tx.Exec(ctx, queryPassword, user.Password.Hash); err != nil {
-		return fmt.Errorf("failed to insert password: %w", err)
+		return errors.ErrFailedToCreatePassword.With(err)
 	}
 	if _, err := tx.CopyFrom(ctx,
 		pgx.Identifier{"users_settings"},
@@ -555,7 +556,7 @@ func (repo *userRepository) Create(ctx context.Context, user models.User) error 
 			return []any{user.ID, user.Settings[i].ID, user.Settings[i].Value}, nil
 		}),
 	); err != nil {
-		return fmt.Errorf("failed to copy settings: %w", err)
+		return errors.ErrFailedToCoopyModels.With(err)
 	}
 	if _, err := tx.CopyFrom(ctx,
 		pgx.Identifier{"users_roles"},
@@ -564,10 +565,10 @@ func (repo *userRepository) Create(ctx context.Context, user models.User) error 
 			return []any{user.ID, user.Roles[i].ID}, nil
 		}),
 	); err != nil {
-		return fmt.Errorf("failed to copy roles: %w", err)
+		return errors.ErrFailedToCoopyModels.With(err)
 	}
 	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return errors.ErrFailedToCommitTransaction.With(err)
 	}
 	return nil
 }
@@ -582,7 +583,7 @@ func (repo *userRepository) Update(ctx context.Context, user models.User) error 
 		`
 	)
 	if _, err := repo.client.Exec(ctx, query, user.Name, user.ID); err != nil {
-		return fmt.Errorf("failed to update user: %w", err)
+		return errors.ErrFailedToUpdateUser.With(err)
 	}
 	return nil
 }
@@ -597,7 +598,7 @@ func (repo *userRepository) Delete(ctx context.Context, id int) error {
 		`
 	)
 	if _, err := repo.client.Exec(ctx, query, id); err != nil {
-		return err
+		return errors.ErrFailedToDeleteUser.With(err)
 	}
 	return nil
 }
@@ -612,7 +613,7 @@ func (repo *userRepository) Restore(ctx context.Context, id int) error {
 		`
 	)
 	if _, err := repo.client.Exec(ctx, query, id); err != nil {
-		return err
+		return errors.ErrFailedToRestoreUser.With(err)
 	}
 	return nil
 }

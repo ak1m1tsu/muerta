@@ -35,7 +35,7 @@ func (h *TipHandler) CreateTip(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.CreateTip(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -61,12 +61,12 @@ func (h *TipHandler) FindTips(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindTips(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"tips": result, "count": count},
@@ -86,7 +86,7 @@ func (h *TipHandler) UpdateTip(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.UpdateTip(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -95,7 +95,7 @@ func (h *TipHandler) DeleteTip(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	if err := h.svc.DeleteTip(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -104,7 +104,7 @@ func (h *TipHandler) RestoreTip(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	if err := h.svc.RestoreTip(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }

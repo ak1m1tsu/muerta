@@ -25,9 +25,9 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 		router.Patch("/", jware.DeserializeUser, handler.RestoreRecipe)
 		router.Route("/ingredients", func(router fiber.Router) {
 			router.Get("/", handler.FindRecipeIngredients)
-			router.Post("/", jware.DeserializeUser, handler.CreateRecipeIngredient)
-			router.Put("/", jware.DeserializeUser, handler.UpdateRecipeIngredient)
-			router.Delete("/", jware.DeserializeUser, handler.DeleteRecipeIngredient)
+			router.Post("/", jware.DeserializeUser, handler.CreateIngredient)
+			router.Put("/", jware.DeserializeUser, handler.UpdateIngredient)
+			router.Delete("/", jware.DeserializeUser, handler.DeleteIngredient)
 		})
 		router.Route("/steps", func(router fiber.Router) {
 			router.Get("/", handler.FindRecipeSteps)

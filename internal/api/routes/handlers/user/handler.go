@@ -43,12 +43,12 @@ func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindUsers(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"users": result, "count": count},
@@ -67,7 +67,7 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.CreateUser(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -84,7 +84,7 @@ func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.UpdateUser(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -93,7 +93,7 @@ func (h *UserHanlder) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	if err := h.svc.DeleteUser(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -102,7 +102,7 @@ func (h *UserHanlder) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	if err := h.svc.RestoreUser(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }

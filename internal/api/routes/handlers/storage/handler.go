@@ -32,12 +32,12 @@ func (h *StorageHandler) FindMany(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindStorages(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"storages": result, "count": count},
@@ -49,7 +49,7 @@ func (h *StorageHandler) FindOne(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindStorageByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"storage": result},
@@ -68,7 +68,7 @@ func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.CreateStorage(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -86,7 +86,7 @@ func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.UpdateStorage(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -95,7 +95,7 @@ func (h *StorageHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.DeleteStorage(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -104,7 +104,7 @@ func (h *StorageHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.RestoreStorage(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -114,7 +114,7 @@ func (h *StorageHandler) FindTips(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindTips(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"tips": result},
@@ -127,7 +127,7 @@ func (h *StorageHandler) CreateTip(ctx *fiber.Ctx) error {
 	result, err := h.svc.CreateTip(ctx.Context(), id, tipID)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"tip": result},
@@ -139,7 +139,7 @@ func (h *StorageHandler) DeleteTip(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	if err := h.svc.DeleteTip(ctx.Context(), id, tipID); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }

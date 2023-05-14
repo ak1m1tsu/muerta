@@ -80,7 +80,6 @@ func CreateUserDTOToModel(dto *dto.CreateUserDTO) models.User {
 	}
 	salt := uuid.New().String()
 	return models.User{
-		ID:       dto.ID,
 		Name:     dto.Name,
 		Salt:     salt,
 		Settings: settings,
@@ -356,14 +355,14 @@ func SignUpDTOToModel(payload *dto.SignUpDTO) models.User {
 		Name: payload.Name,
 	}
 }
-func CreateRecipeIngredientDTOToModel(payload *dto.CreateRecipeIngredientDTO) models.RecipeIngredient {
+func CreateIngredientDTOToModel(payload *dto.CreateIngredientDTO) models.RecipeIngredient {
 	return models.RecipeIngredient{
 		Product:  models.Product{ID: payload.ProductID},
 		Measure:  models.Measure{ID: payload.MeasureID},
 		Quantity: payload.Quantity,
 	}
 }
-func UpdateRecipeIngredientDTOToModel(payload *dto.UpdateRecipeIngredientDTO) models.RecipeIngredient {
+func UpdateIngredientDTOToModel(payload *dto.UpdateIngredientDTO) models.RecipeIngredient {
 	return models.RecipeIngredient{
 		Product:  models.Product{ID: payload.ProductID},
 		Measure:  models.Measure{ID: payload.MeasureID},

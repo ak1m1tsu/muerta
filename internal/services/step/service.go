@@ -27,7 +27,7 @@ type stepService struct {
 // CreateStep implements StepServicer
 func (s *stepService) CreateStep(ctx context.Context, payload *dto.CreateStepDTO) (dto.FindStepDTO, error) {
 	model := translate.CreateDTOToStepModel(payload)
-	if err := s.repo.Create(ctx, model); err != nil {
+	if err := s.repo.Create(ctx, &model); err != nil {
 		return dto.FindStepDTO{}, fmt.Errorf("error creating step: %w", err)
 	}
 	return translate.StepModelToFindDTO(model), nil

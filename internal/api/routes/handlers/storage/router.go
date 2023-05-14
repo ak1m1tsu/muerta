@@ -31,6 +31,9 @@ func NewRouter(client repositories.PostgresClient, logger *log.Logger, jware *jw
 				router.Delete("/", jware.DeserializeUser, handler.DeleteTip)
 			})
 		})
+		router.Route("/shelf-lives", func(router fiber.Router) {
+			// router.Get("/", handler.FindShelfLives)
+		})
 	})
 	return router
 }

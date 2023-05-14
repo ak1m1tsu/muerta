@@ -48,11 +48,11 @@ func (h *ShelfLifeDetectorHandler) DetectDates(ctx *fiber.Ctx) error {
 	dates, err := h.svc.Detect(data)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	if dates == nil {
 		h.log.ServerError(ctx, fmt.Errorf("dates is nil"))
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,

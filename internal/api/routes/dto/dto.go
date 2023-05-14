@@ -22,14 +22,14 @@ type Filter interface {
 }
 
 type LoginDTO struct {
-	Name     string `json:"name" validate:"required"`
-	Password string `json:"password" validate:"required,min=8"`
+	Name     string `json:"name" validate:"required,gte=3,alpha"`
+	Password string `json:"password" validate:"required,gte=8,alphanum"`
 }
 
 type SignUpDTO struct {
-	Name            string `json:"name" validate:"required"`
-	Password        string `json:"password" validate:"required,min=8"`
-	PasswordConfirm string `json:"password_confirm" validate:"required,min=8"`
+	Name            string `json:"name" validate:"required,gte=3,alpha"`
+	Password        string `json:"password" validate:"required,gte=8,alphanum"`
+	PasswordConfirm string `json:"password_confirm" validate:"required,gte=8,alphanum,eqfield=Password"`
 }
 
 type TokenPayload struct {
@@ -39,11 +39,6 @@ type TokenPayload struct {
 }
 
 type Paging struct {
-	Limit  int `query:"limit"`
-	Offset int `query:"offset"`
-}
-
-type Response struct {
-	Success bool           `json:"success" example:"true"`
-	Data    map[string]any `json:"data,omitempty"`
+	Limit  int `query:"limit" example:"10" validate:"omitempty,gte=0"`
+	Offset int `query:"offset" example:"0" validate:"omitempty,gte=0"`
 }

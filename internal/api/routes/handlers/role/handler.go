@@ -32,12 +32,12 @@ func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindRoles(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"roles": result, "count": count},
@@ -49,7 +49,7 @@ func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindRoleByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"roles": result},
@@ -68,7 +68,7 @@ func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.CreateRole(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -86,7 +86,7 @@ func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.UpdateRole(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -95,7 +95,7 @@ func (h *RoleHandler) DeleteRole(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.DeleteRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -104,7 +104,7 @@ func (h *RoleHandler) RestoreRole(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.RestoreRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }

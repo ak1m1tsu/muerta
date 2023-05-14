@@ -2,7 +2,7 @@ package dto
 
 type MeasureFilterDTO struct {
 	Paging
-	Name string `query:"name"`
+	Name string `query:"name" example:"кг" validate:"omitempty,gte=1,alphaunicode"`
 }
 
 func (f *MeasureFilterDTO) GetLimit() int {
@@ -22,11 +22,11 @@ func (f *MeasureFilterDTO) SetOffset(offset int) {
 }
 
 type CreateMeasureDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gte=1,alphaunicode" example:"кг"`
 }
 
 type UpdateMeasureDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gte=1,alphaunicode" example:"л"`
 }
 
 type FindMeasureDTO struct {

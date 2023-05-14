@@ -15,14 +15,14 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 	repo := repository.New(client)
 	svc := service.New(repo)
 	handler := New(svc, log)
-	router.Get("/", handler.FindMany)
-	router.Post("/", jware.DeserializeUser, handler.Create)
+	router.Get("/", handler.FindProductCategories)
+	router.Post("/", jware.DeserializeUser, handler.CreateProductCategory)
 	router.Route(context.CategoryID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.CategoryID))
-		router.Get("/", handler.FindOne)
-		router.Put("/", jware.DeserializeUser, handler.Update)
-		router.Patch("/", jware.DeserializeUser, handler.Restore)
-		router.Delete("/", jware.DeserializeUser, handler.Delete)
+		router.Get("/", handler.FindProductCategoryByID)
+		router.Put("/", jware.DeserializeUser, handler.UpdateProductCategory)
+		router.Patch("/", jware.DeserializeUser, handler.RestoreProductCategroy)
+		router.Delete("/", jware.DeserializeUser, handler.DeleteProductCategroy)
 	})
 	return router
 }

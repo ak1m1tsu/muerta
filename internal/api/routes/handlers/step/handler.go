@@ -37,7 +37,7 @@ func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"steps": result, "count": count},
@@ -46,7 +46,7 @@ func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
 
 func (h *StepHandler) CreateStep(ctx *fiber.Ctx) error {
 	var paylaod *dto.CreateStepDTO
-	if err := ctx.BodyParser(paylaod); err != nil {
+	if err := ctx.BodyParser(&paylaod); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}
@@ -79,7 +79,7 @@ func (h *StepHandler) FindStep(ctx *fiber.Ctx) error {
 func (h *StepHandler) UpdateStep(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	var payload *dto.UpdateStepDTO
-	if err := ctx.BodyParser(payload); err != nil {
+	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return fiber.ErrBadRequest
 	}

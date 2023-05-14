@@ -35,7 +35,7 @@ func (h *ShelfLifeHandler) CreateShelfLife(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.CreateShelfLife(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -61,12 +61,12 @@ func (h *ShelfLifeHandler) FindShelfLives(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindShelfLifes(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"shelf_lives": result, "count": count},
@@ -86,7 +86,7 @@ func (h *ShelfLifeHandler) UpdateShelfLife(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.UpdateShelfLife(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -95,7 +95,7 @@ func (h *ShelfLifeHandler) DeleteShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.DeleteShelfLife(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -104,7 +104,7 @@ func (h *ShelfLifeHandler) RestoreShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.RestoreShelfLife(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -114,7 +114,7 @@ func (h *ShelfLifeHandler) FindShelfLifeStatuses(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindShelfLifeStatuses(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"statuses": result},
@@ -126,7 +126,7 @@ func (h *ShelfLifeHandler) CreateShelfLifeStatus(ctx *fiber.Ctx) error {
 	result, err := h.svc.CreateShelfLifeStatus(ctx.Context(), id, statusID)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"status": result},
@@ -137,7 +137,7 @@ func (h *ShelfLifeHandler) DeleteShelfLifeStatus(ctx *fiber.Ctx) error {
 	statusID := ctx.Locals(context.StatusID).(int)
 	if err := h.svc.DeleteShelfLifeStatus(ctx.Context(), id, statusID); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }

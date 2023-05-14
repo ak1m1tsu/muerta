@@ -1,16 +1,16 @@
 package dto
 
 type CreateStepDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gt=3,alphanumunicode"`
 }
 
 type UpdateStepDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gt=3,alphanumunicode"`
 }
 
 type StepFilterDTO struct {
 	Paging
-	Name string `query:"name"`
+	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
 }
 
 func (f *StepFilterDTO) SetLimit(limit int) {
