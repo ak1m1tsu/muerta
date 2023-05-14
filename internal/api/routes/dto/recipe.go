@@ -1,9 +1,9 @@
 package dto
 
 type CreateRecipeDTO struct {
-	UserID      int             `json:"id_user" validate:"required"`
-	Name        string          `json:"name" validate:"required,max=100"`
-	Description string          `json:"description,omitempty" validate:"max=200"`
+	UserID      int             `json:"id_user" validate:"required,gt=0"`
+	Name        string          `json:"name" validate:"required,gte=2,lte=100,alphaunicode"`
+	Description string          `json:"description,omitempty" validate:"lte=200,alphanumunicode"`
 	Steps       []RecipeStepDTO `json:"steps" validate:"required"`
 }
 
@@ -15,13 +15,13 @@ type FindRecipeDTO struct {
 }
 
 type UpdateRecipeDTO struct {
-	Name        string `json:"name,omitempty" validate:"max=100"`
-	Description string `json:"description,omitempty" validate:"max=200"`
+	Name        string `json:"name" validate:"gte=2,lte=100"`
+	Description string `json:"description" validate:"lte=200"`
 }
 
 type RecipeFilterDTO struct {
 	Paging
-	Name string `query:"name"`
+	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
 }
 
 func (f *RecipeFilterDTO) GetLimit() int {
@@ -47,14 +47,14 @@ type FindStepDTO struct {
 }
 
 type RecipeStepDTO struct {
-	ID    int `json:"id" validate:"required, unique"`
-	Place int `json:"place" validate:"required, unique"`
+	ID    int `json:"id" validate:"required,unique,gt=0"`
+	Place int `json:"place" validate:"required,unique,gt=0"`
 }
 
-type CreateRecipeIngredientDTO struct {
-	ProductID int `json:"id_product" validate:"required"`
-	MeasureID int `json:"id_measure" validate:"required"`
-	Quantity  int `json:"quantity" validate:"required"`
+type CreateIngredientDTO struct {
+	ProductID int `json:"id_product" validate:"required,gt=0"`
+	MeasureID int `json:"id_measure" validate:"required,gt=0"`
+	Quantity  int `json:"quantity" validate:"required,gt=0"`
 }
 
 type FindRecipeIngredientDTO struct {
@@ -63,20 +63,20 @@ type FindRecipeIngredientDTO struct {
 	Quantity int            `json:"quantity"`
 }
 
-type UpdateRecipeIngredientDTO struct {
-	ProductID int `json:"id_product" validate:"required"`
-	MeasureID int `json:"id_measure"`
-	Quantity  int `json:"quantity" validate:"required"`
+type UpdateIngredientDTO struct {
+	ProductID int `json:"id_product" validate:"omitempty,gt=0"`
+	MeasureID int `json:"id_measure" validate:"omitempty,gt=0"`
+	Quantity  int `json:"quantity" validate:"omitempty,gt=0"`
 }
 
-type DeleteRecipeIngredientDTO struct {
-	ProductID int `json:"id_product" validate:"required"`
+type DeleteIngredientDTO struct {
+	ProductID int `json:"id_product" validate:"required,gt=0"`
 }
 
 type DeleteRecipeStepDTO struct {
-	Place int `json:"place" validate:"required"`
+	Place int `json:"place" validate:"required,gt=0"`
 }
 
 type CreateRecipeStepDTO struct {
-	Place int `json:"place" validate:"required"`
+	Place int `json:"place" validate:"required,gt=0"`
 }

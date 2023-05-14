@@ -6,16 +6,16 @@ type FindTipDTO struct {
 }
 
 type UpdateTipDTO struct {
-	Description string `json:"description" validate:"required"`
+	Description string `json:"description" validate:"required,gte=3,lte=200"`
 }
 
 type CreateTipDTO struct {
-	Description string `json:"description" validate:"required"`
+	Description string `json:"description" validate:"required,gte=3,lte=200"`
 }
 
 type TipFilterDTO struct {
 	Paging
-	Description string `query:"description"`
+	Description string `query:"description" validate:"omitempty,gte=1,alphaunicode"`
 }
 
 func (f *TipFilterDTO) GetLimit() int {

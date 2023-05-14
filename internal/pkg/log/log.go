@@ -1,3 +1,5 @@
+// Package log provides a structured logging solution for the application.
+// It utilizes the zerolog library to log messages to stderr.
 package log
 
 import (
@@ -10,10 +12,12 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Logger is a struct that contains the zerolog logger.
 type Logger struct {
 	zlog *zerolog.Logger
 }
 
+// New creates a new Logger instance with a new zerolog logger.
 func New() *Logger {
 	zlog := zerolog.New(os.Stderr).With().Timestamp().Logger()
 	return &Logger{
@@ -21,10 +25,12 @@ func New() *Logger {
 	}
 }
 
+// GetLogger returns the zerolog logger contained within the Logger.
 func (l *Logger) GetLogger() *zerolog.Logger {
 	return l.zlog
 }
 
+// ServerError logs a server error message with the associated request ID and error.
 func (l *Logger) ServerError(ctx *fiber.Ctx, err error) {
 	l.zlog.Error().Interface(
 		fiberzerolog.FieldRequestID,
@@ -32,6 +38,7 @@ func (l *Logger) ServerError(ctx *fiber.Ctx, err error) {
 	).Err(err).Msg(errors.ErrServer)
 }
 
+// ClientError logs a client error message with the associated request ID and error.
 func (l *Logger) ClientError(ctx *fiber.Ctx, err error) {
 	l.zlog.Error().Interface(
 		fiberzerolog.FieldRequestID,
@@ -39,6 +46,7 @@ func (l *Logger) ClientError(ctx *fiber.Ctx, err error) {
 	).Err(err).Msg(errors.ErrClient)
 }
 
+// ValidationError logs a validation error message with the associated request ID and errors.
 func (l *Logger) ValidationError(ctx *fiber.Ctx, errs validator.ErrorResponses) {
 	l.zlog.Error().Interface(
 		fiberzerolog.FieldRequestID,

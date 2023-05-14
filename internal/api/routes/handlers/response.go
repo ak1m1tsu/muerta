@@ -1,9 +1,8 @@
 package handlers
 
 type apiResponse struct {
-	Success bool   `json:"success"`
-	Data    Data   `json:"data,omitempty"`
-	Error   string `json:"error,omitempty"`
+	Success bool `json:"success"`
+	Data    Data `json:"data,omitempty" swaggertype:"object,string" example:"key:value,key2:value"`
 }
 
 func (r *apiResponse) WithSuccess() *apiResponse {
@@ -24,9 +23,14 @@ func SuccessResponse() *apiResponse {
 	}
 }
 
-func ErrorResponse(err error) *apiResponse {
-	return &apiResponse{
-		Success: false,
-		Error:   err.Error(),
+type errorResponse struct {
+	apiResponse
+	Error string `json:"error,omitempty" example:"error message"`
+}
+
+func ErrorResponse(err error) *errorResponse {
+	return &errorResponse{
+		apiResponse: apiResponse{Success: false},
+		Error:       err.Error(),
 	}
 }

@@ -28,7 +28,7 @@ func (h *UserSettingHandler) FindByID(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindSettingByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"setting": result},
@@ -44,12 +44,12 @@ func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindSettings(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"settings": result, "count": count},
@@ -68,7 +68,7 @@ func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.CreateSetting(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -86,7 +86,7 @@ func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.UpdateSetting(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -95,7 +95,7 @@ func (h *UserSettingHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
 	if err := h.svc.DeleteSetting(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -104,7 +104,7 @@ func (h *UserSettingHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
 	if err := h.svc.RestoreSetting(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }

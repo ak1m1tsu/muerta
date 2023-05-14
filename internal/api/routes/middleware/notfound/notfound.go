@@ -1,9 +1,15 @@
 package notfound
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"net/http"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
+)
 
 func New() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		return fiber.ErrNotFound
+		return ctx.Status(http.StatusNotFound).
+			JSON(handlers.ErrorResponse(fiber.ErrNotFound))
 	}
 }

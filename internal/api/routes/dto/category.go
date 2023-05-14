@@ -4,7 +4,7 @@ import "time"
 
 type ProductCategoryFilterDTO struct {
 	Paging
-	Name string `query:"name"`
+	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
 }
 
 func (f *ProductCategoryFilterDTO) GetLimit() int {
@@ -24,11 +24,11 @@ func (f *ProductCategoryFilterDTO) SetOffset(offset int) {
 }
 
 type CreateProductCategoryDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gte=2,alphaunicode"`
 }
 
 type UpdateProductCategoryDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gte=2,alphaunicode"`
 }
 
 type FindProductCategoryDTO struct {

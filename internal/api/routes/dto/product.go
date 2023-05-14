@@ -2,7 +2,7 @@ package dto
 
 type ProductFilterDTO struct {
 	Paging
-	Name string `query:"name"`
+	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
 }
 
 func (f *ProductFilterDTO) GetLimit() int {
@@ -22,11 +22,11 @@ func (f *ProductFilterDTO) SetOffset(offset int) {
 }
 
 type CreateProductDTO struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required,gte=2,alphaunicode"`
 }
 
 type UpdateProductDTO struct {
-	Name string `json:"name"`
+	Name string `json:"name" validate:"required,gte=2,alphaunicode"`
 }
 
 type FindProductDTO struct {

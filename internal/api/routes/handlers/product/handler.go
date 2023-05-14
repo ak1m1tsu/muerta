@@ -37,7 +37,7 @@ func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.CreateProduct(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }
@@ -63,12 +63,12 @@ func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindProducts(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	count, err := h.svc.Count(ctx.Context())
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"products": result, "count": count},
@@ -88,7 +88,7 @@ func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
 	}
 	if err := h.svc.UpdateProduct(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
@@ -99,7 +99,7 @@ func (h *ProductHandler) DeleteProduct(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.DeleteProduct(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
@@ -110,7 +110,7 @@ func (h *ProductHandler) RestoreProduct(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.RestoreProduct(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
@@ -122,7 +122,7 @@ func (h *ProductHandler) FindProductCategories(ctx *fiber.Ctx) error {
 	categories, err := h.svc.FindProductCategories(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
@@ -135,7 +135,7 @@ func (h *ProductHandler) FindProductRecipes(ctx *fiber.Ctx) error {
 	recipes, err := h.svc.FindProductRecipes(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrInternalServerError
+		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(fiber.Map{
 		"success": true,
@@ -143,10 +143,10 @@ func (h *ProductHandler) FindProductRecipes(ctx *fiber.Ctx) error {
 	})
 }
 
-func (h *ProductHandler) AddProductCategory(ctx *fiber.Ctx) error {
+func (h *ProductHandler) CreateCategory(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	categoryID := ctx.Locals(context.CategoryID).(int)
-	result, err := h.svc.AddProductCategory(ctx.Context(), productID, categoryID)
+	result, err := h.svc.CreateCategory(ctx.Context(), productID, categoryID)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
@@ -156,12 +156,48 @@ func (h *ProductHandler) AddProductCategory(ctx *fiber.Ctx) error {
 		handlers.Data{"category": result},
 	))
 }
-func (h *ProductHandler) RemoveProductCategory(ctx *fiber.Ctx) error {
+func (h *ProductHandler) DeleteCategory(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	categoryID := ctx.Locals(context.CategoryID).(int)
-	if err := h.svc.RemoveProductCategory(ctx.Context(), productID, categoryID); err != nil {
+	if err := h.svc.DeleteCategory(ctx.Context(), productID, categoryID); err != nil {
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
+	}
+	return ctx.JSON(handlers.SuccessResponse())
+}
+
+func (h *ProductHandler) FindProductTips(ctx *fiber.Ctx) error {
+	productID := ctx.Locals(context.ProductID).(int)
+	result, err := h.svc.FindProductTips(ctx.Context(), productID)
+	if err != nil {
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"tips": result},
+	))
+}
+
+func (h *ProductHandler) CreateProductTip(ctx *fiber.Ctx) error {
+	productID := ctx.Locals(context.ProductID).(int)
+	tipID := ctx.Locals(context.TipID).(int)
+	result, err := h.svc.CreateProductTip(ctx.Context(), productID, tipID)
+	if err != nil {
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"tip": result},
+	))
+}
+
+func (h *ProductHandler) DeleteProductTip(ctx *fiber.Ctx) error {
+	productID := ctx.Locals(context.ProductID).(int)
+	tipID := ctx.Locals(context.TipID).(int)
+	err := h.svc.DeleteProductTip(ctx.Context(), productID, tipID)
+	if err != nil {
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
 	}
 	return ctx.JSON(handlers.SuccessResponse())
 }

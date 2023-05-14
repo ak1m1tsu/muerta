@@ -35,8 +35,8 @@ type FindStorageDTO struct {
 	CreatedAt   *time.Time `json:"created_at,omitempty"`
 }
 type UpdateStorageDTO struct {
-	Name        string  `json:"name,omitempty"`
-	Temperature float32 `json:"temperature,omitempty"`
-	Humidity    float32 `json:"humidity,omitempty"`
-	TypeID      int     `json:"id_type,omitempty"`
+	Name        string  `json:"name,omitempty" validate:"omitempty,gte=3,alphaunicode"`
+	Temperature float32 `json:"temperature,omitempty" validate:"omitempty,gte=0"`
+	Humidity    float32 `json:"humidity,omitempty" validate:"omitempty,gte=0"`
+	TypeID      int     `json:"id_type,omitempty" validate:"omitempty,gte=0"`
 }

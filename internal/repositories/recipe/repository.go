@@ -11,9 +11,9 @@ import (
 
 type RecipeIngredientsRepositorer interface {
 	FindIngredients(ctx context.Context, id int) ([]models.RecipeIngredient, error)
-	CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
-	UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
-	DeleteRecipeIngredient(ctx context.Context, recipeId, productId int) error
+	CreateIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
+	UpdateIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error)
+	DeleteIngredient(ctx context.Context, recipeId, productId int) error
 }
 
 type RecipeStepsRepositorer interface {
@@ -114,8 +114,8 @@ func (r *recipesRepository) FindSteps(ctx context.Context, recipeID int) ([]mode
 	return result, nil
 }
 
-// CreateRecipeIngredient implements RecipesRepositorer
-func (r *recipesRepository) CreateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
+// CreateIngredient implements RecipesRepositorer
+func (r *recipesRepository) CreateIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
 	var (
 		queryInsert = `
 			INSERT INTO products_recipes_measures 
@@ -143,8 +143,8 @@ func (r *recipesRepository) CreateRecipeIngredient(ctx context.Context, id int, 
 	return *entity, nil
 }
 
-// DeleteRecipeIngredient implements RecipesRepositorer
-func (r *recipesRepository) DeleteRecipeIngredient(ctx context.Context, recipeId int, productId int) error {
+// DeleteIngredient implements RecipesRepositorer
+func (r *recipesRepository) DeleteIngredient(ctx context.Context, recipeId int, productId int) error {
 	var (
 		query = `
 			DELETE FROM products_recipes_measures
@@ -184,8 +184,8 @@ func (r *recipesRepository) FindIngredients(ctx context.Context, id int) ([]mode
 	return entities, nil
 }
 
-// UpdateRecipeIngredient implements RecipesRepositorer
-func (r *recipesRepository) UpdateRecipeIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
+// UpdateIngredient implements RecipesRepositorer
+func (r *recipesRepository) UpdateIngredient(ctx context.Context, id int, entity *models.RecipeIngredient) (models.RecipeIngredient, error) {
 	var (
 		query = `
 			UPDATE products_recipes_measures

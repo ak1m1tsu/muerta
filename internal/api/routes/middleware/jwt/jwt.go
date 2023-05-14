@@ -2,9 +2,11 @@ package jwt
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
@@ -32,12 +34,14 @@ func (m *JWTMiddleware) DeserializeUser(ctx *fiber.Ctx) error {
 	}
 	if token == "" {
 		m.log.ClientError(ctx, fmt.Errorf("unauthorized request"))
-		return fiber.ErrUnauthorized
+		return ctx.Status(http.StatusUnauthorized).
+			JSON(handlers.ErrorResponse(fiber.ErrUnauthorized))
 	}
 	payload, err := jwt.ValidateToken(token, m.accessPubKey)
 	if err != nil {
 		m.log.ClientError(ctx, err)
-		return fiber.ErrForbidden
+		return ctx.Status(http.StatusForbidden).
+			JSON(handlers.ErrorResponse(fiber.ErrForbidden))
 	}
 	ctx.Locals("user", payload)
 	return ctx.Next()

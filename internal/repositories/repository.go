@@ -1,3 +1,4 @@
+// repositories provides functions for interacting with a PostgreSQL database.
 package repositories
 
 import (
@@ -12,10 +13,12 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 )
 
+// Repository is an interface for defining methods to interact with a PostgreSQL database.
 type Repository interface {
 	Count(ctx context.Context) (int, error)
 }
 
+// PostgresClient is an interface for defining methods to interact with a PostgreSQL client.
 type PostgresClient interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
@@ -40,6 +43,9 @@ func doWithTries(fn func() (*pgxpool.Pool, error), attemtps int, delay time.Dura
 	return nil, err
 }
 
+// NewPostgresClient returns a new PostgreSQL client connection pool based on the provided config.
+//
+// The function attempts to connect to the database maxAttempts times with a delay of 5 seconds between attempts.
 func NewPostgresClient(ctx context.Context, maxAttempts int, cfg *config.Config) (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
 		cfg.Database.User,
