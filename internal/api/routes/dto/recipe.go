@@ -5,6 +5,13 @@ type CreateRecipeDTO struct {
 	Name        string          `json:"name" validate:"required,gte=2,lte=100,notblank"`
 	Description string          `json:"description,omitempty" validate:"lte=200"`
 	Steps       []RecipeStepDTO `json:"steps" validate:"required"`
+	Ingredients []IngredientDTO `json:"ingredients" validate:"required"`
+}
+
+type IngredientDTO struct {
+	ProductID int `json:"id_product" validate:"required,gt=0"`
+	MeasureID int `json:"id_measure" validate:"required,gt=0"`
+	Quantity  int `json:"quantity" validate:"required,gt=0"`
 }
 
 type FindRecipeDTO struct {

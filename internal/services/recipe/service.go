@@ -110,9 +110,7 @@ func New(repository recipes.RecipesRepositorer) RecipeServicer {
 }
 
 func (s *recipeService) CreateRecipe(ctx context.Context, payload *dto.CreateRecipeDTO) error {
-	fmt.Printf("%#v\n", payload)
 	model := translate.CreateRecipeDTOToModel(payload)
-	fmt.Printf("%#v\n", model)
 	if err := s.repo.Create(ctx, &model); err != nil {
 		return fmt.Errorf("create recipe: %w", err)
 	}

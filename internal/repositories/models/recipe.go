@@ -9,6 +9,7 @@ type Recipe struct {
 	User        User
 	UpdatedAt   *time.Time `db:"updated_at"`
 	DeletedAt   *time.Time `db:"deleted_at"`
+	Ingredients []RecipeIngredient
 	Steps       []Step
 }
 

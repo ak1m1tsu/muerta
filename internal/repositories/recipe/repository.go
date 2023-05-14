@@ -282,7 +282,7 @@ func (r *recipesRepository) FindMany(ctx context.Context, limit, offset int, nam
 }
 
 func (r *recipesRepository) Create(ctx context.Context, recipe *models.Recipe) error {
-	fmt.Printf("%#v\n",recipe)
+	fmt.Printf("%#v\n", recipe)
 	var (
 		query = `
 			INSERT INTO recipes
@@ -305,6 +305,15 @@ func (r *recipesRepository) Create(ctx context.Context, recipe *models.Recipe) e
 		[]string{"id_recipe", "id_step", "place"},
 		pgx.CopyFromSlice(len(recipe.Steps), func(i int) ([]any, error) {
 			return []any{recipe.ID, recipe.Steps[i].ID, recipe.Steps[i].Place}, nil
+		}),
+	); err != nil {
+		return err
+	}
+	if _, err = tx.CopyFrom(ctx,
+		pgx.Identifier{"products_recipes_measures"},
+		[]string{"id_product", "id_recipe", "id_measure", "quantity"},
+		pgx.CopyFromSlice(len(recipe.Ingredients), func(i int) ([]any, error) {
+			return []any{recipe.Ingredients[i].Product.ID, recipe.ID, recipe.Ingredients[i].Measure.ID, recipe.Ingredients[i].Quantity}, nil
 		}),
 	); err != nil {
 		return err

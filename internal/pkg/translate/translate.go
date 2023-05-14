@@ -90,9 +90,15 @@ func CreateUserDTOToModel(dto *dto.CreateUserDTO) models.User {
 
 func CreateRecipeDTOToModel(dto *dto.CreateRecipeDTO) models.Recipe {
 	steps := make([]models.Step, len(dto.Steps))
+	ingredients := make([]models.RecipeIngredient, len(dto.Ingredients))
 	for i, step := range dto.Steps {
 		steps[i].ID = step.ID
 		steps[i].Place = step.Place
+	}
+	for i, ingredient := range dto.Ingredients {
+		ingredients[i].Product.ID = ingredient.ProductID
+		ingredients[i].Measure.ID = ingredient.MeasureID
+		ingredients[i].Quantity = ingredient.Quantity
 	}
 	return models.Recipe{
 		User: models.User{
@@ -101,6 +107,7 @@ func CreateRecipeDTOToModel(dto *dto.CreateRecipeDTO) models.Recipe {
 		Name:        dto.Name,
 		Description: dto.Description,
 		Steps:       steps,
+		Ingredients: ingredients,
 	}
 }
 
