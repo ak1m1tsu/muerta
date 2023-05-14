@@ -14,6 +14,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -115,7 +116,7 @@ func New() (*Config, error) {
 		RefreshTokenPublicKey:  refreshPub,
 		RefreshTokenMaxAge:     60,
 		RefreshTokenExpiresIn:  time.Hour * 1,
-		AllowOrigins:           os.Getenv("ALLOWED_ORIGINS"),
+		AllowOrigins:           strings.Join(strings.Split(os.Getenv("ALLOWED_ORIGINS"), ","), ", "),
 	}
 	return cfg, nil
 }

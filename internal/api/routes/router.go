@@ -71,7 +71,7 @@ func (r *Router) mountAPIMiddlewares(cfg *config.Config, logger *log.Logger) {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowOrigins,
 		AllowCredentials: true,
-		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowHeaders:     "Origin, Content-Type, Accept, Accept-Language, Content-Length",
 	}))
 	r.Use(requestid.New())
 	r.Use(recover.New())
