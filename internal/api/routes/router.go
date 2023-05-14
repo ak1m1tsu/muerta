@@ -69,7 +69,9 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 
 func (r *Router) mountAPIMiddlewares(cfg *config.Config, logger *log.Logger) {
 	r.Use(cors.New(cors.Config{
-		AllowOrigins: cfg.AllowOrigins,
+		AllowOrigins:     cfg.AllowOrigins,
+		AllowCredentials: true,
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 	}))
 	r.Use(requestid.New())
 	r.Use(recover.New())
