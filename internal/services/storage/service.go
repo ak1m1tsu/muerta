@@ -20,11 +20,20 @@ type StorageServicer interface {
 	FindTips(ctx context.Context, id int) ([]dto.FindTipDTO, error)
 	CreateTip(ctx context.Context, id, tipID int) (dto.FindTipDTO, error)
 	DeleteTip(ctx context.Context, id, tipID int) error
+	FindShelfLives(ctx context.Context, id int) ([]dto.FindShelfLifeDTO, error)
 	services.Counter
 }
 
 type storageService struct {
 	repo storage.StorageRepositorer
+}
+
+func (s *storageService) FindShelfLives(ctx context.Context, id int) ([]dto.FindShelfLifeDTO, error) {
+	result, err := s.repo.FindShelfLives(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find shelf lives: %w", err)
+	}
+	return translate.ShelfLifeModelsToFindDTOs(result), nil
 }
 
 func (s *storageService) Count(ctx context.Context) (int, error) {

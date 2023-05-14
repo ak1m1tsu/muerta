@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
@@ -142,4 +144,17 @@ func (h *StorageHandler) DeleteTip(ctx *fiber.Ctx) error {
 		return fiber.ErrBadGateway
 	}
 	return ctx.JSON(handlers.SuccessResponse())
+}
+
+func (h *StorageHandler) FindShelfLives(ctx *fiber.Ctx) error {
+	id := ctx.Locals(context.StorageID).(int)
+	result, err := h.svc.FindShelfLives(ctx.Context(), id)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"shelf-lives": result},
+	))
 }
