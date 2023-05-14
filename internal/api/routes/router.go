@@ -44,7 +44,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 		}),
 	}
 	jware := jware.New(cfg, logger)
-	r.mountAPIMiddlewares(logger)
+	r.mountAPIMiddlewares(cfg, logger)
 	r.Route("/api/v1", func(r fiber.Router) {
 		r.Get("/swagger/*", swagger.HandlerDefault)
 		r.Mount("/shelf-life-detector", shelflifedetector.NewRouter(logger, jware))
@@ -67,10 +67,11 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 	return r
 }
 
-func (r *Router) mountAPIMiddlewares(logger *log.Logger) {
+func (r *Router) mountAPIMiddlewares(cfg *config.Config, logger *log.Logger) {
 	r.Use(cors.New(cors.Config{
-		AllowHeaders:     "Origin,Content-Type,Accept,Content-Length,Accept-Language,Accept-Encoding,Connection,Access-Control-Allow-Origin",
+		AllowOrigins:     cfg.AllowOrigins,
 		AllowCredentials: true,
+		AllowHeaders:     "Origin, Content-Type, Accept, Accept-Language, Content-Length, Authorization",
 	}))
 	r.Use(requestid.New())
 	r.Use(recover.New())
