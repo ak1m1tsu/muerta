@@ -12,16 +12,91 @@ type TipRepositorer interface {
 	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Tip, error)
 	FindMany(ctx context.Context, limit, offset int, description string) ([]models.Tip, error)
-	Create(ctx context.Context, tip models.Tip) error
+	Create(ctx context.Context, tip *models.Tip) error
 	Update(ctx context.Context, tip models.Tip) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
 	FindProducts(ctx context.Context, id int) ([]models.Product, error)
 	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
+	AddProduct(ctx context.Context, tipID, productID int) (models.Product, error)
+	RemoveProduct(ctx context.Context, tipID, productID int) error
+	AddStorage(ctx context.Context, tipID, storageID int) (models.Storage, error)
+	RemoveStorage(ctx context.Context, tipID, storageID int) error
 }
 
 type tipRepository struct {
 	client repositories.PostgresClient
+}
+
+// AddProduct implements TipRepositorer
+func (r *tipRepository) AddProduct(ctx context.Context, tipID int, productID int) (models.Product, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO products_tips (id_tip, id_product)
+				VALUES ($1, $2)
+				RETURNING id_tip, id_product
+			)
+			SELECT p.id, p.name
+			FROM products p
+			JOIN inserted i ON i.id_product = p.id
+			WHERE p.id = i.id_product AND p.deleted_at IS NULL
+		`
+		model models.Product
+	)
+	if err := r.client.QueryRow(ctx, query, tipID, productID).Scan(&model.ID, &model.Name); err != nil {
+		return models.Product{}, fmt.Errorf("failed to add product: %w", err)
+	}
+	return model, nil
+}
+
+// AddStoragep implements TipRepositorer
+func (r *tipRepository) AddStorage(ctx context.Context, tipID int, storageID int) (models.Storage, error) {
+	var (
+		query = `
+			WITH inserted AS (
+				INSERT INTO storages_tips (id_tip, id_storage)
+				VALUES ($1, $2)
+				RETURNING id_tip, id_storage
+			)
+			SELECT s.id, s.name, st.id, st.name, s.temperature, s.humidity
+			FROM storages s
+			JOIN storages_types st ON s.id_type = st.id
+			JOIN inserted i ON i.id_storage = s.id
+			WHERE s.id = i.id_storage AND s.deleted_at IS NULL
+		`
+		model models.Storage
+	)
+	if err := r.client.QueryRow(ctx, query, tipID, storageID).Scan(
+		&model.ID, &model.Name, &model.Type.ID, &model.Type.Name, &model.Temperature, &model.Humidity,
+	); err != nil {
+		return models.Storage{}, fmt.Errorf("failed to add storage: %w", err)
+	}
+	return model, nil
+}
+
+// RemoveProduct implements TipRepositorer
+func (r *tipRepository) RemoveProduct(ctx context.Context, tipID int, productID int) error {
+	var query = `
+		DELETE FROM products_tips
+		WHERE id_tip = $1 AND id_product = $2
+	`
+	if _, err := r.client.Exec(ctx, query, tipID, productID); err != nil {
+		return fmt.Errorf("failed to remove products: %w", err)
+	}
+	return nil
+}
+
+// RemoveStorage implements TipRepositorer
+func (r *tipRepository) RemoveStorage(ctx context.Context, tipID int, storageID int) error {
+	var query = `
+		DELETE FROM storages_tips
+		WHERE id_tip = $1 AND id_storage = $2
+	`
+	if _, err := r.client.Exec(ctx, query, tipID, storageID); err != nil {
+		return fmt.Errorf("failed to remove storage: %w", err)
+	}
+	return nil
 }
 
 func New(client repositories.PostgresClient) TipRepositorer {
@@ -96,14 +171,15 @@ func (r *tipRepository) FindStorages(ctx context.Context, id int) ([]models.Stor
 }
 
 // Create implements TipRepositorer
-func (r *tipRepository) Create(ctx context.Context, tip models.Tip) error {
+func (r *tipRepository) Create(ctx context.Context, tip *models.Tip) error {
 	var (
 		query = `
 			INSERT INTO tips (description)
 			VALUES ($1)
+			RETURNING id
 		`
 	)
-	if _, err := r.client.Exec(ctx, query, tip.Description); err != nil {
+	if err := r.client.QueryRow(ctx, query, tip.Description).Scan(&tip.ID); err != nil {
 		return fmt.Errorf("failed to create tip: %w", err)
 	}
 	return nil
