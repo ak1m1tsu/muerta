@@ -22,9 +22,17 @@ func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware
 		router.Get("/", handler.FindTipByID)
 		router.Route("/products", func(router fiber.Router) {
 			router.Get("/", handler.FindTipProducts)
+			router.Route(context.ProductID.Path(), func(router fiber.Router) {
+				router.Post("/", jware.DeserializeUser, handler.AddProductToTip)
+				router.Delete("/", jware.DeserializeUser, handler.RemoveProductFromTip)
+			})
 		})
 		router.Route("/storages", func(router fiber.Router) {
 			router.Get("/", handler.FindTipStorages)
+			router.Route(context.StorageID.Path(), func(router fiber.Router) {
+				router.Post("/", jware.DeserializeUser, handler.AddStorageToTip)
+				router.Delete("/", jware.DeserializeUser, handler.RemoveStorageFromTip)
+			})
 		})
 		router.Put("/", jware.DeserializeUser, handler.UpdateTip)
 		router.Delete("/", jware.DeserializeUser, handler.DeleteTip)

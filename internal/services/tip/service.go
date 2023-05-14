@@ -13,17 +13,55 @@ import (
 type TipServicer interface {
 	FindTipByID(ctx context.Context, id int) (dto.FindTipDTO, error)
 	FindTips(ctx context.Context, filter *dto.TipFilterDTO) ([]dto.FindTipDTO, error)
-	CreateTip(ctx context.Context, payload *dto.CreateTipDTO) error
+	CreateTip(ctx context.Context, payload *dto.CreateTipDTO) (dto.FindTipDTO, error)
 	UpdateTip(ctx context.Context, id int, payload *dto.UpdateTipDTO) error
 	DeleteTip(ctx context.Context, id int) error
 	RestoreTip(ctx context.Context, id int) error
 	FindTipStorages(ctx context.Context, id int) ([]dto.FindStorageDTO, error)
 	FindTipProducts(ctx context.Context, id int) ([]dto.FindProductDTO, error)
+	AddProductToTip(ctx context.Context, tipID, productID int) (dto.FindProductDTO, error)
+	RemoveProductFromTip(ctx context.Context, tipID, productID int) error
+	AddStorageToTip(ctx context.Context, tipID, storageID int) (dto.FindStorageDTO, error)
+	RemoveStorageFromTip(ctx context.Context, tipID, storageID int) error
 	services.Counter
 }
 
 type tipService struct {
 	repo repository.TipRepositorer
+}
+
+// AddProductToTip implements TipServicer
+func (s *tipService) AddProductToTip(ctx context.Context, tipID int, productID int) (dto.FindProductDTO, error) {
+	result, err := s.repo.AddProduct(ctx, tipID, productID)
+	if err != nil {
+		return dto.FindProductDTO{}, err
+	}
+	return translate.ProductModelToFindDTO(&result), nil
+}
+
+// AddStorageToTip implements TipServicer
+func (s *tipService) AddStorageToTip(ctx context.Context, tipID int, storageID int) (dto.FindStorageDTO, error) {
+	result, err := s.repo.AddStorage(ctx, tipID, storageID)
+	if err != nil {
+		return dto.FindStorageDTO{}, err
+	}
+	return translate.StorageModelToFindDTO(&result), nil
+}
+
+// RemoveProductFromTip implements TipServicer
+func (s *tipService) RemoveProductFromTip(ctx context.Context, tipID int, productID int) error {
+	if err := s.repo.RemoveProduct(ctx, tipID, productID); err != nil {
+		return err
+	}
+	return nil
+}
+
+// RemoveStorageFromTip implements TipServicer
+func (s *tipService) RemoveStorageFromTip(ctx context.Context, tipID int, storageID int) error {
+	if err := s.repo.RemoveStorage(ctx, tipID, storageID); err != nil {
+		return err
+	}
+	return nil
 }
 
 func New(repo repository.TipRepositorer) TipServicer {
@@ -61,12 +99,12 @@ func (sbc *tipService) FindTipStorages(ctx context.Context, id int) ([]dto.FindS
 }
 
 // CreateTip implements TipServicer
-func (svc *tipService) CreateTip(ctx context.Context, payload *dto.CreateTipDTO) error {
+func (svc *tipService) CreateTip(ctx context.Context, payload *dto.CreateTipDTO) (dto.FindTipDTO, error) {
 	model := translate.CreateTipDTOToModel(payload)
-	if err := svc.repo.Create(ctx, model); err != nil {
-		return err
+	if err := svc.repo.Create(ctx, &model); err != nil {
+		return dto.FindTipDTO{}, err
 	}
-	return nil
+	return translate.TipModelToFindDTO(&model), nil
 }
 
 // DeleteTip implements TipServicer

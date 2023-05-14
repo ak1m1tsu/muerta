@@ -1,6 +1,8 @@
 package tip
 
 import (
+	"net/http"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
@@ -33,11 +35,14 @@ func (h *TipHandler) CreateTip(ctx *fiber.Ctx) error {
 		h.log.ValidationError(ctx, errs)
 		return fiber.ErrBadRequest
 	}
-	if err := h.svc.CreateTip(ctx.Context(), payload); err != nil {
+	result, err := h.svc.CreateTip(ctx.Context(), payload)
+	if err != nil {
 		h.log.ServerError(ctx, err)
 		return fiber.ErrBadGateway
 	}
-	return ctx.JSON(handlers.SuccessResponse())
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"tip": result},
+	))
 }
 
 func (h *TipHandler) FindTipByID(ctx *fiber.Ctx) error {
@@ -131,4 +136,54 @@ func (h *TipHandler) FindTipProducts(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.SuccessResponse().WithData(
 		handlers.Data{"products": result},
 	))
+}
+
+func (h *TipHandler) AddProductToTip(ctx *fiber.Ctx) error {
+	tipID := ctx.Locals(context.TipID).(int)
+	productID := ctx.Locals(context.ProductID).(int)
+	result, err := h.svc.AddProductToTip(ctx.Context(), tipID, productID)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"product": result},
+	))
+}
+
+func (h *TipHandler) RemoveProductFromTip(ctx *fiber.Ctx) error {
+	tipID := ctx.Locals(context.TipID).(int)
+	productID := ctx.Locals(context.ProductID).(int)
+	if err := h.svc.RemoveProductFromTip(ctx.Context(), tipID, productID); err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
+	}
+	return ctx.JSON(handlers.SuccessResponse())
+}
+
+func (h *TipHandler) AddStorageToTip(ctx *fiber.Ctx) error {
+	tipID := ctx.Locals(context.TipID).(int)
+	storateID := ctx.Locals(context.StorageID).(int)
+	result, err := h.svc.AddStorageToTip(ctx.Context(), tipID, storateID)
+	if err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
+	}
+	return ctx.JSON(handlers.SuccessResponse().WithData(
+		handlers.Data{"storage": result},
+	))
+}
+
+func (h *TipHandler) RemoveStorageFromTip(ctx *fiber.Ctx) error {
+	tipID := ctx.Locals(context.TipID).(int)
+	storateID := ctx.Locals(context.StorageID).(int)
+	if err := h.svc.RemoveStorageFromTip(ctx.Context(), tipID, storateID); err != nil {
+		h.log.ServerError(ctx, err)
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.ErrorResponse(fiber.ErrBadGateway))
+	}
+	return ctx.JSON(handlers.SuccessResponse())
 }
