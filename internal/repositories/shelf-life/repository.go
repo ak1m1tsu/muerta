@@ -170,7 +170,8 @@ func (r *shelfLifeRepository) FindMany(ctx context.Context, limit int, offset in
 			JOIN storages s ON s.id = sl.id_storage
 			JOIN measures m ON m.id = sl.id_measure
 			ORDER BY sl.created_at DESC
-			LIMIT $1 OFFSET $2
+			LIMIT $1 
+			OFFSET $2
 		`
 		shelfLives = make([]models.ShelfLife, 0, limit)
 	)

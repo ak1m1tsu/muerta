@@ -22,7 +22,7 @@ type CreateUserDTO struct {
 
 type UserSettingDTO struct {
 	ID    int    `json:"id" validate:"required,gt=0"`
-	Value string `json:"value" validate:"required,gt=0,alphanumunicode"`
+	Value string `json:"value" validate:"required,gt=0,notblank"`
 }
 
 type UserRoleDTO struct {
@@ -36,12 +36,12 @@ type CreateSettingDTO struct {
 }
 
 type UpdateSettingDTO struct {
-	Name       string `json:"name" validate:"omitempty,gte=3,alphanumunicode"`
+	Name       string `json:"name" validate:"omitempty,gte=3,notblank"`
 	CategoryID int    `json:"id_category" validate:"omitempty,gt=0"`
 }
 
 type UpdateUserSettingDTO struct {
-	Value string `json:"value" validate:"required,gt=0,alphanumunicode"`
+	Value string `json:"value" validate:"required,gt=0,notblank"`
 }
 
 type FindSettingDTO struct {
@@ -53,7 +53,7 @@ type FindSettingDTO struct {
 
 type UserFilterDTO struct {
 	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
+	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
 }
 
 func (f *UserFilterDTO) GetLimit() int {
@@ -74,7 +74,7 @@ func (f *UserFilterDTO) SetOffset(offset int) {
 
 type SettingFilterDTO struct {
 	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
+	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
 }
 
 func (f *SettingFilterDTO) GetLimit() int {
@@ -99,10 +99,10 @@ type UserStorageDTO struct {
 
 type UserShelfLifeDTO struct {
 	ShelfLifeID  int        `json:"id_shelf_life" validate:"gt=0"`
-	ProductID    int        `json:"id_product"`
-	StorageID    int        `json:"id_storage"`
-	MeasureID    int        `json:"id_measure"`
-	Quantity     int        `json:"quantity"`
-	PurchaseDate *time.Time `json:"purchase_date"`
-	EndDate      *time.Time `json:"end_date"`
+	ProductID    int        `json:"id_product" validate:"omitempty,gt=0"`
+	StorageID    int        `json:"id_storage" validate:"omitempty,gt=0"`
+	MeasureID    int        `json:"id_measure" validate:"omitempty,gt=0"`
+	Quantity     int        `json:"quantity" validate:"omitempty,gt=0"`
+	PurchaseDate *time.Time `json:"purchase_date" validate:"required_with=EndDate,ltfield=EndDate"`
+	EndDate      *time.Time `json:"end_date" validate:"required_with=PurchaseDate,gtfield=PurchaseDate"`
 }

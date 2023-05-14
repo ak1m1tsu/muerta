@@ -72,7 +72,7 @@ func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model 
 			JOIN storages s ON i.id_storage = s.id
 			JOIN measures m ON i.id_measure = m.id
 			WHERE p.deleted_at IS NULL AND 
-				s.deleted_at IS NULL AND 
+				s.deleted_at IS NULL
 			LIMIT 1
 		`
 	)

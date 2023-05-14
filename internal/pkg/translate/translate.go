@@ -95,6 +95,9 @@ func CreateRecipeDTOToModel(dto *dto.CreateRecipeDTO) models.Recipe {
 		steps[i].Place = step.Place
 	}
 	return models.Recipe{
+		User: models.User{
+			ID: dto.UserID,
+		},
 		Name:        dto.Name,
 		Description: dto.Description,
 		Steps:       steps,

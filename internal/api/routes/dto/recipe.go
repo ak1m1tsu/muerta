@@ -2,8 +2,8 @@ package dto
 
 type CreateRecipeDTO struct {
 	UserID      int             `json:"id_user" validate:"required,gt=0"`
-	Name        string          `json:"name" validate:"required,gte=2,lte=100,alphaunicode"`
-	Description string          `json:"description,omitempty" validate:"lte=200,alphanumunicode"`
+	Name        string          `json:"name" validate:"required,gte=2,lte=100,notblank"`
+	Description string          `json:"description,omitempty" validate:"lte=200"`
 	Steps       []RecipeStepDTO `json:"steps" validate:"required"`
 }
 
@@ -21,7 +21,7 @@ type UpdateRecipeDTO struct {
 
 type RecipeFilterDTO struct {
 	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,alphaunicode"`
+	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
 }
 
 func (f *RecipeFilterDTO) GetLimit() int {
