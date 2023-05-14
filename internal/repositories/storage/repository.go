@@ -19,10 +19,47 @@ type StorageRepositorer interface {
 	CreateTip(ctx context.Context, id, tipID int) (models.Tip, error)
 	DeleteTip(ctx context.Context, id, tipID int) error
 	FindTips(ctx context.Context, id int) ([]models.Tip, error)
+	FindShelfLives(ctx context.Context, id int) ([]models.ShelfLife, error)
 }
 
 type storageRepository struct {
 	client repositories.PostgresClient
+}
+
+func (r *storageRepository) FindShelfLives(ctx context.Context, id int) ([]models.ShelfLife, error) {
+	var (
+		query = `
+			SELECT sl.id, p.id, p.name, m.id, m.name, sl.quantity, sl.purchase_date, sl.end_date
+			FROM shelf_lives sl
+			JOIN products p ON p.id = sl.id_product
+			JOIN measures m ON m.id = sl.id_measure
+			WHERE sl.deleted_at IS NULL AND sl.id_storage = $1
+			ORDER BY sl.end_date DESC, sl.purchase_date DESC
+		`
+		result []models.ShelfLife
+	)
+	rows, err := r.client.Query(ctx, query, id)
+	if err != nil {
+		return nil, fmt.Errorf("find shelf lives: %w", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var model models.ShelfLife
+		if err := rows.Scan(
+			&model.ID,
+			&model.Product.ID,
+			&model.Product.Name,
+			&model.Measure.ID,
+			&model.Measure.Name,
+			&model.Quantity,
+			&model.PurchaseDate,
+			&model.EndDate,
+		); err != nil {
+			return nil, fmt.Errorf("find shelf lives: %w", err)
+		}
+		result = append(result, model)
+	}
+	return result, nil
 }
 
 func (r *storageRepository) Count(ctx context.Context) (int, error) {
