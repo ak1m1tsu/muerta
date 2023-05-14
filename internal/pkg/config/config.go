@@ -54,6 +54,8 @@ type Config struct {
 	RefreshTokenMaxAge int
 	// Duration for refresh token expiration
 	RefreshTokenExpiresIn time.Duration
+	//
+	AllowOrigins string
 }
 
 // New initializes a Config object with values from environment variables and
@@ -113,6 +115,7 @@ func New() (*Config, error) {
 		RefreshTokenPublicKey:  refreshPub,
 		RefreshTokenMaxAge:     60,
 		RefreshTokenExpiresIn:  time.Hour * 1,
+		AllowOrigins:           os.Getenv("ALLOWED_ORIGINS"),
 	}
 	return cfg, nil
 }
