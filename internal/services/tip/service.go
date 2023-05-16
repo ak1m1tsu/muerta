@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repository "github.com/romankravchuk/muerta/internal/repositories/tip"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type TipServicer interface {
@@ -23,7 +23,7 @@ type TipServicer interface {
 	RemoveProductFromTip(ctx context.Context, tipID, productID int) error
 	AddStorageToTip(ctx context.Context, tipID, storageID int) (dto.FindStorageDTO, error)
 	RemoveStorageFromTip(ctx context.Context, tipID, storageID int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.TipFilterDTO) (int, error)
 }
 
 type tipService struct {
@@ -70,8 +70,8 @@ func New(repo repository.TipRepositorer) TipServicer {
 	}
 }
 
-func (s *tipService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *tipService) Count(ctx context.Context, filter dto.TipFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.TipFilter{Description: filter.Description})
 	if err != nil {
 		return 0, fmt.Errorf("error counting users: %w", err)
 	}
@@ -127,7 +127,13 @@ func (svc *tipService) FindTipByID(ctx context.Context, id int) (dto.FindTipDTO,
 
 // FindTips implements TipServicer
 func (svc *tipService) FindTips(ctx context.Context, filter *dto.TipFilterDTO) ([]dto.FindTipDTO, error) {
-	models, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Description)
+	models, err := svc.repo.FindMany(ctx, models.TipFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Description: filter.Description,
+	})
 	dtos := translate.TipModelsToFindDTOs(models)
 	if err != nil {
 		return nil, err

@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repository "github.com/romankravchuk/muerta/internal/repositories/storage-type"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type StorageTypeServicer interface {
@@ -20,15 +20,15 @@ type StorageTypeServicer interface {
 	FindTips(ctx context.Context, id int) ([]dto.FindTipDTO, error)
 	CreateTip(ctx context.Context, id, tipID int) (dto.FindTipDTO, error)
 	DeleteTip(ctx context.Context, id, tipID int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.StorageTypeFilterDTO) (int, error)
 }
 
 type storageTypeService struct {
 	repo repository.StorageTypeRepositorer
 }
 
-func (s *storageTypeService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *storageTypeService) Count(ctx context.Context, filter dto.StorageTypeFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.StorageTypeFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting storages types: %w", err)
 	}
@@ -99,7 +99,10 @@ func (svc *storageTypeService) FindStorageTypeByID(ctx context.Context, id int) 
 
 // FindStorageTypes implements StorageTypeServicer
 func (svc *storageTypeService) FindStorageTypes(ctx context.Context, filter *dto.StorageTypeFilterDTO) ([]dto.FindStorageTypeDTO, error) {
-	models, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	models, err := svc.repo.FindMany(ctx, models.StorageTypeFilter{
+		PageFilter: models.PageFilter{Limit: filter.Limit, Offset: filter.Offset},
+		Name:       filter.Name,
+	})
 	dtos := translate.StorageTypeModelsToFindDTOs(models)
 	if err != nil {
 		return nil, err

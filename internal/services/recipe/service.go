@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	recipes "github.com/romankravchuk/muerta/internal/repositories/recipe"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type RecipeServicer interface {
@@ -24,15 +24,15 @@ type RecipeServicer interface {
 	FindRecipeSteps(ctx context.Context, recipeID int) ([]dto.FindStepDTO, error)
 	CreateRecipeStep(ctx context.Context, recipeID, stepID, place int) (dto.FindStepDTO, error)
 	DeleteRecipeStep(ctx context.Context, recipeID, stepID, place int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.RecipeFilterDTO) (int, error)
 }
 
 type recipeService struct {
 	repo recipes.RecipesRepositorer
 }
 
-func (s *recipeService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *recipeService) Count(ctx context.Context, filter dto.RecipeFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.RecipeFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting recipes: %w", err)
 	}
@@ -127,7 +127,13 @@ func (s *recipeService) FindRecipeByID(ctx context.Context, id int) (dto.FindRec
 }
 
 func (s *recipeService) FindRecipes(ctx context.Context, filter *dto.RecipeFilterDTO) ([]dto.FindRecipeDTO, error) {
-	recipes, err := s.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	recipes, err := s.repo.FindMany(ctx, models.RecipeFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("recipes not found: %w", err)
 	}

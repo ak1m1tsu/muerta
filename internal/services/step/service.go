@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repository "github.com/romankravchuk/muerta/internal/repositories/step"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type StepServicer interface {
@@ -17,7 +17,7 @@ type StepServicer interface {
 	UpdateStep(ctx context.Context, id int, payload *dto.UpdateStepDTO) (dto.FindStepDTO, error)
 	DeleteStep(ctx context.Context, id int) error
 	RestoreStep(ctx context.Context, id int) (dto.FindStepDTO, error)
-	services.Counter
+	Count(ctx context.Context, filter dto.StepFilterDTO) (int, error)
 }
 
 type stepService struct {
@@ -52,7 +52,13 @@ func (s *stepService) FindStep(ctx context.Context, id int) (dto.FindStepDTO, er
 
 // FindSteps implements StepServicer
 func (s *stepService) FindSteps(ctx context.Context, filter *dto.StepFilterDTO) ([]dto.FindStepDTO, error) {
-	model, err := s.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	model, err := s.repo.FindMany(ctx, models.StepFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error finding steps: %w", err)
 	}
@@ -68,8 +74,8 @@ func (s *stepService) RestoreStep(ctx context.Context, id int) (dto.FindStepDTO,
 	return translate.StepModelToFindDTO(model), nil
 }
 
-func (s *stepService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *stepService) Count(ctx context.Context, filter dto.StepFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.StepFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting steps: %w", err)
 	}

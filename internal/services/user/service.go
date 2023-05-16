@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repo "github.com/romankravchuk/muerta/internal/repositories/user"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type UserServicer interface {
@@ -28,7 +28,7 @@ type UserServicer interface {
 	UpdateShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error)
 	RestoreShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) (dto.FindShelfLifeDTO, error)
 	DeleteShelfLife(ctx context.Context, id int, payload *dto.UserShelfLifeDTO) error
-	services.Counter
+	Count(ctx context.Context, filter dto.UserFilterDTO) (int, error)
 }
 
 type userService struct {
@@ -36,8 +36,8 @@ type userService struct {
 }
 
 // Count implements UserServicer
-func (s *userService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *userService) Count(ctx context.Context, filter dto.UserFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.UserFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting users: %w", err)
 	}
@@ -196,7 +196,13 @@ func (svc *userService) FindUserByID(ctx context.Context, id int) (dto.FindUserD
 }
 
 func (svc *userService) FindUsers(ctx context.Context, filter *dto.UserFilterDTO) ([]dto.FindUserDTO, error) {
-	users, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	users, err := svc.repo.FindMany(ctx, models.UserFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	dtos := translate.UserModelsToFindDTOs(users)
 	if err != nil {
 		return nil, err

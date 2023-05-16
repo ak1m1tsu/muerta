@@ -9,17 +9,34 @@ import (
 )
 
 type RoleRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Role, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Role, error)
+	FindByName(ctx context.Context, name string) (models.Role, error)
+	FindMany(ctx context.Context, filter models.RoleFilter) ([]models.Role, error)
 	Create(ctx context.Context, role models.Role) error
 	Update(ctx context.Context, role models.Role) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	Count(ctx context.Context, filter models.RoleFilter) (int, error)
 }
 
 type roleRepository struct {
 	client repositories.PostgresClient
+}
+
+// FindByName implements RoleRepositorer
+func (r *roleRepository) FindByName(ctx context.Context, name string) (models.Role, error) {
+	var (
+		query = `
+			SELECT id, name FROM roles
+			WHERE name = $1
+			LIMIT 1
+		`
+		role models.Role
+	)
+	if err := r.client.QueryRow(ctx, query, name).Scan(&role.ID, &role.Name); err != nil {
+		return role, fmt.Errorf("failed to find role by name: %w", err)
+	}
+	return role, nil
 }
 
 func New(client repositories.PostgresClient) RoleRepositorer {
@@ -28,14 +45,17 @@ func New(client repositories.PostgresClient) RoleRepositorer {
 	}
 }
 
-func (r *roleRepository) Count(ctx context.Context) (int, error) {
+func (r *roleRepository) Count(ctx context.Context, filter models.RoleFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM roles WHERE deleted_at IS NULL
+			SELECT COUNT(*) 
+			FROM roles 
+			WHERE deleted_at IS NULL AND
+				name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count roles: %w", err)
 	}
 	return count, nil
@@ -88,18 +108,19 @@ func (r *roleRepository) FindByID(ctx context.Context, id int) (models.Role, err
 }
 
 // FindMany implements RoleRepositorer
-func (r *roleRepository) FindMany(ctx context.Context, limit int, offset int, name string) ([]models.Role, error) {
+func (r *roleRepository) FindMany(ctx context.Context, filter models.RoleFilter) ([]models.Role, error) {
 	var (
 		query = `
 			SELECT id, name
 			FROM roles
-			WHERE name ILIKE $1
+			WHERE name ILIKE $1 AND
+				deleted_at IS NULL
 			LIMIT $2
 			OFFSET $3
 		`
-		roles = make([]models.Role, 0, limit)
+		roles = make([]models.Role, 0, filter.Limit)
 	)
-	rows, err := r.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	rows, err := r.client.Query(ctx, query, "%"+filter.Name+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find roles: %w", err)
 	}

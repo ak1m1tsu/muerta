@@ -10,25 +10,25 @@ import (
 
 type MeasureRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.Measure, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Measure, error)
+	FindMany(ctx context.Context, filter models.MeasureFilter) ([]models.Measure, error)
 	Create(ctx context.Context, measure models.Measure) error
 	Update(ctx context.Context, measure models.Measure) error
 	Delete(ctx context.Context, id int) error
-	repositories.Repository
+	Count(ctx context.Context, filter models.MeasureFilter) (int, error)
 }
 
 type measureRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *measureRepository) Count(ctx context.Context) (int, error) {
+func (r *measureRepository) Count(ctx context.Context, filter models.MeasureFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM measures
+			SELECT COUNT(*) FROM measures WHERE name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count measures: %w", err)
 	}
 	return count, nil
@@ -80,7 +80,7 @@ func (r *measureRepository) FindByID(ctx context.Context, id int) (models.Measur
 }
 
 // FindMany implements MeasureRepositorer
-func (r *measureRepository) FindMany(ctx context.Context, limit int, offset int, name string) ([]models.Measure, error) {
+func (r *measureRepository) FindMany(ctx context.Context, filter models.MeasureFilter) ([]models.Measure, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -89,9 +89,9 @@ func (r *measureRepository) FindMany(ctx context.Context, limit int, offset int,
 			LIMIT $2
 			OFFSET $3
 		`
-		measures = make([]models.Measure, 0, limit)
+		measures = make([]models.Measure, 0, filter.Limit)
 	)
-	rows, err := r.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	rows, err := r.client.Query(ctx, query, "%"+filter.Name+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find measures: %w", err)
 	}

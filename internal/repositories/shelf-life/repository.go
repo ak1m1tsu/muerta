@@ -9,9 +9,8 @@ import (
 )
 
 type ShelfLifeRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.ShelfLife, error)
-	FindMany(ctx context.Context, limit, offset int) ([]models.ShelfLife, error)
+	FindMany(ctx context.Context, filter models.ShelfLifeFilter) ([]models.ShelfLife, error)
 	Create(ctx context.Context, measure models.ShelfLife) error
 	Update(ctx context.Context, measure models.ShelfLife) error
 	Delete(ctx context.Context, id int) error
@@ -19,13 +18,14 @@ type ShelfLifeRepositorer interface {
 	CreateStatus(ctx context.Context, id, statusID int) (models.ShelfLifeStatus, error)
 	DeleteStatus(ctx context.Context, id, statusID int) error
 	FindStatuses(ctx context.Context, id int) ([]models.ShelfLifeStatus, error)
+	Count(ctx context.Context, filter models.ShelfLifeFilter) (int, error)
 }
 
 type shelfLifeRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *shelfLifeRepository) Count(ctx context.Context) (int, error) {
+func (r *shelfLifeRepository) Count(ctx context.Context, filter models.ShelfLifeFilter) (int, error) {
 	var (
 		query = `
 			SELECT COUNT(*) FROM shelf_lives WHERE deleted_at IS NULL
@@ -157,7 +157,7 @@ func (r *shelfLifeRepository) FindByID(ctx context.Context, id int) (models.Shel
 }
 
 // FindMany implements ShelfLifeRepositorer
-func (r *shelfLifeRepository) FindMany(ctx context.Context, limit int, offset int) ([]models.ShelfLife, error) {
+func (r *shelfLifeRepository) FindMany(ctx context.Context, filter models.ShelfLifeFilter) ([]models.ShelfLife, error) {
 	var (
 		query = `
 			SELECT sl.id, 
@@ -169,13 +169,14 @@ func (r *shelfLifeRepository) FindMany(ctx context.Context, limit int, offset in
 			JOIN products p ON p.id = sl.id_product
 			JOIN storages s ON s.id = sl.id_storage
 			JOIN measures m ON m.id = sl.id_measure
+			WHERE sl.deleted_at IS NULL
 			ORDER BY sl.created_at DESC
 			LIMIT $1 
 			OFFSET $2
 		`
-		shelfLives = make([]models.ShelfLife, 0, limit)
+		shelfLives = make([]models.ShelfLife, 0, filter.Limit)
 	)
-	rows, err := r.client.Query(ctx, query, limit, offset)
+	rows, err := r.client.Query(ctx, query, filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find shelf lives: %w", err)
 	}

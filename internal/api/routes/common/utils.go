@@ -10,13 +10,8 @@ import (
 
 var DefaultIdKey = "id"
 
-func ParseIDFromPath(ctx *fiber.Ctx, idKey ...string) (int, error) {
-	key := DefaultIdKey
-	if len(idKey) != 0 {
-		key = idKey[0]
-	}
-	param := ctx.Params(key, "")
-	id, err := strconv.Atoi(param)
+func ParseIDFromPath(ctx *fiber.Ctx, key string) (int, error) {
+	id, err := strconv.Atoi(ctx.Params(key))
 	if err != nil {
 		return -1, err
 	}

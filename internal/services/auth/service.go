@@ -81,7 +81,7 @@ func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUpDTO) er
 	if _, err := s.userRepository.FindByName(ctx, payload.Name); err == nil {
 		return fmt.Errorf("user already exists")
 	}
-	roles, err := s.roleRepository.FindMany(ctx, 1, 0, "user")
+	role, err := s.roleRepository.FindByName(ctx, "user")
 	if err != nil {
 		return fmt.Errorf("failed to find roles: %w", err)
 	}
@@ -90,13 +90,13 @@ func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUpDTO) er
 	model := models.User{
 		Name:  payload.Name,
 		Salt:  salt,
-		Roles: roles,
+		Roles: []models.Role{role},
 		Password: models.Password{
 			Hash: hash,
 		},
 	}
 	if err := s.userRepository.Create(ctx, model); err != nil {
-		return err
+		return fmt.Errorf("failed to create user: %w", err)
 	}
 	return nil
 }

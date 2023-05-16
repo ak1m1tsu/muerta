@@ -9,9 +9,8 @@ import (
 )
 
 type ProductRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Product, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Product, error)
+	FindMany(ctx context.Context, filter models.ProductFilter) ([]models.Product, error)
 	Create(ctx context.Context, product models.Product) error
 	Update(ctx context.Context, product models.Product) error
 	Delete(ctx context.Context, id int) error
@@ -23,6 +22,7 @@ type ProductRepositorer interface {
 	FindTips(ctx context.Context, id int) ([]models.Tip, error)
 	CreateTip(ctx context.Context, productID, tipID int) (models.Tip, error)
 	DeleteTip(ctx context.Context, productID, tipID int) error
+	Count(ctx context.Context, filter models.ProductFilter) (int, error)
 }
 
 type productRepository struct {
@@ -90,7 +90,7 @@ func (r *productRepository) FindTips(ctx context.Context, id int) ([]models.Tip,
 }
 
 // Count implements ProductRepositorer
-func (r *productRepository) Count(ctx context.Context) (int, error) {
+func (r *productRepository) Count(ctx context.Context, filter models.ProductFilter) (int, error) {
 	var (
 		query = `
 			SELECT COUNT(*) FROM products WHERE deleted_at IS NULL
@@ -212,19 +212,20 @@ func (repo *productRepository) FindByID(ctx context.Context, id int) (models.Pro
 	return product, nil
 }
 
-func (repo *productRepository) FindMany(ctx context.Context, limit, offset int, name string) ([]models.Product, error) {
+func (repo *productRepository) FindMany(ctx context.Context, filter models.ProductFilter) ([]models.Product, error) {
 	var (
 		query = `
 			SELECT id, name
 			FROM products
-			WHERE name ILIKE $3 AND deleted_at IS NULL
+			WHERE name ILIKE $3 AND 
+				deleted_at IS NULL
 			ORDER BY name ASC
 			LIMIT $1
 			OFFSET $2
 		`
-		products = make([]models.Product, 0, limit)
+		products = make([]models.Product, 0, filter.Limit)
 	)
-	rows, err := repo.client.Query(ctx, query, limit, offset, "%"+name+"%")
+	rows, err := repo.client.Query(ctx, query, filter.Limit, filter.Offset, "%"+filter.Name+"%")
 	if err != nil {
 		return nil, fmt.Errorf("failed to find products: %w", err)
 	}

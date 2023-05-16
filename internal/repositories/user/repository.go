@@ -11,10 +11,9 @@ import (
 )
 
 type UserRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.User, error)
 	FindByName(ctx context.Context, name string) (models.User, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.User, error)
+	FindMany(ctx context.Context, filter models.UserFilter) ([]models.User, error)
 	FindPassword(ctx context.Context, passhash string) (models.Password, error)
 	Create(ctx context.Context, user models.User) error
 	Update(ctx context.Context, user models.User) error
@@ -33,6 +32,7 @@ type UserRepositorer interface {
 	UpdateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error)
 	DeleteShelfLife(ctx context.Context, userId int, shelfLifeId int) error
 	RestoreShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error)
+	Count(ctx context.Context, filter models.UserFilter) (int, error)
 }
 
 type userRepository struct {
@@ -43,14 +43,17 @@ func New(client repositories.PostgresClient) UserRepositorer {
 	return &userRepository{client: client}
 }
 
-func (r *userRepository) Count(ctx context.Context) (int, error) {
+func (r *userRepository) Count(ctx context.Context, filter models.UserFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM users WHERE deleted_at IS NULL
+			SELECT COUNT(*) 
+			FROM users 
+			WHERE deleted_at IS NULL AND
+				name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, errors.ErrFailedToCountModels.With(err)
 	}
 	return count, nil
@@ -480,19 +483,19 @@ func (repo *userRepository) FindByName(ctx context.Context, name string) (models
 	return user, nil
 }
 
-func (repo *userRepository) FindMany(ctx context.Context, limit, offset int, name string) ([]models.User, error) {
+func (repo *userRepository) FindMany(ctx context.Context, filter models.UserFilter) ([]models.User, error) {
 	var (
 		query = `
 			SELECT id, name, created_at
 			FROM users
-			WHERE name LIKE $1
+			WHERE name LIKE $1 AND deleted_at IS NULL
 			ORDER BY created_at DESC
 			LIMIT $2
 			OFFSET $3
 		`
-		users = make([]models.User, 0, limit)
+		users = make([]models.User, 0, filter.Limit)
 	)
-	rows, err := repo.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	rows, err := repo.client.Query(ctx, query, "%"+filter.Name+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, errors.ErrFailedToSelectUsers.With(err)
 	}

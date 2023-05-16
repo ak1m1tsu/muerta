@@ -7,7 +7,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repository "github.com/romankravchuk/muerta/internal/repositories/measure"
-	"github.com/romankravchuk/muerta/internal/services"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
 
 type MeasureServicer interface {
@@ -16,15 +16,15 @@ type MeasureServicer interface {
 	CreateMeasure(ctx context.Context, payload *dto.CreateMeasureDTO) error
 	UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasureDTO) error
 	DeleteMeasure(ctx context.Context, id int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.MeasureFilterDTO) (int, error)
 }
 
 type measureService struct {
 	repo repository.MeasureRepositorer
 }
 
-func (s *measureService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *measureService) Count(ctx context.Context, filter dto.MeasureFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.MeasureFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting measures: %w", err)
 	}
@@ -60,7 +60,13 @@ func (svc *measureService) FindMeasureByID(ctx context.Context, id int) (dto.Fin
 
 // FindMeasures implements MeasureServicer
 func (svc *measureService) FindMeasures(ctx context.Context, filter *dto.MeasureFilterDTO) ([]dto.FindMeasureDTO, error) {
-	models, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	models, err := svc.repo.FindMany(ctx, models.MeasureFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	dtos := translate.MeasureModelsToFindDTOs(models)
 	if err != nil {
 		return nil, err

@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/v1/auth"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers/v1/measure"
@@ -27,9 +25,7 @@ import (
 
 func New(cfg *config.Config, app fiber.Router, client repositories.PostgresClient, logger *log.Logger) {
 	jware := jware.New(cfg, logger)
-	a := auth.NewRouter(cfg, client, logger, jware)
-	app.Mount("/auth", a)
-	fmt.Println(a.MountPath())
+	app.Mount("/auth", auth.NewRouter(cfg, client, logger, jware))
 	app.Mount("/shelf-life-detector", shelflifedetector.NewRouter(cfg, logger, jware))
 	app.Mount("/recipes", recipe.NewRouter(client, logger, jware))
 	app.Mount("/users", user.NewRouter(client, logger, jware))

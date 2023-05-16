@@ -9,9 +9,8 @@ import (
 )
 
 type StorageTypeRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.StorageType, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.StorageType, error)
+	FindMany(ctx context.Context, filter models.StorageTypeFilter) ([]models.StorageType, error)
 	Create(ctx context.Context, storageType models.StorageType) error
 	Update(ctx context.Context, storageType models.StorageType) error
 	Delete(ctx context.Context, id int) error
@@ -19,20 +18,23 @@ type StorageTypeRepositorer interface {
 	CreateTip(ctx context.Context, id int, tipID int) (models.Tip, error)
 	DeleteTip(ctx context.Context, id int, tipID int) error
 	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
+	Count(ctx context.Context, filter models.StorageTypeFilter) (int, error)
 }
 
 type storageTypeRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *storageTypeRepository) Count(ctx context.Context) (int, error) {
+func (r *storageTypeRepository) Count(ctx context.Context, filter models.StorageTypeFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM storages_types
+			SELECT COUNT(*) 
+			FROM storages_types 
+			WHERE name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count types: %w", err)
 	}
 	return count, nil
@@ -169,7 +171,7 @@ func (r *storageTypeRepository) FindByID(ctx context.Context, id int) (models.St
 }
 
 // FindMany implements StorageTypeRepositorer
-func (r *storageTypeRepository) FindMany(ctx context.Context, limit int, offset int, name string) ([]models.StorageType, error) {
+func (r *storageTypeRepository) FindMany(ctx context.Context, filter models.StorageTypeFilter) ([]models.StorageType, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -178,9 +180,9 @@ func (r *storageTypeRepository) FindMany(ctx context.Context, limit int, offset 
 			LIMIT $2
 			OFFSET $3
 		`
-		storageTypes = make([]models.StorageType, 0, limit)
+		storageTypes = make([]models.StorageType, 0, filter.Limit)
 	)
-	rows, err := r.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	rows, err := r.client.Query(ctx, query, "%"+filter.Name+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find storageTypes: %w", err)
 	}

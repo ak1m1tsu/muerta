@@ -13,11 +13,6 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 )
 
-// Repository is an interface for defining methods to interact with a PostgreSQL database.
-type Repository interface {
-	Count(ctx context.Context) (int, error)
-}
-
 // PostgresClient is an interface for defining methods to interact with a PostgreSQL client.
 type PostgresClient interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)

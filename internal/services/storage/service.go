@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	"github.com/romankravchuk/muerta/internal/repositories/storage"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type StorageServicer interface {
@@ -21,7 +21,7 @@ type StorageServicer interface {
 	CreateTip(ctx context.Context, id, tipID int) (dto.FindTipDTO, error)
 	DeleteTip(ctx context.Context, id, tipID int) error
 	FindShelfLives(ctx context.Context, id int) ([]dto.FindShelfLifeDTO, error)
-	services.Counter
+	Count(ctx context.Context, filter dto.StorageFilterDTO) (int, error)
 }
 
 type storageService struct {
@@ -36,8 +36,8 @@ func (s *storageService) FindShelfLives(ctx context.Context, id int) ([]dto.Find
 	return translate.ShelfLifeModelsToFindDTOs(result), nil
 }
 
-func (s *storageService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *storageService) Count(ctx context.Context, filter dto.StorageFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.StorageFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting storages: %w", err)
 	}
@@ -86,7 +86,10 @@ func (s *storageService) FindStorageByID(ctx context.Context, id int) (dto.FindS
 }
 
 func (s *storageService) FindStorages(ctx context.Context, filter *dto.StorageFilterDTO) ([]dto.FindStorageDTO, error) {
-	models, err := s.repo.FindMany(ctx, filter.Limit, filter.Offset)
+	models, err := s.repo.FindMany(ctx, models.StorageFilter{
+		PageFilter: models.PageFilter{Limit: filter.Limit, Offset: filter.Offset},
+		Name:       filter.Name,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find storages: %w", err)
 	}

@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repository "github.com/romankravchuk/muerta/internal/repositories/role"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type RoleServicer interface {
@@ -17,7 +17,7 @@ type RoleServicer interface {
 	UpdateRole(ctx context.Context, id int, payload *dto.UpdateRoleDTO) error
 	DeleteRole(ctx context.Context, id int) error
 	RestoreRole(ctx context.Context, id int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.RoleFilterDTO) (int, error)
 }
 
 type roleService struct {
@@ -30,8 +30,8 @@ func New(repo repository.RoleRepositorer) RoleServicer {
 	}
 }
 
-func (s *roleService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *roleService) Count(ctx context.Context, filter dto.RoleFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.RoleFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting roles: %w", err)
 	}
@@ -67,7 +67,13 @@ func (s *roleService) FindRoleByID(ctx context.Context, id int) (dto.FindRoleDTO
 
 // FindRoles implements RoleServicer
 func (s *roleService) FindRoles(ctx context.Context, filter *dto.RoleFilterDTO) ([]dto.FindRoleDTO, error) {
-	roles, err := s.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	roles, err := s.repo.FindMany(ctx, models.RoleFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to find roles: %w", err)
 	}

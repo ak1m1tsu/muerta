@@ -1,10 +1,5 @@
 package dto
 
-type ProductFilterDTO struct {
-	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
-}
-
 type CreateProductDTO struct {
 	Name string `json:"name" validate:"required,gte=2,notblank"`
 }
