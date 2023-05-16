@@ -114,7 +114,7 @@ func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
-	count, err := h.svc.Count(ctx.Context())
+	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).

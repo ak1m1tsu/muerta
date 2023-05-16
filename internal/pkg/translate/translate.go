@@ -144,7 +144,10 @@ func StorageModelToFindDTO(model *models.Storage) dto.FindStorageDTO {
 		Temperature: model.Temperature,
 		CreatedAt:   model.CreatedAt,
 		Humidity:    model.Humidity,
-		TypeName:    model.Type.Name,
+		Type: dto.FindStorageTypeDTO{
+			ID:   model.Type.ID,
+			Name: model.Type.Name,
+		},
 	}
 }
 
@@ -323,7 +326,6 @@ func ShelfLifeModelToFindDTO(model *models.ShelfLife) dto.FindShelfLifeDTO {
 			Name:        model.Storage.Name,
 			Temperature: model.Storage.Temperature,
 			Humidity:    model.Storage.Humidity,
-			TypeName:    model.Storage.Type.Name,
 			CreatedAt:   model.Storage.CreatedAt,
 		},
 		Measure: dto.FindMeasureDTO{

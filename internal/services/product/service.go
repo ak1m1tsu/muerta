@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repo "github.com/romankravchuk/muerta/internal/repositories/product"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type ProductServicer interface {
@@ -24,7 +24,7 @@ type ProductServicer interface {
 	FindProductTips(ctx context.Context, id int) ([]dto.FindTipDTO, error)
 	CreateProductTip(ctx context.Context, productID, tipID int) (dto.FindTipDTO, error)
 	DeleteProductTip(ctx context.Context, productID, tipID int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.ProductFilterDTO) (int, error)
 }
 
 type productService struct {
@@ -58,8 +58,8 @@ func (s *productService) FindProductTips(ctx context.Context, id int) ([]dto.Fin
 	return translate.TipModelsToFindDTOs(result), nil
 }
 
-func (s *productService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *productService) Count(ctx context.Context, filter dto.ProductFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.ProductFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting products: %w", err)
 	}
@@ -99,7 +99,13 @@ func (svc *productService) FindProductByID(ctx context.Context, id int) (dto.Fin
 }
 
 func (svc *productService) FindProducts(ctx context.Context, filter *dto.ProductFilterDTO) ([]dto.FindProductDTO, error) {
-	models, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	models, err := svc.repo.FindMany(ctx, models.ProductFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	dtos := translate.ProductModelsToFindDTOs(models)
 	if err != nil {
 		return nil, err

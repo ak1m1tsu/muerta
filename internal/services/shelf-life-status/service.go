@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	repository "github.com/romankravchuk/muerta/internal/repositories/shelf-life-status"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type ShelfLifeStatusServicer interface {
@@ -16,15 +16,15 @@ type ShelfLifeStatusServicer interface {
 	CreateShelfLifeStatus(ctx context.Context, payload *dto.CreateShelfLifeStatusDTO) error
 	UpdateShelfLifeStatus(ctx context.Context, id int, payload *dto.UpdateShelfLifeStatusDTO) error
 	DeleteShelfLifeStatus(ctx context.Context, id int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.ShelfLifeStatusFilterDTO) (int, error)
 }
 
 type shelfLifeStatusService struct {
 	repo repository.ShelfLifeStatusRepositorer
 }
 
-func (s *shelfLifeStatusService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *shelfLifeStatusService) Count(ctx context.Context, filter dto.ShelfLifeStatusFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.ShelfLifeStatusFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting shelf life statuses: %w", err)
 	}
@@ -60,7 +60,13 @@ func (svc *shelfLifeStatusService) FindShelfLifeStatusByID(ctx context.Context, 
 
 // FindShelfLifeStatuss implements ShelfLifeStatusServicer
 func (svc *shelfLifeStatusService) FindShelfLifeStatuss(ctx context.Context, filter *dto.ShelfLifeStatusFilterDTO) ([]dto.FindShelfLifeStatusDTO, error) {
-	models, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	models, err := svc.repo.FindMany(ctx, models.ShelfLifeStatusFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	dtos := translate.ShelfLifeStatusModelsToFindDTOs(models)
 	if err != nil {
 		return nil, err

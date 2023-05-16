@@ -9,13 +9,13 @@ import (
 )
 
 type SettingsRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Setting, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Setting, error)
+	FindMany(ctx context.Context, filter models.SettingFilter) ([]models.Setting, error)
 	Create(ctx context.Context, setting models.Setting) error
 	Update(ctx context.Context, setting models.Setting) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
+	Count(ctx context.Context, filter models.SettingFilter) (int, error)
 }
 
 type settingsRepository struct {
@@ -28,14 +28,17 @@ func New(client repositories.PostgresClient) SettingsRepositorer {
 	}
 }
 
-func (r *settingsRepository) Count(ctx context.Context) (int, error) {
+func (r *settingsRepository) Count(ctx context.Context, filter models.SettingFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM settings WHERE deleted_at IS NULL
+			SELECT COUNT(*) 
+			FROM settings 
+			WHERE deleted_at IS NULL AND
+				name LIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count settings: %w", err)
 	}
 	return count, nil
@@ -58,20 +61,22 @@ func (r *settingsRepository) FindByID(ctx context.Context, id int) (models.Setti
 	return setting, nil
 }
 
-func (r *settingsRepository) FindMany(ctx context.Context, limit, offset int, name string) ([]models.Setting, error) {
+func (r *settingsRepository) FindMany(ctx context.Context, filter models.SettingFilter) ([]models.Setting, error) {
 	var (
 		query = `
 			SELECT s.id, s.name, c.id, c.name
 			FROM settings s
 			JOIN settings_categories c ON c.id = s.id_category
-			WHERE s.name LIKE $1
+			WHERE 
+				s.name ILIKE $1 AND
+				s.deleted_at IS NULL
 			ORDER BY c.id
 			LIMIT $2
 			OFFSET $3
 		`
 		settings []models.Setting
 	)
-	rows, err := r.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	rows, err := r.client.Query(ctx, query, "%"+filter.Name+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find settings: %w", err)
 	}

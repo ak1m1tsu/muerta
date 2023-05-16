@@ -9,27 +9,30 @@ import (
 )
 
 type StepRepositorer interface {
-	repositories.Repository
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Step, error)
+	FindMany(ctx context.Context, filter models.StepFilter) ([]models.Step, error)
 	Create(ctx context.Context, model *models.Step) error
 	Update(ctx context.Context, id int, model models.Step) error
 	FindByID(ctx context.Context, id int) (models.Step, error)
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) (models.Step, error)
+	Count(ctx context.Context, filter models.StepFilter) (int, error)
 }
 
 type stepRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *stepRepository) Count(ctx context.Context) (int, error) {
+func (r *stepRepository) Count(ctx context.Context, filter models.StepFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM steps WHERE deleted_at IS NULL
+			SELECT COUNT(*) 
+			FROM steps 
+			WHERE deleted_at IS NULL AND
+				name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count steps: %w", err)
 	}
 	return count, nil
@@ -79,18 +82,19 @@ func (r *stepRepository) FindByID(ctx context.Context, id int) (models.Step, err
 }
 
 // FindMany implements StepRepositorer
-func (r *stepRepository) FindMany(ctx context.Context, limit int, offset int, name string) ([]models.Step, error) {
+func (r *stepRepository) FindMany(ctx context.Context, filter models.StepFilter) ([]models.Step, error) {
 	var (
 		query = `
 			SELECT id, name
 			FROM steps
-			WHERE deleted_at IS NULL
+			WHERE deleted_at IS NULL AND
+				name ILIKE $3
 			LIMIT $1
 			OFFSET $2
 		`
 		entities []models.Step
 	)
-	rows, err := r.client.Query(ctx, query, limit, offset)
+	rows, err := r.client.Query(ctx, query, filter.Limit, filter.Offset, "%"+filter.Name+"%")
 	if err != nil {
 		return nil, fmt.Errorf("failed to find steps: %w", err)
 	}

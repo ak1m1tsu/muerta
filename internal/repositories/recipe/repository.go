@@ -24,28 +24,31 @@ type RecipeStepsRepositorer interface {
 
 type RecipesRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.Recipe, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.Recipe, error)
+	FindMany(ctx context.Context, filter models.RecipeFilter) ([]models.Recipe, error)
 	Create(ctx context.Context, recipe *models.Recipe) error
 	Update(ctx context.Context, recipe *models.Recipe) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
 	RecipeIngredientsRepositorer
 	RecipeStepsRepositorer
-	repositories.Repository
+	Count(ctx context.Context, filter models.RecipeFilter) (int, error)
 }
 
 type recipesRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *recipesRepository) Count(ctx context.Context) (int, error) {
+func (r *recipesRepository) Count(ctx context.Context, filter models.RecipeFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM recipes WHERE deleted_at IS NULL
+			SELECT COUNT(*) 
+			FROM recipes 
+			WHERE deleted_at IS NULL AND
+				name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count recipes: %w", err)
 	}
 	return count, nil
@@ -252,13 +255,12 @@ func (r *recipesRepository) FindByID(ctx context.Context, id int) (models.Recipe
 	return recipe, nil
 }
 
-func (r *recipesRepository) FindMany(ctx context.Context, limit, offset int, name string) ([]models.Recipe, error) {
+func (r *recipesRepository) FindMany(ctx context.Context, filter models.RecipeFilter) ([]models.Recipe, error) {
 	var (
 		query = `
 			SELECT id, name, description
 			FROM recipes
-			WHERE 
-				name LIKE $1 AND 
+			WHERE name LIKE $1 AND 
 				deleted_at IS NULL
 			ORDER BY id ASC
 			LIMIT $2
@@ -266,7 +268,7 @@ func (r *recipesRepository) FindMany(ctx context.Context, limit, offset int, nam
 		`
 		recipes []models.Recipe
 	)
-	rows, err := r.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	rows, err := r.client.Query(ctx, query, "%"+filter.Name+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query recipes: %w", err)
 	}

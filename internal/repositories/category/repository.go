@@ -10,19 +10,19 @@ import (
 
 type CategoryRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.ProductCategory, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.ProductCategory, error)
+	FindMany(ctx context.Context, filter models.ProductCategoryFilter) ([]models.ProductCategory, error)
 	Create(ctx context.Context, role models.ProductCategory) error
 	Update(ctx context.Context, role models.ProductCategory) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
-	repositories.Repository
+	Count(ctx context.Context, filter models.ProductCategoryFilter) (int, error)
 }
 
 type categoryRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *categoryRepository) Count(ctx context.Context) (int, error) {
+func (r *categoryRepository) Count(ctx context.Context, filter models.ProductCategoryFilter) (int, error) {
 	var (
 		query = `
 			SELECT COUNT(*) FROM categories WHERE deleted_at IS NULL
@@ -79,26 +79,26 @@ func (r *categoryRepository) FindByID(ctx context.Context, id int) (models.Produ
 }
 
 // FindMany implements CategoryRepositorer
-func (r *categoryRepository) FindMany(ctx context.Context, limit int, offset int, name string) ([]models.ProductCategory, error) {
+func (r *categoryRepository) FindMany(ctx context.Context, filter models.ProductCategoryFilter) ([]models.ProductCategory, error) {
 	var (
 		query = `
-			SELECT id, name, created_at
+			SELECT id, name
 			FROM categories
-			WHERE name ILIKE $3
+			WHERE name ILIKE $3 and deleted_at IS NULL
 			ORDER BY created_at DESC
 			LIMIT $1
 			OFFSET $2
 		`
-		categories = make([]models.ProductCategory, 0, limit)
+		categories = make([]models.ProductCategory, 0, filter.Limit)
 	)
-	rows, err := r.client.Query(ctx, query, limit, offset, "%"+name+"%")
+	rows, err := r.client.Query(ctx, query, filter.Limit, filter.Offset, "%"+filter.Name+"%")
 	if err != nil {
 		return nil, fmt.Errorf("failed to find categories: %w", err)
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var category models.ProductCategory
-		if err := rows.Scan(&category.ID, &category.Name, &category.CreatedAt); err != nil {
+		if err := rows.Scan(&category.ID, &category.Name); err != nil {
 			return nil, fmt.Errorf("failed to scan category: %w", err)
 		}
 		categories = append(categories, category)

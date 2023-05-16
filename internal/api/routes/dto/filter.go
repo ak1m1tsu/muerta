@@ -1,13 +1,18 @@
 package dto
 
 type Paging struct {
-	Limit  int `query:"limit" example:"10" validate:"omitempty,gte=0"`
+	Limit  int `query:"limit" example:"10" validate:"required,oneof=5 10 15 20 25 30"`
 	Offset int `query:"offset" example:"0" validate:"omitempty,gte=0"`
 }
 
 type ProductCategoryFilterDTO struct {
 	Paging
 	Name string `query:"name" example:"овощь" validate:"omitempty,gte=1,notblank"`
+}
+
+type ProductFilterDTO struct {
+	Paging
+	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
 }
 
 type MeasureFilterDTO struct {

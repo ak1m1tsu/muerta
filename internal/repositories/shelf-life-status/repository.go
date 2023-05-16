@@ -9,26 +9,28 @@ import (
 )
 
 type ShelfLifeStatusRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.ShelfLifeStatus, error)
-	FindMany(ctx context.Context, limit, offset int, name string) ([]models.ShelfLifeStatus, error)
+	FindMany(ctx context.Context, filter models.ShelfLifeStatusFilter) ([]models.ShelfLifeStatus, error)
 	Create(ctx context.Context, shelfLifeStatus models.ShelfLifeStatus) error
 	Update(ctx context.Context, shelfLifeStatus models.ShelfLifeStatus) error
 	Delete(ctx context.Context, id int) error
+	Count(ctx context.Context, filter models.ShelfLifeStatusFilter) (int, error)
 }
 
 type shelfLifeStatusRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *shelfLifeStatusRepository) Count(ctx context.Context) (int, error) {
+func (r *shelfLifeStatusRepository) Count(ctx context.Context, filter models.ShelfLifeStatusFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM statuses
+			SELECT COUNT(*) 
+			FROM statuses
+			WHERE name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count statuses: %w", err)
 	}
 	return count, nil
@@ -80,7 +82,7 @@ func (r *shelfLifeStatusRepository) FindByID(ctx context.Context, id int) (model
 }
 
 // FindMany implements ShelfLifeStatusRepositorer
-func (r *shelfLifeStatusRepository) FindMany(ctx context.Context, limit int, offset int, name string) ([]models.ShelfLifeStatus, error) {
+func (r *shelfLifeStatusRepository) FindMany(ctx context.Context, filter models.ShelfLifeStatusFilter) ([]models.ShelfLifeStatus, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -89,9 +91,9 @@ func (r *shelfLifeStatusRepository) FindMany(ctx context.Context, limit int, off
 			LIMIT $2
 			OFFSET $3
 		`
-		statuses = make([]models.ShelfLifeStatus, 0, limit)
+		statuses = make([]models.ShelfLifeStatus, 0, filter.Limit)
 	)
-	rows, err := r.client.Query(ctx, query, "%"+name+"%", limit, offset)
+	rows, err := r.client.Query(ctx, query, "%"+filter.Name+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find statuses: %w", err)
 	}

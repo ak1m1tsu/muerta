@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -44,15 +45,19 @@ func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
+	fmt.Printf("%+v\n", filter)
 	result, err := h.svc.FindUsers(ctx.Context(), filter)
+	fmt.Println(result)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	count, err := h.svc.Count(ctx.Context())
+	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"users": result, "count": count}})
 }
@@ -61,15 +66,18 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateUserDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if errs := validator.Validate(payload); errs != nil {
 		h.log.ValidationError(ctx, errs)
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateUser(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -78,15 +86,18 @@ func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	var payload *dto.UpdateUserDTO
 	if err := ctx.BodyParser(&payload); err != nil {
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if errs := validator.Validate(payload); errs != nil {
 		h.log.ValidationError(ctx, errs)
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateUser(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -95,7 +106,8 @@ func (h *UserHanlder) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	if err := h.svc.DeleteUser(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -104,7 +116,8 @@ func (h *UserHanlder) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	if err := h.svc.RestoreUser(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }

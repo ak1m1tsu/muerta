@@ -108,7 +108,7 @@ func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
-	count, err := h.svc.Count(ctx.Context())
+	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})

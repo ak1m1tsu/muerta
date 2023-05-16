@@ -7,7 +7,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
 	repository "github.com/romankravchuk/muerta/internal/repositories/category"
-	"github.com/romankravchuk/muerta/internal/services"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
 
 type CategoryServicer interface {
@@ -17,15 +17,15 @@ type CategoryServicer interface {
 	UpdateCategory(ctx context.Context, id int, category *dto.UpdateProductCategoryDTO) error
 	DeleteCategory(ctx context.Context, id int) error
 	RestoreCategory(ctx context.Context, id int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.ProductCategoryFilterDTO) (int, error)
 }
 
 type categoryService struct {
 	repo repository.CategoryRepositorer
 }
 
-func (s *categoryService) Count(ctx context.Context) (int, error) {
-	count, err := s.repo.Count(ctx)
+func (s *categoryService) Count(ctx context.Context, filter dto.ProductCategoryFilterDTO) (int, error) {
+	count, err := s.repo.Count(ctx, models.ProductCategoryFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting users: %w", err)
 	}
@@ -61,7 +61,13 @@ func (svc *categoryService) FindCategoryByID(ctx context.Context, id int) (dto.F
 
 // FindCategorys implements CategoryServicer
 func (svc *categoryService) FindCategorys(ctx context.Context, filter *dto.ProductCategoryFilterDTO) ([]dto.FindProductCategoryDTO, error) {
-	categories, err := svc.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	categories, err := svc.repo.FindMany(ctx, models.ProductCategoryFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name: filter.Name,
+	})
 	if err != nil {
 		return nil, err
 	}

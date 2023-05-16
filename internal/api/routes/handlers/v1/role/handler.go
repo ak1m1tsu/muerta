@@ -40,12 +40,14 @@ func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindRoles(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	count, err := h.svc.Count(ctx.Context())
+	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result, "count": count}})
 }
@@ -55,7 +57,8 @@ func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindRoleByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result}})
 }
@@ -64,15 +67,18 @@ func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
 	var payload *dto.CreateRoleDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if errs := validator.Validate(payload); errs != nil {
 		h.log.ValidationError(ctx, errs)
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateRole(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -82,15 +88,18 @@ func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
 	var payload *dto.UpdateRoleDTO
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if errs := validator.Validate(payload); errs != nil {
 		h.log.ValidationError(ctx, errs)
-		return fiber.ErrBadRequest
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateRole(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -99,7 +108,8 @@ func (h *RoleHandler) DeleteRole(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.DeleteRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -108,7 +118,8 @@ func (h *RoleHandler) RestoreRole(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.RestoreRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return fiber.ErrBadGateway
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }

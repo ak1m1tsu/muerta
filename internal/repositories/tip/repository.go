@@ -9,9 +9,8 @@ import (
 )
 
 type TipRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Tip, error)
-	FindMany(ctx context.Context, limit, offset int, description string) ([]models.Tip, error)
+	FindMany(ctx context.Context, filter models.TipFilter) ([]models.Tip, error)
 	Create(ctx context.Context, tip *models.Tip) error
 	Update(ctx context.Context, tip models.Tip) error
 	Delete(ctx context.Context, id int) error
@@ -22,6 +21,7 @@ type TipRepositorer interface {
 	RemoveProduct(ctx context.Context, tipID, productID int) error
 	AddStorage(ctx context.Context, tipID, storageID int) (models.Storage, error)
 	RemoveStorage(ctx context.Context, tipID, storageID int) error
+	Count(ctx context.Context, filter models.TipFilter) (int, error)
 }
 
 type tipRepository struct {
@@ -105,14 +105,17 @@ func New(client repositories.PostgresClient) TipRepositorer {
 	}
 }
 
-func (r *tipRepository) Count(ctx context.Context) (int, error) {
+func (r *tipRepository) Count(ctx context.Context, filter models.TipFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM tips WHERE deleted_at IS NULL
+			SELECT COUNT(*) 
+			FROM tips 
+			WHERE deleted_at IS NULL AND
+				description ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Description+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count tips: %w", err)
 	}
 	return count, nil
@@ -218,18 +221,19 @@ func (r *tipRepository) FindByID(ctx context.Context, id int) (models.Tip, error
 }
 
 // FindMany implements TipRepositorer
-func (r *tipRepository) FindMany(ctx context.Context, limit int, offset int, description string) ([]models.Tip, error) {
+func (r *tipRepository) FindMany(ctx context.Context, filter models.TipFilter) ([]models.Tip, error) {
 	var (
 		query = `
 			SELECT id, description
 			FROM tips
-			WHERE description ILIKE $1
+			WHERE description ILIKE $1 AND
+				deleted_at IS NULL
 			LIMIT $2
 			OFFSET $3
 		`
-		tips = make([]models.Tip, 0, limit)
+		tips = make([]models.Tip, 0, filter.Limit)
 	)
-	rows, err := r.client.Query(ctx, query, "%"+description+"%", limit, offset)
+	rows, err := r.client.Query(ctx, query, "%"+filter.Description+"%", filter.Limit, filter.Offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find tips: %w", err)
 	}

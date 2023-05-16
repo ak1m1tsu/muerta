@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/repositories/models"
 	"github.com/romankravchuk/muerta/internal/repositories/setting"
-	"github.com/romankravchuk/muerta/internal/services"
 )
 
 type UserSettingsServicer interface {
@@ -17,7 +17,7 @@ type UserSettingsServicer interface {
 	UpdateSetting(ctx context.Context, id int, setting *dto.UpdateSettingDTO) error
 	DeleteSetting(ctx context.Context, id int) error
 	RestoreSetting(ctx context.Context, id int) error
-	services.Counter
+	Count(ctx context.Context, filter dto.SettingFilterDTO) (int, error)
 }
 
 type userSettingsService struct {
@@ -25,8 +25,8 @@ type userSettingsService struct {
 }
 
 // Count implements UserSettingsServicer
-func (s *userSettingsService) Count(ctx context.Context) (int, error) {
-	return s.repo.Count(ctx)
+func (s *userSettingsService) Count(ctx context.Context, filter dto.SettingFilterDTO) (int, error) {
+	return s.repo.Count(ctx, models.SettingFilter{Name: filter.Name})
 }
 
 func New(repo setting.SettingsRepositorer) UserSettingsServicer {
@@ -43,7 +43,13 @@ func (s *userSettingsService) FindSettingByID(ctx context.Context, id int) (dto.
 }
 
 func (s *userSettingsService) FindSettings(ctx context.Context, filter *dto.SettingFilterDTO) ([]dto.FindSettingDTO, error) {
-	models, err := s.repo.FindMany(ctx, filter.Limit, filter.Offset, filter.Name)
+	models, err := s.repo.FindMany(ctx, models.SettingFilter{
+		PageFilter: models.PageFilter{
+			Limit:  filter.Limit,
+			Offset: filter.Offset,
+		},
+		Name:       filter.Name,
+	})
 	if err != nil {
 		return nil, err
 	}

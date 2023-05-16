@@ -9,9 +9,8 @@ import (
 )
 
 type StorageRepositorer interface {
-	repositories.Repository
 	FindByID(ctx context.Context, id int) (models.Storage, error)
-	FindMany(ctx context.Context, limit, offset int) ([]models.Storage, error)
+	FindMany(ctx context.Context, filter models.StorageFilter) ([]models.Storage, error)
 	Create(ctx context.Context, storage *models.Storage) error
 	Update(ctx context.Context, storage *models.Storage) error
 	Delete(ctx context.Context, id int) error
@@ -20,6 +19,7 @@ type StorageRepositorer interface {
 	DeleteTip(ctx context.Context, id, tipID int) error
 	FindTips(ctx context.Context, id int) ([]models.Tip, error)
 	FindShelfLives(ctx context.Context, id int) ([]models.ShelfLife, error)
+	Count(ctx context.Context, filter models.StorageFilter) (int, error)
 }
 
 type storageRepository struct {
@@ -62,14 +62,17 @@ func (r *storageRepository) FindShelfLives(ctx context.Context, id int) ([]model
 	return result, nil
 }
 
-func (r *storageRepository) Count(ctx context.Context) (int, error) {
+func (r *storageRepository) Count(ctx context.Context, filter models.StorageFilter) (int, error) {
 	var (
 		query = `
-			SELECT COUNT(*) FROM storages WHERE deleted_at IS NULL
+			SELECT COUNT(*) 
+			FROM storages 
+			WHERE deleted_at IS NULL AND
+				name ILIKE $1
 		`
 		count int
 	)
-	if err := r.client.QueryRow(ctx, query).Scan(&count); err != nil {
+	if err := r.client.QueryRow(ctx, query, "%"+filter.Name+"%").Scan(&count); err != nil {
 		return 0, fmt.Errorf("failed to count storages: %w", err)
 	}
 	return count, nil
@@ -164,7 +167,7 @@ func (r *storageRepository) FindByID(ctx context.Context, id int) (models.Storag
 	return storage, nil
 }
 
-func (r *storageRepository) FindMany(ctx context.Context, limit, offset int) ([]models.Storage, error) {
+func (r *storageRepository) FindMany(ctx context.Context, filter models.StorageFilter) ([]models.Storage, error) {
 	var (
 		query = `
 			SELECT 
@@ -174,12 +177,13 @@ func (r *storageRepository) FindMany(ctx context.Context, limit, offset int) ([]
 			FROM storages s
 			JOIN storages_types st ON st.id = s.id_type
 			WHERE s.deleted_at IS NULL
+				AND s.name ILIKE $3
 			ORDER BY s.created_at DESC
 			LIMIT $1 OFFSET $2
 		`
 		storages []models.Storage
 	)
-	rows, err := r.client.Query(ctx, query, limit, offset)
+	rows, err := r.client.Query(ctx, query, filter.Limit, filter.Offset, "%"+filter.Name+"%")
 	if err != nil {
 		return nil, fmt.Errorf("find many storages: %w", err)
 	}
