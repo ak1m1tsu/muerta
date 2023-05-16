@@ -39,15 +39,13 @@ func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
 //	@Router			/measures [post]
 func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
 	var payload *dto.CreateMeasureDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateMeasure(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -142,15 +140,13 @@ func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
 func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	payload := new(dto.UpdateMeasureDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateMeasure(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)

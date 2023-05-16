@@ -27,15 +27,13 @@ func New(svc service.ShelfLifeStatusServicer, log *log.Logger) ShelfLifeStatusHa
 
 func (h *ShelfLifeStatusHandler) CreateShelfLifeStatus(ctx *fiber.Ctx) error {
 	var payload *dto.CreateShelfLifeStatusDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateShelfLifeStatus(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -85,15 +83,13 @@ func (h *ShelfLifeStatusHandler) FindShelfLifeStatuses(ctx *fiber.Ctx) error {
 func (h *ShelfLifeStatusHandler) UpdateShelfLifeStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StatusID).(int)
 	payload := new(dto.UpdateShelfLifeStatusDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateShelfLifeStatus(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)

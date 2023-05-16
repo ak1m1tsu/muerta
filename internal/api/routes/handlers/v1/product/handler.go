@@ -39,13 +39,13 @@ func New(svc service.ProductServicer, log *log.Logger) *ProductHandler {
 //	@Router			/products [post]
 func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
 	var payload *dto.CreateProductDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateProduct(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -267,7 +267,7 @@ func (h *ProductHandler) CreateCategory(ctx *fiber.Ctx) error {
 //	@Param			category_id	path		integer	true	"Category ID"
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
-//	@Router			/products/{product_id}/category/{category_id} [delete]
+//	@Router			/products/{product_id}/categories/{category_id} [delete]
 func (h *ProductHandler) DeleteCategory(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	categoryID := ctx.Locals(context.CategoryID).(int)

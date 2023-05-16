@@ -299,10 +299,17 @@ paths:
       description: Returns a list of measures and their count based on the given filter.
       operationId: find-measures
       parameters:
-      - example: 10
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
         in: query
-        minimum: 0
         name: limit
+        required: true
         type: integer
       - example: кг
         in: query
@@ -459,10 +466,17 @@ paths:
       description: Find product categories with optional filters
       operationId: find-product-categories
       parameters:
-      - example: 10
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
         in: query
-        minimum: 0
         name: limit
+        required: true
         type: integer
       - example: овощь
         in: query
@@ -472,14 +486,6 @@ paths:
       - example: 0
         in: query
         minimum: 0
-        name: offset
-        type: integer
-      - description: Limit the number of results returned
-        in: query
-        name: limit
-        type: integer
-      - description: Offset for pagination
-        in: query
         name: offset
         type: integer
       produces:
@@ -647,10 +653,17 @@ paths:
       - application/json
       description: Retrieve a list of products with optional filters
       parameters:
-      - example: 10
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
         in: query
-        minimum: 0
         name: limit
+        required: true
         type: integer
       - in: query
         minLength: 1
@@ -846,6 +859,32 @@ paths:
       tags:
       - Products
   /products/{product_id}/categories/{category_id}:
+    delete:
+      description: Deletes a category from a product given the product ID and category
+        ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Delete a category from a product
+      tags:
+      - Products
     post:
       consumes:
       - application/json
@@ -874,33 +913,6 @@ paths:
           schema:
             $ref: '#/definitions/handlers.HTTPError'
       summary: Create a category for a product
-      tags:
-      - Products
-  /products/{product_id}/category/{category_id}:
-    delete:
-      description: Deletes a category from a product given the product ID and category
-        ID
-      parameters:
-      - description: Product ID
-        in: path
-        name: product_id
-        required: true
-        type: integer
-      - description: Category ID
-        in: path
-        name: category_id
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.HTTPSuccess'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.HTTPError'
-      summary: Delete a category from a product
       tags:
       - Products
   /products/{product_id}/recipes:
@@ -1006,17 +1018,27 @@ paths:
       - application/json
       description: Find recipes based on the provided filter
       parameters:
-      - description: Filter recipes by name, category, or ingredients
-        in: query
-        name: filter
-        type: string
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
         in: query
         name: limit
+        required: true
+        type: integer
+      - example: салат
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
         type: integer
       produces:
       - application/json

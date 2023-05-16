@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/romankravchuk/muerta/internal/pkg/errors"
 	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/errors"
 	"github.com/romankravchuk/muerta/internal/repositories/models"
 )
 

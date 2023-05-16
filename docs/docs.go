@@ -201,11 +201,19 @@ const docTemplate = `{
                 "operationId": "find-measures",
                 "parameters": [
                     {
-                        "minimum": 0,
+                        "enum": [
+                            5,
+                            10,
+                            15,
+                            20,
+                            25,
+                            30
+                        ],
                         "type": "integer",
                         "example": 10,
                         "name": "limit",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "minLength": 1,
@@ -441,11 +449,19 @@ const docTemplate = `{
                 "operationId": "find-product-categories",
                 "parameters": [
                     {
-                        "minimum": 0,
+                        "enum": [
+                            5,
+                            10,
+                            15,
+                            20,
+                            25,
+                            30
+                        ],
                         "type": "integer",
                         "example": 10,
                         "name": "limit",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "minLength": 1,
@@ -458,18 +474,6 @@ const docTemplate = `{
                         "minimum": 0,
                         "type": "integer",
                         "example": 0,
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Limit the number of results returned",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Offset for pagination",
                         "name": "offset",
                         "in": "query"
                     }
@@ -722,11 +726,19 @@ const docTemplate = `{
                 "summary": "Get a list of products",
                 "parameters": [
                     {
-                        "minimum": 0,
+                        "enum": [
+                            5,
+                            10,
+                            15,
+                            20,
+                            25,
+                            30
+                        ],
                         "type": "integer",
                         "example": 10,
                         "name": "limit",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "minLength": 1,
@@ -1058,9 +1070,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/products/{product_id}/category/{category_id}": {
+            },
             "delete": {
                 "description": "Deletes a category from a product given the product ID and category ID",
                 "tags": [
@@ -1260,21 +1270,32 @@ const docTemplate = `{
                 "summary": "Find recipes",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Filter recipes by name, category, or ingredients",
-                        "name": "filter",
-                        "in": "query"
-                    },
-                    {
+                        "enum": [
+                            5,
+                            10,
+                            15,
+                            20,
+                            25,
+                            30
+                        ],
                         "type": "integer",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
+                        "example": 10,
                         "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minLength": 1,
+                        "type": "string",
+                        "example": "салат",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "example": 0,
+                        "name": "offset",
                         "in": "query"
                     }
                 ],

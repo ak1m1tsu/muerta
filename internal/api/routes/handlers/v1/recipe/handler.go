@@ -39,15 +39,13 @@ func New(svc recipe.RecipeServicer, log *log.Logger) *RecipesHandler {
 //	@Router			/recipes [post]
 func (h *RecipesHandler) CreateRecipe(ctx *fiber.Ctx) error {
 	var payload *dto.CreateRecipeDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateRecipe(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -87,9 +85,7 @@ func (h *RecipesHandler) FindRecipeByID(ctx *fiber.Ctx) error {
 //	@Tags			Recipes
 //	@Accept			json
 //	@Produce		json
-//	@Param			filter	query		string	false	"Filter recipes by name, category, or ingredients"
-//	@Param			page	query		int		false	"Page number"
-//	@Param			limit	query		int		false	"Number of items per page"
+//	@Param			filter	query		dto.RecipeFilterDTO	false	"Filter recipes by name, category, or ingredients"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
@@ -137,15 +133,13 @@ func (h *RecipesHandler) FindRecipes(ctx *fiber.Ctx) error {
 func (h *RecipesHandler) UpdateRecipe(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	payload := new(dto.UpdateRecipeDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateRecipe(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -222,15 +216,13 @@ func (h *RecipesHandler) FindRecipeIngredients(ctx *fiber.Ctx) error {
 func (h *RecipesHandler) CreateIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	var payload *dto.CreateIngredientDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.CreateIngredient(ctx.Context(), id, payload)
 	if err != nil {
@@ -257,15 +249,13 @@ func (h *RecipesHandler) CreateIngredient(ctx *fiber.Ctx) error {
 func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	var payload *dto.UpdateIngredientDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.UpdateIngredient(ctx.Context(), id, payload)
 	if err != nil {
@@ -292,15 +282,13 @@ func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 func (h *RecipesHandler) DeleteIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	var payload *dto.DeleteIngredientDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.DeleteIngredient(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -348,15 +336,13 @@ func (h *RecipesHandler) CreateRecipeStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)
 	var payload *dto.CreateRecipeStepDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.CreateRecipeStep(ctx.Context(), recipeId, stepId, payload.Place)
 	if err != nil {
@@ -385,15 +371,13 @@ func (h *RecipesHandler) DeleteRecipeStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)
 	var payload *dto.DeleteRecipeStepDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.DeleteRecipeStep(ctx.Context(), recipeId, stepId, payload.Place); err != nil {
 		h.log.ServerError(ctx, err)

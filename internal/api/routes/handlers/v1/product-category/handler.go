@@ -39,15 +39,13 @@ func New(svc service.CategoryServicer, log *log.Logger) *CategoryHandler {
 //	@Router			/product-categories [post]
 func (h *CategoryHandler) CreateProductCategory(ctx *fiber.Ctx) error {
 	var payload *dto.CreateProductCategoryDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateCategory(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -91,8 +89,6 @@ func (h *CategoryHandler) FindProductCategoryByID(ctx *fiber.Ctx) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			filter	query		dto.ProductCategoryFilterDTO	false	"Filter criteria for product categories"
-//	@Param			limit	query		int								false	"Limit the number of results returned"
-//	@Param			offset	query		int								false	"Offset for pagination"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
@@ -141,15 +137,13 @@ func (h *CategoryHandler) FindProductCategories(ctx *fiber.Ctx) error {
 func (h *CategoryHandler) UpdateProductCategory(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	payload := new(dto.UpdateProductCategoryDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateCategory(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
