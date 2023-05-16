@@ -29,68 +29,8 @@ type UserRoleDTO struct {
 	ID int `json:"id"`
 }
 
-type CreateSettingDTO struct {
-	Name       string `json:"name,omitempty" validate:"required,gte=3,alphanumunicode"`
-	Value      string `json:"value,omitempty" validate:"required,gt=0,alphanumunicode"`
-	CategoryID int    `json:"id_category,omitempty" validate:"required,gt=0"`
-}
-
-type UpdateSettingDTO struct {
-	Name       string `json:"name" validate:"omitempty,gte=3,notblank"`
-	CategoryID int    `json:"id_category" validate:"omitempty,gt=0"`
-}
-
 type UpdateUserSettingDTO struct {
 	Value string `json:"value" validate:"required,gt=0,notblank"`
-}
-
-type FindSettingDTO struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Value    string `json:"value,omitempty"`
-	Category string `json:"category"`
-}
-
-type UserFilterDTO struct {
-	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
-}
-
-func (f *UserFilterDTO) GetLimit() int {
-	return f.Limit
-}
-
-func (f *UserFilterDTO) SetLimit(limit int) {
-	f.Limit = limit
-}
-
-func (f *UserFilterDTO) GetOffset() int {
-	return f.Offset
-}
-
-func (f *UserFilterDTO) SetOffset(offset int) {
-	f.Offset = offset
-}
-
-type SettingFilterDTO struct {
-	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
-}
-
-func (f *SettingFilterDTO) GetLimit() int {
-	return f.Limit
-}
-
-func (f *SettingFilterDTO) SetLimit(limit int) {
-	f.Limit = limit
-}
-
-func (f *SettingFilterDTO) GetOffset() int {
-	return f.Offset
-}
-
-func (f *SettingFilterDTO) SetOffset(offset int) {
-	f.Offset = offset
 }
 
 type UserStorageDTO struct {

@@ -170,7 +170,7 @@ func (r *storageRepository) FindMany(ctx context.Context, limit, offset int) ([]
 			SELECT 
 				s.id, s.name, 
 				s.temperature, s.humidity,
-				s.created_at, st.name
+				s.created_at, st.id, st.name
 			FROM storages s
 			JOIN storages_types st ON st.id = s.id_type
 			WHERE s.deleted_at IS NULL
@@ -186,7 +186,7 @@ func (r *storageRepository) FindMany(ctx context.Context, limit, offset int) ([]
 	defer rows.Close()
 	for rows.Next() {
 		var storage models.Storage
-		if err := rows.Scan(&storage.ID, &storage.Name, &storage.Temperature, &storage.Humidity, &storage.CreatedAt, &storage.Type.Name); err != nil {
+		if err := rows.Scan(&storage.ID, &storage.Name, &storage.Temperature, &storage.Humidity, &storage.CreatedAt, &storage.Type.ID, &storage.Type.Name); err != nil {
 			return nil, fmt.Errorf("scan storage: %w", err)
 		}
 		storages = append(storages, storage)

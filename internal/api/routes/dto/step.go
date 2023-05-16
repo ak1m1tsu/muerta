@@ -8,20 +8,13 @@ type UpdateStepDTO struct {
 	Name string `json:"name" validate:"required,gt=3,notblank"`
 }
 
-type StepFilterDTO struct {
-	Paging
-	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
+type FindStepDTO struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Place int    `json:"place,omitempty"`
 }
 
-func (f *StepFilterDTO) SetLimit(limit int) {
-	f.Limit = limit
-}
-func (f *StepFilterDTO) GetLimit() int {
-	return f.Limit
-}
-func (f *StepFilterDTO) SetOffset(offset int) {
-	f.Offset = offset
-}
-func (f *StepFilterDTO) GetOffset() int {
-	return f.Offset
+type RecipeStepDTO struct {
+	ID    int `json:"id" validate:"required,unique,gt=0"`
+	Place int `json:"place" validate:"required,unique,gt=0"`
 }

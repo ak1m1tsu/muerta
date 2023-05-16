@@ -12,11 +12,11 @@ import (
 
 func New(log *log.Logger, key idKey) func(ctx *fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
-		id, err := common.GetIdByFiberCtx(ctx, key.String())
+		id, err := common.ParseIDFromPath(ctx, key.String())
 		if err != nil {
 			log.ClientError(ctx, err)
 			return ctx.Status(http.StatusNotFound).
-				JSON(handlers.ErrorResponse(fiber.ErrNotFound))
+				JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 		}
 		ctx.Locals(key, id)
 		return ctx.Next()

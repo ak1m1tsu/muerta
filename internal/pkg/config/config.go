@@ -57,6 +57,8 @@ type Config struct {
 	RefreshTokenExpiresIn time.Duration
 	//
 	AllowOrigins string
+	//
+	ShutdownShelfDetectorChan chan struct{}
 }
 
 // New initializes a Config object with values from environment variables and
@@ -91,32 +93,24 @@ func New() (*Config, error) {
 		API: struct {
 			Name string
 			Port string
-		}{
-			Name: os.Getenv("API_NAME"),
-			Port: os.Getenv("PORT"),
-		},
+		}{Name: os.Getenv("API_NAME"), Port: os.Getenv("PORT")},
 		Database: struct {
 			Host string
 			Port string
 			User string
 			Pass string
 			Name string
-		}{
-			Host: os.Getenv("DB_HOST"),
-			Port: os.Getenv("DB_PORT"),
-			User: os.Getenv("DB_USER"),
-			Pass: os.Getenv("DB_PASSWORD"),
-			Name: os.Getenv("DB_NAME"),
-		},
-		AccessTokenPrivateKey:  accessPem,
-		AccessTokenPublicKey:   accessPub,
-		AccessTokenMaxAge:      15,
-		AccessTokenExpiresIn:   time.Minute * 15,
-		RefreshTokenPrivateKey: refreshPem,
-		RefreshTokenPublicKey:  refreshPub,
-		RefreshTokenMaxAge:     60,
-		RefreshTokenExpiresIn:  time.Hour * 1,
-		AllowOrigins:           strings.Join(strings.Split(os.Getenv("ALLOWED_ORIGINS"), ","), ", "),
+		}{Host: os.Getenv("DB_HOST"), Port: os.Getenv("DB_PORT"), User: os.Getenv("DB_USER"), Pass: os.Getenv("DB_PASSWORD"), Name: os.Getenv("DB_NAME")},
+		AccessTokenPrivateKey:     accessPem,
+		AccessTokenPublicKey:      accessPub,
+		AccessTokenMaxAge:         15,
+		AccessTokenExpiresIn:      time.Minute * 15,
+		RefreshTokenPrivateKey:    refreshPem,
+		RefreshTokenPublicKey:     refreshPub,
+		RefreshTokenMaxAge:        60,
+		RefreshTokenExpiresIn:     time.Hour * 1,
+		AllowOrigins:              strings.Join(strings.Split(os.Getenv("ALLOWED_ORIGINS"), ","), ", "),
+		ShutdownShelfDetectorChan: make(chan struct{}, 1),
 	}
 	return cfg, nil
 }

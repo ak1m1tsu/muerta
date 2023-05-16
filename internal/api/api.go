@@ -24,3 +24,7 @@ func New(client repositories.PostgresClient, cfg *config.Config, logger *log.Log
 func (api *API) Run() error {
 	return api.router.Listen(api.listenAddr)
 }
+
+func (api *API) Shutdown() error {
+	return api.router.Shutdown()
+}

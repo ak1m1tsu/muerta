@@ -22,15 +22,17 @@ func Test_Detect(t *testing.T) {
 			},
 		},
 	}
-	svc := DateDetectorService{}
+	cl := make(chan struct{})
+	detector := New(cl)
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			data, _ := os.ReadFile(tc.path)
-			dates, err := svc.Detect(data)
+			dates, err := detector.Detect(data)
 			assert.Nil(t, err)
 			assert.NotNil(t, dates)
 			assert.NotEmpty(t, dates)
 			assert.Equal(t, tc.expected, dates)
 		})
 	}
+	cl <- struct{}{}
 }
