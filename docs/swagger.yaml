@@ -17,6 +17,14 @@ definitions:
     required:
     - name
     type: object
+  dto.CreateProductDTO:
+    properties:
+      name:
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
   dto.CreateRecipeDTO:
     properties:
       description:
@@ -24,6 +32,10 @@ definitions:
         type: string
       id_user:
         type: integer
+      ingredients:
+        items:
+          $ref: '#/definitions/dto.IngredientDTO'
+        type: array
       name:
         maxLength: 100
         minLength: 2
@@ -34,6 +46,7 @@ definitions:
         type: array
     required:
     - id_user
+    - ingredients
     - name
     - steps
     type: object
@@ -50,6 +63,19 @@ definitions:
         type: integer
     required:
     - id_product
+    type: object
+  dto.IngredientDTO:
+    properties:
+      id_measure:
+        type: integer
+      id_product:
+        type: integer
+      quantity:
+        type: integer
+    required:
+    - id_measure
+    - id_product
+    - quantity
     type: object
   dto.LoginDTO:
     properties:
@@ -115,6 +141,14 @@ definitions:
     required:
     - name
     type: object
+  dto.UpdateProductDTO:
+    properties:
+      name:
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
   dto.UpdateRecipeDTO:
     properties:
       description:
@@ -125,31 +159,24 @@ definitions:
         minLength: 2
         type: string
     type: object
-  handlers.apiResponse:
-    properties:
-      data:
-        additionalProperties:
-          type: string
-        example:
-          key: value
-          key2: value
-        type: object
-      success:
-        type: boolean
+  handlers.Data:
+    additionalProperties: {}
     type: object
-  handlers.errorResponse:
+  handlers.HTTPError:
     properties:
-      data:
-        additionalProperties:
-          type: string
-        example:
-          key: value
-          key2: value
-        type: object
       error:
-        example: error message
+        example: Not Found
         type: string
       success:
+        example: false
+        type: boolean
+    type: object
+  handlers.HTTPSuccess:
+    properties:
+      data:
+        $ref: '#/definitions/handlers.Data'
+      success:
+        example: true
         type: boolean
     type: object
 info:
@@ -178,15 +205,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Login handles the user login request and returns access and refresh
         tokens.
       tags:
@@ -202,7 +229,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
       summary: Logout user
       tags:
       - Authentication
@@ -217,11 +244,21 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            allOf:
+            - $ref: '#/definitions/handlers.HTTPSuccess'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/handlers.Data'
+                  - properties:
+                      access_token:
+                        type: string
+                    type: object
+              type: object
         "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Refresh access token
       tags:
       - Authentication
@@ -243,206 +280,18 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Sign up a new user
       tags:
       - Authentication
-  /categories:
-    get:
-      consumes:
-      - application/json
-      description: Find product categories with optional filters
-      operationId: find-product-categories
-      parameters:
-      - example: 10
-        in: query
-        minimum: 0
-        name: limit
-        type: integer
-      - in: query
-        minLength: 1
-        name: name
-        type: string
-      - example: 0
-        in: query
-        minimum: 0
-        name: offset
-        type: integer
-      - description: Limit the number of results returned
-        in: query
-        name: limit
-        type: integer
-      - description: Offset for pagination
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.apiResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-      summary: Find product categories
-      tags:
-      - Product Categories
-    post:
-      consumes:
-      - application/json
-      description: Create a new product category
-      parameters:
-      - description: Payload for creating product category
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateProductCategoryDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.apiResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-      summary: Create product category
-      tags:
-      - Product Categories
-  /categories/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes a product category by ID
-      parameters:
-      - description: Category ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.apiResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-      summary: Delete a product category
-      tags:
-      - Product Categories
-    get:
-      consumes:
-      - application/json
-      description: Get a product category by ID
-      parameters:
-      - description: Category ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.apiResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-      summary: Find a product category by ID
-      tags:
-      - Product Categories
-    patch:
-      description: Restores a previously deleted product category with the given ID
-      parameters:
-      - description: Product category ID to be restored
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.apiResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-      summary: Restore a deleted product category
-      tags:
-      - Product Categories
-    put:
-      consumes:
-      - application/json
-      description: Update an existing product category by providing the ID and updated
-        fields in the request body
-      parameters:
-      - description: Product Category ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Updated Product Category Fields
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateProductCategoryDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.apiResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.errorResponse'
-      summary: Update an existing product category by ID
-      tags:
-      - Product Categories
   /measures:
     get:
       consumes:
@@ -471,15 +320,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Find measures
       tags:
       - Measures
@@ -500,15 +349,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Create a new measure record
       tags:
       - Measures
@@ -529,15 +378,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Delete a measure
       tags:
       - Measures
@@ -557,15 +406,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Find a measure by ID
       tags:
       - Measures
@@ -591,18 +440,566 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Update a measure
       tags:
       - Measures
+  /product-categories:
+    get:
+      consumes:
+      - application/json
+      description: Find product categories with optional filters
+      operationId: find-product-categories
+      parameters:
+      - example: 10
+        in: query
+        minimum: 0
+        name: limit
+        type: integer
+      - example: овощь
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      - description: Limit the number of results returned
+        in: query
+        name: limit
+        type: integer
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find product categories
+      tags:
+      - Product Categories
+    post:
+      consumes:
+      - application/json
+      description: Create a new product category
+      parameters:
+      - description: Payload for creating product category
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProductCategoryDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Create product category
+      tags:
+      - Product Categories
+  /product-categories/{category_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a product category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Delete a product category
+      tags:
+      - Product Categories
+    get:
+      consumes:
+      - application/json
+      description: Get a product category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find a product category by ID
+      tags:
+      - Product Categories
+    patch:
+      description: Restores a previously deleted product category with the given ID
+      parameters:
+      - description: Product category ID to be restored
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Restore a deleted product category
+      tags:
+      - Product Categories
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product category by providing the ID and updated
+        fields in the request body
+      parameters:
+      - description: Product Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      - description: Updated Product Category Fields
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProductCategoryDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Update an existing product category by ID
+      tags:
+      - Product Categories
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of products with optional filters
+      parameters:
+      - example: 10
+        in: query
+        minimum: 0
+        name: limit
+        type: integer
+      - in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get a list of products
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product with the given details
+      parameters:
+      - description: Product details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Create a new product
+      tags:
+      - Products
+  /products/{product_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Delete a product
+      tags:
+      - Products
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the details of a product with the specified ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get a product by ID
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product with new details
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: New product details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProductDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Update a product
+      tags:
+      - Products
+  /products/{product_id}/:
+    patch:
+      consumes:
+      - application/json
+      description: Restore a deleted product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Restore a deleted product
+      tags:
+      - Products
+  /products/{product_id}/categories:
+    get:
+      consumes:
+      - application/json
+      description: Get the categories of a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get categories of a product
+      tags:
+      - Products
+  /products/{product_id}/categories/{category_id}:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new category for a product by product ID and category
+        ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Create a category for a product
+      tags:
+      - Products
+  /products/{product_id}/category/{category_id}:
+    delete:
+      description: Deletes a category from a product given the product ID and category
+        ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Delete a category from a product
+      tags:
+      - Products
+  /products/{product_id}/recipes:
+    get:
+      consumes:
+      - application/json
+      description: Get the recipes of a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get recipes of a product
+      tags:
+      - Products
+  /products/{product_id}/tip/{tip_id}:
+    delete:
+      description: Deletes a tip from a product given the product ID and tip ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: tip_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Delete a tip from a product
+      tags:
+      - Products
+    post:
+      description: Creates a tip for a product given the product ID and tip ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: tip_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Create a tip for a product
+      tags:
+      - Products
+  /products/{product_id}/tips:
+    get:
+      description: Finds tips for a product given the product ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tips for a product
+      tags:
+      - Products
   /recipes:
     get:
       consumes:
@@ -627,15 +1024,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Find recipes
       tags:
       - Recipes
@@ -656,15 +1053,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Create a new recipe
       tags:
       - Recipes
@@ -686,11 +1083,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Delete a recipe
       tags:
       - Recipes
@@ -710,15 +1107,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Find recipe by ID
       tags:
       - Recipes
@@ -744,15 +1141,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Update a recipe
       tags:
       - Recipes
@@ -779,15 +1176,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Delete an ingredient from a recipe
       tags:
       - Recipes
@@ -805,11 +1202,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Find recipe ingredients by recipe ID
       tags:
       - Recipes
@@ -835,15 +1232,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Update an ingredient of a recipe
       tags:
       - Recipes
@@ -864,11 +1261,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Restore a deleted recipe by ID
       tags:
       - Recipes
@@ -890,11 +1287,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Find all recipe steps
       tags:
       - Recipes
@@ -926,15 +1323,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Delete a recipe step.
       tags:
       - Recipes
@@ -960,15 +1357,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handlers.apiResponse'
+            $ref: '#/definitions/handlers.HTTPSuccess'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
         "502":
           description: Bad Gateway
           schema:
-            $ref: '#/definitions/handlers.errorResponse'
+            $ref: '#/definitions/handlers.HTTPError'
       summary: Create a recipe step
       tags:
       - Recipes

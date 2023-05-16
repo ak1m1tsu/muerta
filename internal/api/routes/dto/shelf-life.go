@@ -2,26 +2,6 @@ package dto
 
 import "time"
 
-type ShelfLifeFilterDTO struct {
-	Paging
-}
-
-func (f *ShelfLifeFilterDTO) GetLimit() int {
-	return f.Limit
-}
-
-func (f *ShelfLifeFilterDTO) SetLimit(limit int) {
-	f.Limit = limit
-}
-
-func (f *ShelfLifeFilterDTO) GetOffset() int {
-	return f.Offset
-}
-
-func (f *ShelfLifeFilterDTO) SetOffset(offset int) {
-	f.Offset = offset
-}
-
 type CreateShelfLifeDTO struct {
 	ProductID    int        `json:"id_product" validate:"required,gt=0"`
 	UserID       int        `json:"id_user" validate:"required,gt=0"`

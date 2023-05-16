@@ -10,6 +10,6 @@ import (
 func New() fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).
-			JSON(handlers.ErrorResponse(fiber.ErrNotFound))
+			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
 }

@@ -1,5 +1,11 @@
+GO=go
+GOCOVER=$(GO) tool cover
+GOBUILD=$(GO) build
+GOTEST=$(GO) test
+
+.PHONY: build
 build:
-	go build -o ./bin/muerta ./cmd/muerta/
+	$(GOBUILD) -o ./bin/muerta ./cmd/muerta/
 
 run: build
 	./bin/muerta
@@ -13,8 +19,12 @@ docker-down:
 swagger:
 	swag fmt && swag init -d ./cmd/muerta/,./internal/api/ -o ./docs
 
-postman:
-	go run ./cmd/postman/main.go
-
+.PHONY: test
 test:
-	go test -v ./... -count=1
+	$(GOTEST) -v ./... -count=1
+
+.PHONY: test/cover
+test/cover:
+	$(GOTEST) -v -coverprofile=coverage.out ./...
+	$(GOCOVER) -func=coverage.out
+	$(GOCOVER) -html=coverage.out

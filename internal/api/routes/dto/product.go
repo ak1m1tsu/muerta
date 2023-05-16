@@ -5,22 +5,6 @@ type ProductFilterDTO struct {
 	Name string `query:"name" validate:"omitempty,gte=1,notblank"`
 }
 
-func (f *ProductFilterDTO) GetLimit() int {
-	return f.Limit
-}
-
-func (f *ProductFilterDTO) SetLimit(limit int) {
-	f.Limit = limit
-}
-
-func (f *ProductFilterDTO) GetOffset() int {
-	return f.Offset
-}
-
-func (f *ProductFilterDTO) SetOffset(offset int) {
-	f.Offset = offset
-}
-
 type CreateProductDTO struct {
 	Name string `json:"name" validate:"required,gte=2,notblank"`
 }

@@ -12,12 +12,13 @@ func AdminOnly(ctx *fiber.Ctx) error {
 	payload, ok := ctx.Locals("user").(*dto.TokenPayload)
 	if !ok {
 		return ctx.Status(http.StatusForbidden).
-			JSON(handlers.ErrorResponse(fiber.ErrNotFound))
+			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 	}
 	for _, role := range payload.Roles {
 		if role == "admin" {
 			return ctx.Next()
 		}
 	}
-	return fiber.ErrForbidden
+	return ctx.Status(http.StatusForbidden).
+		JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 }

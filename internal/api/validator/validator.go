@@ -12,7 +12,7 @@ import (
 var validate *validator.Validate
 
 func notBlank(fl validator.FieldLevel) bool {
-	ok, err := regexp.Match(`^[a-zA-Zа-яА-Я][a-zA-Zа-яА-Я\s]+$`, []byte(fl.Field().String()))
+	ok, err := regexp.Match(`^(?:[a-zA-Zа-яА-Я]|[a-zA-Zа-яА-Я]+\s)*[a-zA-Zа-яА-Я]$`, []byte(fl.Field().String()))
 	if !ok || err != nil {
 		return false
 	}
@@ -25,31 +25,31 @@ func init() {
 }
 
 const (
-	KeyErrResponses string = "errorResponses"
+	KeyErrResponses string = "HTTPErrors"
 	keyField        string = "field"
 	keyTag          string = "tag"
 	keyValue        string = "value"
 )
 
-type ErrorResponse struct {
-	Field string `json:"field"`
-	Tag   string `json:"tag"`
-	Value string `json:"value"`
+type ValidationError struct {
+	Field string      `json:"field"`
+	Tag   string      `json:"tag"`
+	Value interface{} `json:"value"`
 }
 
-func (er ErrorResponse) Error() string {
-	return fmt.Sprintf("invalid field '%s' with tag '%s' value '%s'", er.Field, er.Tag, er.Value)
+func (e ValidationError) Error() string {
+	return fmt.Sprintf("`%v` with value `%v` doesn't satisfy the `%v` constraint", e.Field, e.Value, e.Tag)
 }
 
-func (er ErrorResponse) MarshalZerologObject(e *zerolog.Event) {
+func (er ValidationError) MarshalZerologObject(e *zerolog.Event) {
 	e.Str(keyField, er.Field).
 		Str(keyTag, er.Tag).
-		Str(keyValue, er.Value)
+		Interface(keyValue, er.Value)
 }
 
-type ErrorResponses []ErrorResponse
+type ValidationErrors []ValidationError
 
-func (errs ErrorResponses) Error() string {
+func (errs ValidationErrors) Error() string {
 	var buf strings.Builder
 	for i, err := range errs {
 		if len(errs)-1 == i {
@@ -61,23 +61,26 @@ func (errs ErrorResponses) Error() string {
 	return buf.String()
 }
 
-func (ers ErrorResponses) MarshalZerologArray(a *zerolog.Array) {
+func (ers ValidationErrors) MarshalZerologArray(a *zerolog.Array) {
 	for _, er := range ers {
 		a.Object(er)
 	}
 }
 
-func Validate(payload interface{}) ErrorResponses {
-	var errors ErrorResponses
-	err := validate.Struct(payload)
-	if err != nil {
+func Validate(payload interface{}) ValidationErrors {
+	if err := validate.Struct(payload); err != nil {
+		var errors ValidationErrors
 		for _, err := range err.(validator.ValidationErrors) {
-			var errResp ErrorResponse
-			errResp.Field = err.StructField()
-			errResp.Tag = err.Tag()
-			errResp.Value = err.Param()
-			errors = append(errors, errResp)
+			errors = append(
+				errors,
+				ValidationError{
+					Field: strings.ToLower(err.Field()),
+					Tag:   err.Tag(),
+					Value: err.Value(),
+				},
+			)
 		}
+		return errors
 	}
-	return errors
+	return nil
 }

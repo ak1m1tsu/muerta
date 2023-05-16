@@ -35,13 +35,13 @@ func (m *JWTMiddleware) DeserializeUser(ctx *fiber.Ctx) error {
 	if token == "" {
 		m.log.ClientError(ctx, fmt.Errorf("unauthorized request"))
 		return ctx.Status(http.StatusUnauthorized).
-			JSON(handlers.ErrorResponse(fiber.ErrUnauthorized))
+			JSON(handlers.HTTPError{Error: fiber.ErrUnauthorized.Error()})
 	}
 	payload, err := jwt.ValidateToken(token, m.accessPubKey)
 	if err != nil {
 		m.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusForbidden).
-			JSON(handlers.ErrorResponse(fiber.ErrForbidden))
+			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 	}
 	ctx.Locals("user", payload)
 	return ctx.Next()

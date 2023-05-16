@@ -5,12 +5,12 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/validator"
 )
 
 var DefaultIdKey = "id"
 
-func GetIdByFiberCtx(ctx *fiber.Ctx, idKey ...string) (int, error) {
+func ParseIDFromPath(ctx *fiber.Ctx, idKey ...string) (int, error) {
 	key := DefaultIdKey
 	if len(idKey) != 0 {
 		key = idKey[0]
@@ -23,24 +23,29 @@ func GetIdByFiberCtx(ctx *fiber.Ctx, idKey ...string) (int, error) {
 	return id, nil
 }
 
-func GetNameByFiberCtx(ctx *fiber.Ctx) (string, error) {
-	param := ctx.Params("name")
-	if param == "" {
-		return "", fmt.Errorf("name is required")
-	}
-	return param, nil
-}
-
-func GetFilterByFiberCtx[T dto.Filter](ctx *fiber.Ctx, filter T) error {
+func ParseFilterAndValidate(ctx *fiber.Ctx, filter interface{}) error {
 	if err := ctx.QueryParser(filter); err != nil {
 		return fmt.Errorf("failed to parse query: %w", err)
 	}
-	if filter.GetLimit() == 0 {
-		filter.SetLimit(10)
-	}
-	if filter.GetOffset() < 0 {
-		filter.SetOffset(0)
+	if err := validator.Validate(filter); err != nil {
+		return err
 	}
 	return nil
 }
 
+func ParseBody(ctx *fiber.Ctx, body interface{}) error {
+	if err := ctx.BodyParser(body); err != nil {
+		return fmt.Errorf("failed to parse body: %w", err)
+	}
+	return nil
+}
+
+func ParseBodyAndValidate(ctx *fiber.Ctx, body interface{}) error {
+	if err := ParseBody(ctx, body); err != nil {
+		return err
+	}
+	if err := validator.Validate(body); err != nil {
+		return err
+	}
+	return nil
+}

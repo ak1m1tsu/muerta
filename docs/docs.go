@@ -45,19 +45,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -80,7 +80,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     }
                 }
@@ -103,13 +103,37 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/handlers.HTTPSuccess"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/handlers.Data"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "access_token": {
+                                                            "type": "string"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "403": {
                         "description": "Forbidden",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -143,300 +167,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/categories": {
-            "get": {
-                "description": "Find product categories with optional filters",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product Categories"
-                ],
-                "summary": "Find product categories",
-                "operationId": "find-product-categories",
-                "parameters": [
-                    {
-                        "minimum": 0,
-                        "type": "integer",
-                        "example": 10,
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "minLength": 1,
-                        "type": "string",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 0,
-                        "type": "integer",
-                        "example": 0,
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Limit the number of results returned",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Offset for pagination",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new product category",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product Categories"
-                ],
-                "summary": "Create product category",
-                "parameters": [
-                    {
-                        "description": "Payload for creating product category",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.CreateProductCategoryDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/categories/{id}": {
-            "get": {
-                "description": "Get a product category by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product Categories"
-                ],
-                "summary": "Find a product category by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Category ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update an existing product category by providing the ID and updated fields in the request body",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product Categories"
-                ],
-                "summary": "Update an existing product category by ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Product Category ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated Product Category Fields",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateProductCategoryDTO"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Deletes a product category by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Product Categories"
-                ],
-                "summary": "Delete a product category",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Category ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Restores a previously deleted product category with the given ID",
-                "tags": [
-                    "Product Categories"
-                ],
-                "summary": "Restore a deleted product category",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Product category ID to be restored",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -483,19 +226,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -527,19 +270,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -571,19 +314,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -622,19 +365,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -664,19 +407,839 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/product-categories": {
+            "get": {
+                "description": "Find product categories with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Find product categories",
+                "operationId": "find-product-categories",
+                "parameters": [
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "example": 10,
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "minLength": 1,
+                        "type": "string",
+                        "example": "овощь",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "example": 0,
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit the number of results returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset for pagination",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new product category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Create product category",
+                "parameters": [
+                    {
+                        "description": "Payload for creating product category",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateProductCategoryDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/product-categories/{category_id}": {
+            "get": {
+                "description": "Get a product category by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Find a product category by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing product category by providing the ID and updated fields in the request body",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Update an existing product category by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product Category ID",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Product Category Fields",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateProductCategoryDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a product category by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Delete a product category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Restores a previously deleted product category with the given ID",
+                "tags": [
+                    "Product Categories"
+                ],
+                "summary": "Restore a deleted product category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product category ID to be restored",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products": {
+            "get": {
+                "description": "Retrieve a list of products with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get a list of products",
+                "parameters": [
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "example": 10,
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "minLength": 1,
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "example": 0,
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new product with the given details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Create a new product",
+                "parameters": [
+                    {
+                        "description": "Product details",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateProductDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}": {
+            "get": {
+                "description": "Retrieve the details of a product with the specified ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get a product by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an existing product with new details",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Update a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "New product details",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateProductDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an existing product by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}/": {
+            "patch": {
+                "description": "Restore a deleted product by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Restore a deleted product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}/categories": {
+            "get": {
+                "description": "Get the categories of a product by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get categories of a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}/categories/{category_id}": {
+            "post": {
+                "description": "Creates a new category for a product by product ID and category ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Create a category for a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}/category/{category_id}": {
+            "delete": {
+                "description": "Deletes a category from a product given the product ID and category ID",
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete a category from a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Category ID",
+                        "name": "category_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}/recipes": {
+            "get": {
+                "description": "Get the recipes of a product by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get recipes of a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}/tip/{tip_id}": {
+            "post": {
+                "description": "Creates a tip for a product given the product ID and tip ID",
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Create a tip for a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Tip ID",
+                        "name": "tip_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a tip from a product given the product ID and tip ID",
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete a tip from a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Tip ID",
+                        "name": "tip_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/products/{product_id}/tips": {
+            "get": {
+                "description": "Finds tips for a product given the product ID",
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Find tips for a product",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Product ID",
+                        "name": "product_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -719,19 +1282,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -763,19 +1326,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -807,19 +1370,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -858,19 +1421,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -901,13 +1464,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -936,13 +1499,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -981,19 +1544,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -1032,19 +1595,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -1076,13 +1639,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -1115,13 +1678,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -1162,19 +1725,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -1220,19 +1783,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handlers.apiResponse"
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     },
                     "502": {
                         "description": "Bad Gateway",
                         "schema": {
-                            "$ref": "#/definitions/handlers.errorResponse"
+                            "$ref": "#/definitions/handlers.HTTPError"
                         }
                     }
                 }
@@ -1265,10 +1828,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateProductDTO": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            }
+        },
         "dto.CreateRecipeDTO": {
             "type": "object",
             "required": [
                 "id_user",
+                "ingredients",
                 "name",
                 "steps"
             ],
@@ -1279,6 +1855,12 @@ const docTemplate = `{
                 },
                 "id_user": {
                     "type": "integer"
+                },
+                "ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.IngredientDTO"
+                    }
                 },
                 "name": {
                     "type": "string",
@@ -1311,6 +1893,25 @@ const docTemplate = `{
             ],
             "properties": {
                 "id_product": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.IngredientDTO": {
+            "type": "object",
+            "required": [
+                "id_measure",
+                "id_product",
+                "quantity"
+            ],
+            "properties": {
+                "id_measure": {
+                    "type": "integer"
+                },
+                "id_product": {
+                    "type": "integer"
+                },
+                "quantity": {
                     "type": "integer"
                 }
             }
@@ -1408,6 +2009,18 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateProductDTO": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 2
+                }
+            }
+        },
         "dto.UpdateRecipeDTO": {
             "type": "object",
             "properties": {
@@ -1422,43 +2035,32 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.apiResponse": {
+        "handlers.Data": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "handlers.HTTPError": {
             "type": "object",
             "properties": {
-                "data": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "example": {
-                        "key": "value",
-                        "key2": "value"
-                    }
+                "error": {
+                    "type": "string",
+                    "example": "Not Found"
                 },
                 "success": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
-        "handlers.errorResponse": {
+        "handlers.HTTPSuccess": {
             "type": "object",
             "properties": {
                 "data": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    },
-                    "example": {
-                        "key": "value",
-                        "key2": "value"
-                    }
-                },
-                "error": {
-                    "type": "string",
-                    "example": "error message"
+                    "$ref": "#/definitions/handlers.Data"
                 },
                 "success": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
                 }
             }
         }

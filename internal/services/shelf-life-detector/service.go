@@ -3,6 +3,7 @@ package shelflifedetector
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/otiai10/gosseract/v2"
 )
@@ -13,26 +14,37 @@ type DateDetectorServicer interface {
 
 type DateDetectorService struct {
 	pattern string
+	client  *gosseract.Client
 }
 
-func New() *DateDetectorService {
+const DefaultPattern = `\b(?:0[1-9]|[1-2][0-9]|3[01])[\.\/\-](?:0[1-9]|1[0-2])[\.\/\-](?:\d{4}|\d{2})\b`
+
+func New(cl chan struct{}) *DateDetectorService {
+	client := gosseract.NewClient()
+	client.SetLanguage("eng", "rus")
+	go func() {
+		<-cl
+		client.Close()
+	}()
 	return &DateDetectorService{
-		pattern: `\b(?:0[1-9]|[1-2][0-9]|3[01])[\.\/\-](?:0[1-9]|1[0-2])[\.\/\-](?:\d{4}|\d{2})\b`,
+		pattern: DefaultPattern,
+		client:  client,
 	}
 }
 
 func (s *DateDetectorService) Detect(image []byte) ([]string, error) {
-	client := gosseract.NewClient()
-	defer client.Close()
-	client.SetLanguage("eng", "rus")
-	if err := client.SetImageFromBytes(image); err != nil {
+	if err := s.client.SetImageFromBytes(image); err != nil {
 		return nil, fmt.Errorf("failed to set image: %w", err)
 	}
-	text, err := client.Text()
+	text, err := s.client.Text()
 	if err != nil {
 		return nil, fmt.Errorf("failed to detect date: %w", err)
 	}
-	compiler := regexp.MustCompile(s.pattern)
-	res := compiler.FindAllString(text, -1)
-	return res, nil
+	text = strings.TrimSpace(strings.Join(strings.Split(text, "\n"), " "))
+	result := regexp.MustCompile(s.pattern).FindAllString(text, 2)
+	return result, nil
+}
+
+func (s *DateDetectorService) Close() error {
+	return s.client.Close()
 }

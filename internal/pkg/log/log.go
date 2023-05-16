@@ -7,9 +7,13 @@ import (
 
 	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
-	"github.com/romankravchuk/muerta/internal/api/errors"
 	"github.com/romankravchuk/muerta/internal/api/validator"
 	"github.com/rs/zerolog"
+)
+
+const (
+	errClient = "Client Error"
+	errServer = "Server Error"
 )
 
 // Logger is a struct that contains the zerolog logger.
@@ -35,7 +39,7 @@ func (l *Logger) ServerError(ctx *fiber.Ctx, err error) {
 	l.zlog.Error().Interface(
 		fiberzerolog.FieldRequestID,
 		ctx.GetRespHeader(fiber.HeaderXRequestID),
-	).Err(err).Msg(errors.ErrServer)
+	).Err(err).Msg(errServer)
 }
 
 // ClientError logs a client error message with the associated request ID and error.
@@ -43,16 +47,16 @@ func (l *Logger) ClientError(ctx *fiber.Ctx, err error) {
 	l.zlog.Error().Interface(
 		fiberzerolog.FieldRequestID,
 		ctx.GetRespHeader(fiber.HeaderXRequestID),
-	).Err(err).Msg(errors.ErrClient)
+	).Err(err).Msg(errClient)
 }
 
 // ValidationError logs a validation error message with the associated request ID and errors.
-func (l *Logger) ValidationError(ctx *fiber.Ctx, errs validator.ErrorResponses) {
+func (l *Logger) ValidationError(ctx *fiber.Ctx, errs validator.ValidationErrors) {
 	l.zlog.Error().Interface(
 		fiberzerolog.FieldRequestID,
 		ctx.GetRespHeader(fiber.HeaderXRequestID),
 	).Array(
 		validator.KeyErrResponses,
 		errs,
-	).Msg(errors.ErrClient)
+	).Msg(errClient)
 }

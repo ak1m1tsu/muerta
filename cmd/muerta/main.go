@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
@@ -33,6 +36,8 @@ func init() {
 	}
 }
 
+// main start point of the application
+//
 //	@title						Muerta API
 //	@version					1.0.0
 //	@description				Web API to control the shelf life of products using computer vision
@@ -46,5 +51,13 @@ func init() {
 func main() {
 	logger := logger.New()
 	api := api.New(client, cfg, logger)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		log.Println("Gracefully shutting down...")
+		cfg.ShutdownShelfDetectorChan <- struct{}{}
+		_ = api.Shutdown()
+	}()
 	log.Fatalf("api run: %v", api.Run())
 }
