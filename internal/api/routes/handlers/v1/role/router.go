@@ -19,14 +19,14 @@ func NewRouter(
 	repo := repository.New(client)
 	svc := service.New(repo)
 	handler := New(svc, log)
-	router.Get("/", handler.FindRoles)
-	router.Post("/", jware.DeserializeUser, handler.CreateRole)
+	router.Get("/", handler.FindMany)
+	router.Post("/", jware.DeserializeUser, handler.Create)
 	router.Route(context.RoleID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.RoleID))
-		router.Get("/", handler.FindRole)
-		router.Put("/", jware.DeserializeUser, handler.UpdateRole)
-		router.Patch("/", jware.DeserializeUser, handler.RestoreRole)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteRole)
+		router.Get("/", handler.FindOne)
+		router.Put("/", jware.DeserializeUser, handler.Update)
+		router.Patch("/", jware.DeserializeUser, handler.Restore)
+		router.Delete("/", jware.DeserializeUser, handler.Delete)
 	})
 	return router
 }

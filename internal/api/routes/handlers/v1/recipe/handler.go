@@ -193,7 +193,7 @@ func (h *RecipesHandler) Delete(ctx *fiber.Ctx) error {
 //	@Param			recipe_id	path		int	true	"Recipe ID"
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
-//	@Router			/recipes/{recipe_id}/restore [patch]
+//	@Router			/recipes/{recipe_id} [patch]
 func (h *RecipesHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	if err := h.svc.RestoreRecipe(ctx.Context(), id); err != nil {

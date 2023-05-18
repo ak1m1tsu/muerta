@@ -78,6 +78,16 @@ definitions:
     required:
     - place
     type: object
+  dto.CreateRole:
+    properties:
+      name:
+        example: admin
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
   dto.DeleteIngredient:
     properties:
       id_product:
@@ -204,6 +214,16 @@ definitions:
         maxLength: 100
         minLength: 2
         type: string
+    type: object
+  dto.UpdateRole:
+    properties:
+      name:
+        example: admin
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - name
     type: object
   handlers.Data:
     additionalProperties: true
@@ -1193,6 +1213,30 @@ paths:
       summary: Find recipe by ID
       tags:
       - Recipes
+    patch:
+      consumes:
+      - application/json
+      description: Restores a deleted recipe by ID
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Restore a deleted recipe by ID
+      tags:
+      - Recipes
     put:
       consumes:
       - application/json
@@ -1326,31 +1370,6 @@ paths:
       summary: Update an ingredient of a recipe
       tags:
       - Recipes
-  /recipes/{recipe_id}/restore:
-    patch:
-      consumes:
-      - application/json
-      description: Restores a deleted recipe by ID
-      parameters:
-      - description: Recipe ID
-        in: path
-        name: recipe_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handlers.HTTPSuccess'
-        "502":
-          description: Bad Gateway
-          schema:
-            $ref: '#/definitions/handlers.HTTPError'
-      summary: Restore a deleted recipe by ID
-      tags:
-      - Recipes
   /recipes/{recipe_id}/steps:
     get:
       consumes:
@@ -1381,7 +1400,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Deletes the specified recipe step of a recipe.
+      description: Removes the specified recipe step of a recipe.
       parameters:
       - description: Recipe ID.
         in: path
@@ -1414,7 +1433,7 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
-      summary: Delete a recipe step.
+      summary: Remove a recipe step.
       tags:
       - Recipes
     post:
@@ -1451,6 +1470,200 @@ paths:
       summary: Create a recipe step
       tags:
       - Recipes
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: Find many roles
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: user
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many roles
+      tags:
+      - Roles
+    post:
+      consumes:
+      - application/json
+      description: Create role
+      parameters:
+      - description: Role
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRole'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Create role
+      tags:
+      - Roles
+  /roles/{role_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Delete role
+      tags:
+      - Roles
+    get:
+      consumes:
+      - application/json
+      description: Find one role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find one role
+      tags:
+      - Roles
+    patch:
+      consumes:
+      - application/json
+      description: Restore role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Restore role
+      tags:
+      - Roles
+    put:
+      consumes:
+      - application/json
+      description: Update role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      - description: Role
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateRole'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Update role
+      tags:
+      - Roles
 securityDefinitions:
   BearerAuth:
     in: header
