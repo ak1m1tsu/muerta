@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  dto.CreateMeasureDTO:
+  dto.CreateMeasure:
     properties:
       name:
         example: кг
@@ -9,105 +9,68 @@ definitions:
     required:
     - name
     type: object
-  dto.CreateProductCategoryDTO:
+  dto.CreateProduct:
     properties:
       name:
+        example: Томат
         minLength: 2
         type: string
     required:
     - name
     type: object
-  dto.CreateProductDTO:
+  dto.CreateProductCategory:
     properties:
       name:
+        example: Овощь
         minLength: 2
         type: string
     required:
     - name
     type: object
-  dto.CreateRecipeDTO:
-    properties:
-      description:
-        maxLength: 200
-        type: string
-      id_user:
-        type: integer
-      ingredients:
-        items:
-          $ref: '#/definitions/dto.IngredientDTO'
-        type: array
-      name:
-        maxLength: 100
-        minLength: 2
-        type: string
-      steps:
-        items:
-          $ref: '#/definitions/dto.RecipeStepDTO'
-        type: array
-    required:
-    - id_user
-    - ingredients
-    - name
-    - steps
+  dto.CreateRecipe:
     type: object
-  dto.CreateRecipeStepDTO:
+  dto.CreateRecipeStep:
     properties:
       place:
+        example: 1
         type: integer
     required:
     - place
     type: object
-  dto.DeleteIngredientDTO:
+  dto.DeleteIngredient:
     properties:
       id_product:
+        example: 1
         type: integer
     required:
     - id_product
     type: object
-  dto.IngredientDTO:
-    properties:
-      id_measure:
-        type: integer
-      id_product:
-        type: integer
-      quantity:
-        type: integer
-    required:
-    - id_measure
-    - id_product
-    - quantity
-    type: object
-  dto.LoginDTO:
+  dto.Login:
     properties:
       name:
+        example: theBestUserEver
         minLength: 3
         type: string
       password:
+        example: th3B3stUs3rEver
         minLength: 8
         type: string
     required:
     - name
     - password
     type: object
-  dto.RecipeStepDTO:
-    properties:
-      id:
-        type: integer
-      place:
-        type: integer
-    required:
-    - id
-    - place
-    type: object
-  dto.SignUpDTO:
+  dto.SignUp:
     properties:
       name:
+        example: theBestUserEver
         minLength: 3
         type: string
       password:
+        example: th3B3stUs3rEver
         minLength: 8
         type: string
       password_confirm:
+        example: th3B3stUs3rEver
         minLength: 8
         type: string
     required:
@@ -115,16 +78,19 @@ definitions:
     - password
     - password_confirm
     type: object
-  dto.UpdateIngredientDTO:
+  dto.UpdateIngredient:
     properties:
       id_measure:
+        example: 1
         type: integer
       id_product:
+        example: 1
         type: integer
       quantity:
+        example: 10
         type: integer
     type: object
-  dto.UpdateMeasureDTO:
+  dto.UpdateMeasure:
     properties:
       name:
         example: л
@@ -133,7 +99,7 @@ definitions:
     required:
     - name
     type: object
-  dto.UpdateProductCategoryDTO:
+  dto.UpdateProduct:
     properties:
       name:
         minLength: 2
@@ -141,26 +107,29 @@ definitions:
     required:
     - name
     type: object
-  dto.UpdateProductDTO:
+  dto.UpdateProductCategory:
     properties:
       name:
+        example: Фрукт
         minLength: 2
         type: string
     required:
     - name
     type: object
-  dto.UpdateRecipeDTO:
+  dto.UpdateRecipe:
     properties:
       description:
+        example: Салат из миндаля
         maxLength: 200
         type: string
       name:
+        example: Салат
         maxLength: 100
         minLength: 2
         type: string
     type: object
   handlers.Data:
-    additionalProperties: {}
+    additionalProperties: true
     type: object
   handlers.HTTPError:
     properties:
@@ -174,7 +143,11 @@ definitions:
   handlers.HTTPSuccess:
     properties:
       data:
-        $ref: '#/definitions/handlers.Data'
+        additionalProperties:
+          type: string
+        example:
+          key: value
+        type: object
       success:
         example: true
         type: boolean
@@ -198,7 +171,7 @@ paths:
         name: login
         required: true
         schema:
-          $ref: '#/definitions/dto.LoginDTO'
+          $ref: '#/definitions/dto.Login'
       produces:
       - application/json
       responses:
@@ -253,6 +226,8 @@ paths:
                   - properties:
                       access_token:
                         type: string
+                      refresh_token:
+                        type: string
                     type: object
               type: object
         "403":
@@ -273,7 +248,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.SignUpDTO'
+          $ref: '#/definitions/dto.SignUp'
       produces:
       - application/json
       responses:
@@ -349,7 +324,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateMeasureDTO'
+          $ref: '#/definitions/dto.CreateMeasure'
       produces:
       - application/json
       responses:
@@ -440,7 +415,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateMeasureDTO'
+          $ref: '#/definitions/dto.UpdateMeasure'
       produces:
       - application/json
       responses:
@@ -516,7 +491,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateProductCategoryDTO'
+          $ref: '#/definitions/dto.CreateProductCategory'
       produces:
       - application/json
       responses:
@@ -624,7 +599,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateProductCategoryDTO'
+          $ref: '#/definitions/dto.UpdateProductCategory'
       produces:
       - application/json
       responses:
@@ -665,7 +640,8 @@ paths:
         name: limit
         required: true
         type: integer
-      - in: query
+      - example: помидор
+        in: query
         minLength: 1
         name: name
         type: string
@@ -702,7 +678,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateProductDTO'
+          $ref: '#/definitions/dto.CreateProduct'
       produces:
       - application/json
       responses:
@@ -789,7 +765,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateProductDTO'
+          $ref: '#/definitions/dto.UpdateProduct'
       produces:
       - application/json
       responses:
@@ -1068,7 +1044,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateRecipeDTO'
+          $ref: '#/definitions/dto.CreateRecipe'
       produces:
       - application/json
       responses:
@@ -1156,7 +1132,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateRecipeDTO'
+          $ref: '#/definitions/dto.UpdateRecipe'
       produces:
       - application/json
       responses:
@@ -1191,7 +1167,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.DeleteIngredientDTO'
+          $ref: '#/definitions/dto.DeleteIngredient'
       produces:
       - application/json
       responses:
@@ -1247,7 +1223,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateIngredientDTO'
+          $ref: '#/definitions/dto.UpdateIngredient'
       produces:
       - application/json
       responses:
@@ -1374,7 +1350,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateRecipeStepDTO'
+          $ref: '#/definitions/dto.CreateRecipeStep'
       responses:
         "200":
           description: OK

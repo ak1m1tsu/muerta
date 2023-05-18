@@ -10,7 +10,11 @@ import (
 	svc "github.com/romankravchuk/muerta/internal/services/storage"
 )
 
-func NewRouter(client repositories.PostgresClient, logger *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
+func NewRouter(
+	client repositories.PostgresClient,
+	logger *log.Logger,
+	jware *jware.JWTMiddleware,
+) *fiber.App {
 	router := fiber.New()
 	repo := repo.New(client)
 	svc := svc.New(repo)

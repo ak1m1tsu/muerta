@@ -4,11 +4,15 @@ GOBUILD=$(GO) build
 GOTEST=$(GO) test
 
 .PHONY: build
-build:
+build: format
 	$(GOBUILD) -o ./bin/muerta ./cmd/muerta/
 
 run: build
 	./bin/muerta
+
+format:
+	golines -w /dev/null --base-formatter="gofumpt" ./internal && \
+	 goimports-reviser ./internal
 
 docker-up:
 	docker compose up --build -d

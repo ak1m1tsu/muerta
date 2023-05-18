@@ -10,7 +10,11 @@ import (
 	usersetting "github.com/romankravchuk/muerta/internal/services/user-setting"
 )
 
-func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
+func NewRouter(
+	client repositories.PostgresClient,
+	log *log.Logger,
+	jware *jware.JWTMiddleware,
+) *fiber.App {
 	router := fiber.New()
 	repo := setting.New(client)
 	svc := usersetting.New(repo)

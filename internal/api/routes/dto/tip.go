@@ -1,14 +1,14 @@
 package dto
 
-type FindTipDTO struct {
-	ID          int    `json:"id"`
-	Description string `json:"description"`
+type FindTip struct {
+	ID          int    `json:"id"          example:"1"`
+	Description string `json:"description" example:"Хранить в Холодильнике"`
 }
 
-type UpdateTipDTO struct {
-	Description string `json:"description" validate:"required,gte=3,lte=200"`
+type UpdateTip struct {
+	Description string `json:"description" validate:"required,gte=3,lte=200" example:"Хранить в Холодильнике"`
 }
 
-type CreateTipDTO struct {
-	Description string `json:"description" validate:"required,gte=3,lte=200"`
+type CreateTip struct {
+	Description string `json:"description" validate:"required,gte=3,lte=200" example:"Хранить в Холодильнике"`
 }

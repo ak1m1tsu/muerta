@@ -26,14 +26,16 @@ func New(svc service.StorageTypeServicer, log *log.Logger) *StorageTypeHandler {
 }
 
 func (h *StorageTypeHandler) CreateStorageType(ctx *fiber.Ctx) error {
-	var payload *dto.CreateStorageTypeDTO
+	var payload *dto.CreateStorageType
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateStorageType(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -54,7 +56,7 @@ func (h *StorageTypeHandler) FindStorageTypeByID(ctx *fiber.Ctx) error {
 }
 
 func (h *StorageTypeHandler) FindStorageTypes(ctx *fiber.Ctx) error {
-	filter := new(dto.StorageTypeFilterDTO)
+	filter := new(dto.StorageTypeFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -77,19 +79,23 @@ func (h *StorageTypeHandler) FindStorageTypes(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"types": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"types": result, "count": count}},
+	)
 }
 
 func (h *StorageTypeHandler) UpdateStorageType(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
-	payload := new(dto.UpdateStorageTypeDTO)
+	payload := new(dto.UpdateStorageType)
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateStorageType(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)

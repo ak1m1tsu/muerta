@@ -26,14 +26,16 @@ func New(svc service.TipServicer, log *log.Logger) *TipHandler {
 }
 
 func (h *TipHandler) CreateTip(ctx *fiber.Ctx) error {
-	var payload *dto.CreateTipDTO
+	var payload *dto.CreateTip
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.CreateTip(ctx.Context(), payload)
 	if err != nil {
@@ -55,7 +57,7 @@ func (h *TipHandler) FindTipByID(ctx *fiber.Ctx) error {
 }
 
 func (h *TipHandler) FindTips(ctx *fiber.Ctx) error {
-	filter := new(dto.TipFilterDTO)
+	filter := new(dto.TipFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -78,19 +80,23 @@ func (h *TipHandler) FindTips(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"tips": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"tips": result, "count": count}},
+	)
 }
 
 func (h *TipHandler) UpdateTip(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
-	payload := new(dto.UpdateTipDTO)
+	payload := new(dto.UpdateTip)
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateTip(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)

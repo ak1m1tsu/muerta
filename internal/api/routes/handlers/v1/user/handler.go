@@ -34,7 +34,7 @@ func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
 }
 
 func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
-	filter := new(dto.UserFilterDTO)
+	filter := new(dto.UserFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -59,18 +59,22 @@ func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"users": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"users": result, "count": count}},
+	)
 }
 
 func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateUserDTO
+	var payload *dto.CreateUser
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateUser(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -82,7 +86,7 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 
 func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UpdateUserDTO
+	var payload *dto.UpdateUser
 	if err := ctx.BodyParser(&payload); err != nil {
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
@@ -130,9 +134,10 @@ func (h *UserHanlder) FindSettings(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"settings": result}})
 }
+
 func (h *UserHanlder) UpdateSetting(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UpdateUserSettingDTO
+	var payload *dto.UpdateUserSetting
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -151,6 +156,7 @@ func (h *UserHanlder) UpdateSetting(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"settings": result}})
 }
+
 func (h *UserHanlder) FindRoles(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindRoles(ctx.Context(), id)
@@ -161,6 +167,7 @@ func (h *UserHanlder) FindRoles(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result}})
 }
+
 func (h *UserHanlder) FindStorages(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindStorages(ctx.Context(), id)
@@ -171,9 +178,10 @@ func (h *UserHanlder) FindStorages(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storages": result}})
 }
+
 func (h *UserHanlder) CreateStorage(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserStorageDTO
+	var payload *dto.UserStorage
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -192,9 +200,10 @@ func (h *UserHanlder) CreateStorage(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storages": result}})
 }
+
 func (h *UserHanlder) DeleteStorage(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserStorageDTO
+	var payload *dto.UserStorage
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -224,9 +233,10 @@ func (h *UserHanlder) FindShelfLives(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-lives": result}})
 }
+
 func (h *UserHanlder) CreateShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.CreateShelfLifeDTO
+	var payload *dto.CreateShelfLife
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -246,9 +256,10 @@ func (h *UserHanlder) CreateShelfLife(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-life": result}})
 }
+
 func (h *UserHanlder) UpdateShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserShelfLifeDTO
+	var payload *dto.UserShelfLife
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -267,9 +278,10 @@ func (h *UserHanlder) UpdateShelfLife(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-life": result}})
 }
+
 func (h *UserHanlder) RestoreShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserShelfLifeDTO
+	var payload *dto.UserShelfLife
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -288,9 +300,10 @@ func (h *UserHanlder) RestoreShelfLife(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-life": result}})
 }
+
 func (h *UserHanlder) DeleteShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserShelfLifeDTO
+	var payload *dto.UserShelfLife
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).

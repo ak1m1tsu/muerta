@@ -10,7 +10,10 @@ import (
 
 type CategoryRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.ProductCategory, error)
-	FindMany(ctx context.Context, filter models.ProductCategoryFilter) ([]models.ProductCategory, error)
+	FindMany(
+		ctx context.Context,
+		filter models.ProductCategoryFilter,
+	) ([]models.ProductCategory, error)
 	Create(ctx context.Context, role models.ProductCategory) error
 	Update(ctx context.Context, role models.ProductCategory) error
 	Delete(ctx context.Context, id int) error
@@ -22,7 +25,10 @@ type categoryRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *categoryRepository) Count(ctx context.Context, filter models.ProductCategoryFilter) (int, error) {
+func (r *categoryRepository) Count(
+	ctx context.Context,
+	filter models.ProductCategoryFilter,
+) (int, error) {
 	var (
 		query = `
 			SELECT COUNT(*) FROM categories WHERE deleted_at IS NULL
@@ -37,7 +43,7 @@ func (r *categoryRepository) Count(ctx context.Context, filter models.ProductCat
 
 // Create implements CategoryRepositorer
 func (r *categoryRepository) Create(ctx context.Context, role models.ProductCategory) error {
-	var query = `
+	query := `
 		INSERT INTO categories (name)
 		VALUES ($1)
 	`
@@ -49,7 +55,7 @@ func (r *categoryRepository) Create(ctx context.Context, role models.ProductCate
 
 // Delete implements CategoryRepositorer
 func (r *categoryRepository) Delete(ctx context.Context, id int) error {
-	var query = `
+	query := `
 		UPDATE categories
 		SET deleted_at = NOW(),
 			updated_at = NOW()
@@ -79,7 +85,10 @@ func (r *categoryRepository) FindByID(ctx context.Context, id int) (models.Produ
 }
 
 // FindMany implements CategoryRepositorer
-func (r *categoryRepository) FindMany(ctx context.Context, filter models.ProductCategoryFilter) ([]models.ProductCategory, error) {
+func (r *categoryRepository) FindMany(
+	ctx context.Context,
+	filter models.ProductCategoryFilter,
+) ([]models.ProductCategory, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -108,7 +117,7 @@ func (r *categoryRepository) FindMany(ctx context.Context, filter models.Product
 
 // Restore implements CategoryRepositorer
 func (r *categoryRepository) Restore(ctx context.Context, id int) error {
-	var query = `
+	query := `
 		UPDATE categories
 		SET deleted_at = NULL,
 			updated_at = NOW()
@@ -122,7 +131,7 @@ func (r *categoryRepository) Restore(ctx context.Context, id int) error {
 
 // Update implements CategoryRepositorer
 func (r *categoryRepository) Update(ctx context.Context, role models.ProductCategory) error {
-	var query = `
+	query := `
 		UPDATE categories
 		SET name = $1,
 			updated_at = NOW()

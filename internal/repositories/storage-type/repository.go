@@ -25,7 +25,10 @@ type storageTypeRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *storageTypeRepository) Count(ctx context.Context, filter models.StorageTypeFilter) (int, error) {
+func (r *storageTypeRepository) Count(
+	ctx context.Context,
+	filter models.StorageTypeFilter,
+) (int, error) {
 	var (
 		query = `
 			SELECT COUNT(*) 
@@ -41,7 +44,11 @@ func (r *storageTypeRepository) Count(ctx context.Context, filter models.Storage
 }
 
 // CreateTip implements StorageTypeRepositorer
-func (r *storageTypeRepository) CreateTip(ctx context.Context, id int, tipID int) (models.Tip, error) {
+func (r *storageTypeRepository) CreateTip(
+	ctx context.Context,
+	id int,
+	tipID int,
+) (models.Tip, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -64,7 +71,7 @@ func (r *storageTypeRepository) CreateTip(ctx context.Context, id int, tipID int
 
 // DeleteTip implements StorageTypeRepositorer
 func (r *storageTypeRepository) DeleteTip(ctx context.Context, id int, tipID int) error {
-	var query = `
+	query := `
 		DELETE FROM storages_types_tips
 		WHERE id_storage_type = $1 AND id_tip = $2
 	`
@@ -75,7 +82,10 @@ func (r *storageTypeRepository) DeleteTip(ctx context.Context, id int, tipID int
 }
 
 // FindStorages implements StorageTypeRepositorer
-func (r *storageTypeRepository) FindStorages(ctx context.Context, id int) ([]models.Storage, error) {
+func (r *storageTypeRepository) FindStorages(
+	ctx context.Context,
+	id int,
+) ([]models.Storage, error) {
 	var (
 		query = `
 			SELECT s.id, s.name, s.temperature, s.humidity
@@ -127,12 +137,10 @@ func (r *storageTypeRepository) FindTips(ctx context.Context, id int) ([]models.
 
 // Create implements StorageTypeRepositorer
 func (r *storageTypeRepository) Create(ctx context.Context, storageType models.StorageType) error {
-	var (
-		query = `
+	query := `
 			INSERT INTO storages_types (name)
 			VALUES ($1)
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, storageType.Name); err != nil {
 		return fmt.Errorf("failed to create storageType: %w", err)
 	}
@@ -141,12 +149,10 @@ func (r *storageTypeRepository) Create(ctx context.Context, storageType models.S
 
 // Delete implements StorageTypeRepositorer
 func (r *storageTypeRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			DELETE FROM storages_types
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to delete storageType: %w", err)
 	}
@@ -171,7 +177,10 @@ func (r *storageTypeRepository) FindByID(ctx context.Context, id int) (models.St
 }
 
 // FindMany implements StorageTypeRepositorer
-func (r *storageTypeRepository) FindMany(ctx context.Context, filter models.StorageTypeFilter) ([]models.StorageType, error) {
+func (r *storageTypeRepository) FindMany(
+	ctx context.Context,
+	filter models.StorageTypeFilter,
+) ([]models.StorageType, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -199,13 +208,11 @@ func (r *storageTypeRepository) FindMany(ctx context.Context, filter models.Stor
 
 // Update implements StorageTypeRepositorer
 func (r *storageTypeRepository) Update(ctx context.Context, storageType models.StorageType) error {
-	var (
-		query = `
+	query := `
 			UPDATE storages_types
 			SET name = $1
 			WHERE id = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, storageType.Name, storageType.ID); err != nil {
 		return fmt.Errorf("failed to update storageType: %w", err)
 	}

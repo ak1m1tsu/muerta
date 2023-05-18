@@ -32,24 +32,27 @@ func New(svc service.ProductServicer, log *log.Logger) *ProductHandler {
 //	@Tags			Products
 //	@Accept			json
 //	@Produce		json
-//	@Param			payload	body		dto.CreateProductDTO	true	"Product details"
+//	@Param			payload	body		dto.CreateProduct	true	"Product details"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/products [post]
 func (h *ProductHandler) CreateProduct(ctx *fiber.Ctx) error {
-	var payload *dto.CreateProductDTO
+	var payload *dto.CreateProduct
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateProduct(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -71,7 +74,8 @@ func (h *ProductHandler) FindProductByID(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindProductByID(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{
 		Success: true,
@@ -86,13 +90,13 @@ func (h *ProductHandler) FindProductByID(ctx *fiber.Ctx) error {
 //	@Tags			Products
 //	@Accept			json
 //	@Produce		json
-//	@Param			filter	query		dto.ProductFilterDTO	false	"Product filter parameters"
+//	@Param			filter	query		dto.ProductFilter	false	"Product filter parameters"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/products [get]
 func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
-	filter := new(dto.ProductFilterDTO)
+	filter := new(dto.ProductFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -106,12 +110,14 @@ func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindProducts(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{
 		Success: true,
@@ -126,26 +132,29 @@ func (h *ProductHandler) FindProducts(ctx *fiber.Ctx) error {
 //	@Tags			Products
 //	@Accept			json
 //	@Produce		json
-//	@Param			product_id	path		int						true	"Product ID"
-//	@Param			payload		body		dto.UpdateProductDTO	true	"New product details"
+//	@Param			product_id	path		int					true	"Product ID"
+//	@Param			payload		body		dto.UpdateProduct	true	"New product details"
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id} [put]
 func (h *ProductHandler) UpdateProduct(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
-	payload := new(dto.UpdateProductDTO)
+	payload := new(dto.UpdateProduct)
 	if err := ctx.BodyParser(payload); err != nil {
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
 	if errs := validator.Validate(payload); errs != nil {
 		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
 	if err := h.svc.UpdateProduct(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -165,7 +174,8 @@ func (h *ProductHandler) DeleteProduct(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.DeleteProduct(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -185,7 +195,8 @@ func (h *ProductHandler) RestoreProduct(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.RestoreProduct(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -206,7 +217,8 @@ func (h *ProductHandler) FindProductCategories(ctx *fiber.Ctx) error {
 	categories, err := h.svc.FindProductCategories(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Data: handlers.Data{"categories": categories}})
 }
@@ -227,7 +239,8 @@ func (h *ProductHandler) FindProductRecipes(ctx *fiber.Ctx) error {
 	recipes, err := h.svc.FindProductRecipes(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Data: handlers.Data{"recipes": recipes}})
 }
@@ -250,7 +263,8 @@ func (h *ProductHandler) CreateCategory(ctx *fiber.Ctx) error {
 	result, err := h.svc.CreateCategory(ctx.Context(), productID, categoryID)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 
 	}
 	return ctx.JSON(handlers.HTTPSuccess{
@@ -272,7 +286,8 @@ func (h *ProductHandler) DeleteCategory(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	categoryID := ctx.Locals(context.CategoryID).(int)
 	if err := h.svc.DeleteCategory(ctx.Context(), productID, categoryID); err != nil {
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -290,7 +305,8 @@ func (h *ProductHandler) FindProductTips(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	result, err := h.svc.FindProductTips(ctx.Context(), productID)
 	if err != nil {
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{
 		Success: true,
@@ -313,7 +329,8 @@ func (h *ProductHandler) CreateProductTip(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.CreateProductTip(ctx.Context(), productID, tipID)
 	if err != nil {
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{
 		Success: true,
@@ -336,7 +353,8 @@ func (h *ProductHandler) DeleteProductTip(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	err := h.svc.DeleteProductTip(ctx.Context(), productID, tipID)
 	if err != nil {
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }

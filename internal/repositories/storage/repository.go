@@ -26,7 +26,10 @@ type storageRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *storageRepository) FindShelfLives(ctx context.Context, id int) ([]models.ShelfLife, error) {
+func (r *storageRepository) FindShelfLives(
+	ctx context.Context,
+	id int,
+) ([]models.ShelfLife, error) {
 	var (
 		query = `
 			SELECT sl.id, p.id, p.name, m.id, m.name, sl.quantity, sl.purchase_date, sl.end_date
@@ -103,12 +106,10 @@ func (r *storageRepository) CreateTip(ctx context.Context, id int, tipID int) (m
 
 // DeleteTip implements StorageRepositorer
 func (r *storageRepository) DeleteTip(ctx context.Context, id int, tipID int) error {
-	var (
-		query = `
+	query := `
 			DELETE FROM storages_tips
 			WHERE id_storage = $1 AND id_tip = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id, tipID); err != nil {
 		return fmt.Errorf("delete tip: %w", err)
 	}
@@ -167,7 +168,10 @@ func (r *storageRepository) FindByID(ctx context.Context, id int) (models.Storag
 	return storage, nil
 }
 
-func (r *storageRepository) FindMany(ctx context.Context, filter models.StorageFilter) ([]models.Storage, error) {
+func (r *storageRepository) FindMany(
+	ctx context.Context,
+	filter models.StorageFilter,
+) ([]models.Storage, error) {
 	var (
 		query = `
 			SELECT 
@@ -199,15 +203,13 @@ func (r *storageRepository) FindMany(ctx context.Context, filter models.StorageF
 }
 
 func (r *storageRepository) Create(ctx context.Context, storage *models.Storage) error {
-	var (
-		query = `
+	query := `
 			INSERT INTO storages 
 				(name, temperature, humidity, id_type)
 			VALUES
 				($1, $2, $3, $4)
 			RETURNING id
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, storage.Name, storage.Temperature, storage.Humidity, storage.Type.ID); err != nil {
 		return fmt.Errorf("create storage: %w", err)
 	}
@@ -215,8 +217,7 @@ func (r *storageRepository) Create(ctx context.Context, storage *models.Storage)
 }
 
 func (r *storageRepository) Update(ctx context.Context, storage *models.Storage) error {
-	var (
-		query = `
+	query := `
 			UPDATE storages
 			SET name = $1,
 				temperature = $2,
@@ -225,7 +226,6 @@ func (r *storageRepository) Update(ctx context.Context, storage *models.Storage)
 				updated_at = NOW()
 			WHERE id = $5
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, storage.Name, storage.Temperature, storage.Humidity, storage.Type.ID, storage.ID); err != nil {
 		return fmt.Errorf("update storage: %w", err)
 	}
@@ -233,14 +233,12 @@ func (r *storageRepository) Update(ctx context.Context, storage *models.Storage)
 }
 
 func (r *storageRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE storages
 			SET deleted_at = NOW(),
 				updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("delete storage: %w", err)
 	}
@@ -248,14 +246,12 @@ func (r *storageRepository) Delete(ctx context.Context, id int) error {
 }
 
 func (r *storageRepository) Restore(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE storages
 			SET deleted_at = NULL,
 				updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("restore storage: %w", err)
 	}

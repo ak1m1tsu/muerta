@@ -11,23 +11,26 @@ import (
 )
 
 type ShelfLifeServicer interface {
-	FindShelfLifeByID(ctx context.Context, id int) (dto.FindShelfLifeDTO, error)
-	FindShelfLifes(ctx context.Context, filter *dto.ShelfLifeFilterDTO) ([]dto.FindShelfLifeDTO, error)
-	CreateShelfLife(ctx context.Context, payload *dto.CreateShelfLifeDTO) error
-	UpdateShelfLife(ctx context.Context, id int, payload *dto.UpdateShelfLifeDTO) error
+	FindShelfLifeByID(ctx context.Context, id int) (dto.FindShelfLife, error)
+	FindShelfLifes(
+		ctx context.Context,
+		filter *dto.ShelfLifeFilter,
+	) ([]dto.FindShelfLife, error)
+	CreateShelfLife(ctx context.Context, payload *dto.CreateShelfLife) error
+	UpdateShelfLife(ctx context.Context, id int, payload *dto.UpdateShelfLife) error
 	DeleteShelfLife(ctx context.Context, id int) error
 	RestoreShelfLife(ctx context.Context, id int) error
-	FindShelfLifeStatuses(ctx context.Context, id int) ([]dto.FindShelfLifeStatusDTO, error)
-	CreateShelfLifeStatus(ctx context.Context, id, status int) (dto.FindShelfLifeStatusDTO, error)
+	FindShelfLifeStatuses(ctx context.Context, id int) ([]dto.FindShelfLifeStatus, error)
+	CreateShelfLifeStatus(ctx context.Context, id, status int) (dto.FindShelfLifeStatus, error)
 	DeleteShelfLifeStatus(ctx context.Context, id, status int) error
-	Count(ctx context.Context, filter dto.ShelfLifeFilterDTO) (int, error)
+	Count(ctx context.Context, filter dto.ShelfLifeFilter) (int, error)
 }
 
 type shelfLifeSerivce struct {
 	repo repository.ShelfLifeRepositorer
 }
 
-func (s *shelfLifeSerivce) Count(ctx context.Context, filter dto.ShelfLifeFilterDTO) (int, error) {
+func (s *shelfLifeSerivce) Count(ctx context.Context, filter dto.ShelfLifeFilter) (int, error) {
 	count, err := s.repo.Count(ctx, models.ShelfLifeFilter{})
 	if err != nil {
 		return 0, fmt.Errorf("error counting shelf lives: %w", err)
@@ -36,12 +39,16 @@ func (s *shelfLifeSerivce) Count(ctx context.Context, filter dto.ShelfLifeFilter
 }
 
 // CreateShelfLifeStatus implements ShelfLifeServicer
-func (s *shelfLifeSerivce) CreateShelfLifeStatus(ctx context.Context, id int, status int) (dto.FindShelfLifeStatusDTO, error) {
+func (s *shelfLifeSerivce) CreateShelfLifeStatus(
+	ctx context.Context,
+	id int,
+	status int,
+) (dto.FindShelfLifeStatus, error) {
 	model, err := s.repo.CreateStatus(ctx, id, status)
 	if err != nil {
-		return dto.FindShelfLifeStatusDTO{}, err
+		return dto.FindShelfLifeStatus{}, err
 	}
-	return translate.ShelfLifeStatusModelToFindDTO(&model), nil
+	return translate.ShelfLifeStatusModelToFind(&model), nil
 }
 
 // DeleteShelfLifeStatus implements ShelfLifeServicer
@@ -53,17 +60,23 @@ func (s *shelfLifeSerivce) DeleteShelfLifeStatus(ctx context.Context, id int, st
 }
 
 // FindShelfLifeStatuses implements ShelfLifeServicer
-func (s *shelfLifeSerivce) FindShelfLifeStatuses(ctx context.Context, id int) ([]dto.FindShelfLifeStatusDTO, error) {
+func (s *shelfLifeSerivce) FindShelfLifeStatuses(
+	ctx context.Context,
+	id int,
+) ([]dto.FindShelfLifeStatus, error) {
 	models, err := s.repo.FindStatuses(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return translate.ShelfLifeStatusModelsToFindDTOs(models), nil
+	return translate.ShelfLifeStatusModelsToFinds(models), nil
 }
 
 // CreateShelfLife implements ShelfLifeServicer
-func (svc *shelfLifeSerivce) CreateShelfLife(ctx context.Context, payload *dto.CreateShelfLifeDTO) error {
-	model := translate.CreateShelfLifeDTOToModel(payload)
+func (svc *shelfLifeSerivce) CreateShelfLife(
+	ctx context.Context,
+	payload *dto.CreateShelfLife,
+) error {
+	model := translate.CreateShelfLifeToModel(payload)
 	if err := svc.repo.Create(ctx, model); err != nil {
 		return err
 	}
@@ -79,23 +92,30 @@ func (svc *shelfLifeSerivce) DeleteShelfLife(ctx context.Context, id int) error 
 }
 
 // FindShelfLifeByID implements ShelfLifeServicer
-func (svc *shelfLifeSerivce) FindShelfLifeByID(ctx context.Context, id int) (dto.FindShelfLifeDTO, error) {
+func (svc *shelfLifeSerivce) FindShelfLifeByID(
+	ctx context.Context,
+	id int,
+) (dto.FindShelfLife, error) {
 	model, err := svc.repo.FindByID(ctx, id)
-	result := translate.ShelfLifeModelToFindDTO(&model)
+	result := translate.ShelfLifeModelToFind(&model)
 	if err != nil {
-		return dto.FindShelfLifeDTO{}, err
+		return dto.FindShelfLife{}, err
 	}
 	return result, nil
 }
 
 // FindShelfLifes implements ShelfLifeServicer
-func (svc *shelfLifeSerivce) FindShelfLifes(ctx context.Context, filter *dto.ShelfLifeFilterDTO) ([]dto.FindShelfLifeDTO, error) {
+func (svc *shelfLifeSerivce) FindShelfLifes(
+	ctx context.Context,
+	filter *dto.ShelfLifeFilter,
+) ([]dto.FindShelfLife, error) {
 	models, err := svc.repo.FindMany(ctx, models.ShelfLifeFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
 			Offset: filter.Offset,
-		}})
-	dtos := translate.ShelfLifeModelsToFindDTOs(models)
+		},
+	})
+	dtos := translate.ShelfLifeModelsToFinds(models)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +131,11 @@ func (svc *shelfLifeSerivce) RestoreShelfLife(ctx context.Context, id int) error
 }
 
 // UpdateShelfLife implements ShelfLifeServicer
-func (svc *shelfLifeSerivce) UpdateShelfLife(ctx context.Context, id int, payload *dto.UpdateShelfLifeDTO) error {
+func (svc *shelfLifeSerivce) UpdateShelfLife(
+	ctx context.Context,
+	id int,
+	payload *dto.UpdateShelfLife,
+) error {
 	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err

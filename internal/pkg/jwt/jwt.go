@@ -25,7 +25,11 @@ var (
 
 // CreateToken creates a new JWT token with the given payload, TTL, and private key.
 // Returns the token details and an error, if any.
-func CreateToken(payload *dto.TokenPayload, ttl time.Duration, pirvateKey []byte) (*dto.TokenDetails, error) {
+func CreateToken(
+	payload *dto.TokenPayload,
+	ttl time.Duration,
+	pirvateKey []byte,
+) (*dto.TokenDetails, error) {
 	now := time.Now().UTC()
 	td := &dto.TokenDetails{
 		UUID: uuid.New().String(),

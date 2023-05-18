@@ -37,7 +37,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.LoginDTO"
+                            "$ref": "#/definitions/dto.Login"
                         }
                     }
                 ],
@@ -120,6 +120,9 @@ const docTemplate = `{
                                                     "properties": {
                                                         "access_token": {
                                                             "type": "string"
+                                                        },
+                                                        "refresh_token": {
+                                                            "type": "string"
                                                         }
                                                     }
                                                 }
@@ -159,7 +162,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.SignUpDTO"
+                            "$ref": "#/definitions/dto.SignUp"
                         }
                     }
                 ],
@@ -270,7 +273,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateMeasureDTO"
+                            "$ref": "#/definitions/dto.CreateMeasure"
                         }
                     }
                 ],
@@ -365,7 +368,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateMeasureDTO"
+                            "$ref": "#/definitions/dto.UpdateMeasure"
                         }
                     }
                 ],
@@ -518,7 +521,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateProductCategoryDTO"
+                            "$ref": "#/definitions/dto.CreateProductCategory"
                         }
                     }
                 ],
@@ -613,7 +616,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateProductCategoryDTO"
+                            "$ref": "#/definitions/dto.UpdateProductCategory"
                         }
                     }
                 ],
@@ -743,6 +746,7 @@ const docTemplate = `{
                     {
                         "minLength": 1,
                         "type": "string",
+                        "example": "помидор",
                         "name": "name",
                         "in": "query"
                     },
@@ -794,7 +798,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateProductDTO"
+                            "$ref": "#/definitions/dto.CreateProduct"
                         }
                     }
                 ],
@@ -889,7 +893,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateProductDTO"
+                            "$ref": "#/definitions/dto.UpdateProduct"
                         }
                     }
                 ],
@@ -1339,7 +1343,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateRecipeDTO"
+                            "$ref": "#/definitions/dto.CreateRecipe"
                         }
                     }
                 ],
@@ -1434,7 +1438,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateRecipeDTO"
+                            "$ref": "#/definitions/dto.UpdateRecipe"
                         }
                     }
                 ],
@@ -1557,7 +1561,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateIngredientDTO"
+                            "$ref": "#/definitions/dto.UpdateIngredient"
                         }
                     }
                 ],
@@ -1608,7 +1612,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.DeleteIngredientDTO"
+                            "$ref": "#/definitions/dto.DeleteIngredient"
                         }
                     }
                 ],
@@ -1738,7 +1742,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateRecipeStepDTO"
+                            "$ref": "#/definitions/dto.CreateRecipeStep"
                         }
                     }
                 ],
@@ -1824,7 +1828,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.CreateMeasureDTO": {
+        "dto.CreateMeasure": {
             "type": "object",
             "required": [
                 "name"
@@ -1837,7 +1841,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateProductCategoryDTO": {
+        "dto.CreateProduct": {
             "type": "object",
             "required": [
                 "name"
@@ -1845,11 +1849,12 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "minLength": 2
+                    "minLength": 2,
+                    "example": "Томат"
                 }
             }
         },
-        "dto.CreateProductDTO": {
+        "dto.CreateProductCategory": {
             "type": "object",
             "required": [
                 "name"
@@ -1857,87 +1862,39 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "minLength": 2
+                    "minLength": 2,
+                    "example": "Овощь"
                 }
             }
         },
-        "dto.CreateRecipeDTO": {
-            "type": "object",
-            "required": [
-                "id_user",
-                "ingredients",
-                "name",
-                "steps"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string",
-                    "maxLength": 200
-                },
-                "id_user": {
-                    "type": "integer"
-                },
-                "ingredients": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.IngredientDTO"
-                    }
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2
-                },
-                "steps": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dto.RecipeStepDTO"
-                    }
-                }
-            }
+        "dto.CreateRecipe": {
+            "type": "object"
         },
-        "dto.CreateRecipeStepDTO": {
+        "dto.CreateRecipeStep": {
             "type": "object",
             "required": [
                 "place"
             ],
             "properties": {
                 "place": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
-        "dto.DeleteIngredientDTO": {
+        "dto.DeleteIngredient": {
             "type": "object",
             "required": [
                 "id_product"
             ],
             "properties": {
                 "id_product": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
-        "dto.IngredientDTO": {
-            "type": "object",
-            "required": [
-                "id_measure",
-                "id_product",
-                "quantity"
-            ],
-            "properties": {
-                "id_measure": {
-                    "type": "integer"
-                },
-                "id_product": {
-                    "type": "integer"
-                },
-                "quantity": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.LoginDTO": {
+        "dto.Login": {
             "type": "object",
             "required": [
                 "name",
@@ -1946,30 +1903,17 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "minLength": 3
+                    "minLength": 3,
+                    "example": "theBestUserEver"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 8
+                    "minLength": 8,
+                    "example": "th3B3stUs3rEver"
                 }
             }
         },
-        "dto.RecipeStepDTO": {
-            "type": "object",
-            "required": [
-                "id",
-                "place"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "place": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.SignUpDTO": {
+        "dto.SignUp": {
             "type": "object",
             "required": [
                 "name",
@@ -1979,33 +1923,39 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "minLength": 3
+                    "minLength": 3,
+                    "example": "theBestUserEver"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 8
+                    "minLength": 8,
+                    "example": "th3B3stUs3rEver"
                 },
                 "password_confirm": {
                     "type": "string",
-                    "minLength": 8
+                    "minLength": 8,
+                    "example": "th3B3stUs3rEver"
                 }
             }
         },
-        "dto.UpdateIngredientDTO": {
+        "dto.UpdateIngredient": {
             "type": "object",
             "properties": {
                 "id_measure": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "id_product": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "quantity": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 }
             }
         },
-        "dto.UpdateMeasureDTO": {
+        "dto.UpdateMeasure": {
             "type": "object",
             "required": [
                 "name"
@@ -2018,7 +1968,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateProductCategoryDTO": {
+        "dto.UpdateProduct": {
             "type": "object",
             "required": [
                 "name"
@@ -2030,7 +1980,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateProductDTO": {
+        "dto.UpdateProductCategory": {
             "type": "object",
             "required": [
                 "name"
@@ -2038,27 +1988,30 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string",
-                    "minLength": 2
+                    "minLength": 2,
+                    "example": "Фрукт"
                 }
             }
         },
-        "dto.UpdateRecipeDTO": {
+        "dto.UpdateRecipe": {
             "type": "object",
             "properties": {
                 "description": {
                     "type": "string",
-                    "maxLength": 200
+                    "maxLength": 200,
+                    "example": "Салат из миндаля"
                 },
                 "name": {
                     "type": "string",
                     "maxLength": 100,
-                    "minLength": 2
+                    "minLength": 2,
+                    "example": "Салат"
                 }
             }
         },
         "handlers.Data": {
             "type": "object",
-            "additionalProperties": {}
+            "additionalProperties": true
         },
         "handlers.HTTPError": {
             "type": "object",
@@ -2077,7 +2030,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/handlers.Data"
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "example": {
+                        "key": "value"
+                    }
                 },
                 "success": {
                     "type": "boolean",

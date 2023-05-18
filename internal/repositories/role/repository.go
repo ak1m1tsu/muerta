@@ -63,12 +63,10 @@ func (r *roleRepository) Count(ctx context.Context, filter models.RoleFilter) (i
 
 // Create implements RoleRepositorer
 func (r *roleRepository) Create(ctx context.Context, role models.Role) error {
-	var (
-		query = `
+	query := `
 			INSERT INTO roles (name)
 			VALUES ($1)
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, role.Name); err != nil {
 		return fmt.Errorf("failed to create role: %w", err)
 	}
@@ -77,13 +75,11 @@ func (r *roleRepository) Create(ctx context.Context, role models.Role) error {
 
 // Delete implements RoleRepositorer
 func (r *roleRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE roles
 			SET deleted_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to delete role: %w", err)
 	}
@@ -108,7 +104,10 @@ func (r *roleRepository) FindByID(ctx context.Context, id int) (models.Role, err
 }
 
 // FindMany implements RoleRepositorer
-func (r *roleRepository) FindMany(ctx context.Context, filter models.RoleFilter) ([]models.Role, error) {
+func (r *roleRepository) FindMany(
+	ctx context.Context,
+	filter models.RoleFilter,
+) ([]models.Role, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -137,13 +136,11 @@ func (r *roleRepository) FindMany(ctx context.Context, filter models.RoleFilter)
 
 // Restore implements RoleRepositorer
 func (r *roleRepository) Restore(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE roles
 			SET deleted_at = NULL
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to restore role: %w", err)
 	}
@@ -152,13 +149,11 @@ func (r *roleRepository) Restore(ctx context.Context, id int) error {
 
 // Update implements RoleRepositorer
 func (r *roleRepository) Update(ctx context.Context, role models.Role) error {
-	var (
-		query = `
+	query := `
 			UPDATE roles
 			SET name = $1
 			WHERE id = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, role.Name, role.ID); err != nil {
 		return fmt.Errorf("failed to update role: %w", err)
 	}

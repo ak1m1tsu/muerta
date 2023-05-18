@@ -26,7 +26,7 @@ func New(svc service.StepServicer, log *log.Logger) *StepHandler {
 }
 
 func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
-	filter := new(dto.StepFilterDTO)
+	filter := new(dto.StepFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -40,18 +40,22 @@ func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindSteps(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"steps": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"steps": result, "count": count}},
+	)
 }
 
 func (h *StepHandler) CreateStep(ctx *fiber.Ctx) error {
-	var paylaod *dto.CreateStepDTO
+	var paylaod *dto.CreateStep
 	if err := ctx.BodyParser(&paylaod); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -65,7 +69,8 @@ func (h *StepHandler) CreateStep(ctx *fiber.Ctx) error {
 	result, err := h.svc.CreateStep(ctx.Context(), paylaod)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
@@ -75,14 +80,15 @@ func (h *StepHandler) FindStep(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindStep(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
 func (h *StepHandler) UpdateStep(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
-	var payload *dto.UpdateStepDTO
+	var payload *dto.UpdateStep
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
@@ -91,7 +97,8 @@ func (h *StepHandler) UpdateStep(ctx *fiber.Ctx) error {
 	result, err := h.svc.UpdateStep(ctx.Context(), id, payload)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
@@ -100,7 +107,8 @@ func (h *StepHandler) DeleteStep(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	if err := h.svc.DeleteStep(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
@@ -110,7 +118,8 @@ func (h *StepHandler) RestoreStep(ctx *fiber.Ctx) error {
 	result, err := h.svc.RestoreStep(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }

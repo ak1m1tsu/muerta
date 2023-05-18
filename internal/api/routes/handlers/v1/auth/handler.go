@@ -35,24 +35,26 @@ func New(cfg *config.Config, svc service.AuthServicer, log *log.Logger) *AuthHan
 // SignUp signs up a new user
 //
 //	@Summary		Sign up a new user
+//	@Description	sign up a new user with the given information
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			payload	body	dto.SignUpDTO	true	"the sign up information"
-//	@Description	sign up a new user with the given information
-//	@Success		200	{object}	handlers.HTTPSuccess
-//	@Failure		400	{object}	handlers.HTTPError
-//	@Failure		502	{object}	handlers.HTTPError
+//	@Param			payload	body		dto.SignUp	true	"the sign up information"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/auth/sign-up [post]
 func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
-	var payload *dto.SignUpDTO
+	var payload *dto.SignUp
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if payload.Password != payload.PasswordConfirm {
 		h.log.ClientError(ctx, fmt.Errorf("passwords do not match"))
@@ -80,13 +82,13 @@ func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			login	body		dto.LoginDTO	true	"User credentials"
+//	@Param			login	body		dto.Login	true	"User credentials"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		401		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/auth/login [post]
 func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
-	var payload *dto.LoginDTO
+	var payload *dto.Login
 	if err := ctx.BodyParser(&payload); err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusUnauthorized).
@@ -143,7 +145,7 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	handlers.HTTPSuccess{data=handlers.Data{access_token=string}}
+//	@Success		200	{object}	handlers.HTTPSuccess{data=handlers.Data{access_token=string,refresh_token=string}}
 //	@Failure		403	{object}	handlers.HTTPError
 //	@Router			/auth/refresh [post]
 func (h *AuthHandler) RefreshAccessToken(ctx *fiber.Ctx) error {

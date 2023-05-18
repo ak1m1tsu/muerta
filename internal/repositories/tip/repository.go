@@ -29,7 +29,11 @@ type tipRepository struct {
 }
 
 // AddProduct implements TipRepositorer
-func (r *tipRepository) AddProduct(ctx context.Context, tipID int, productID int) (models.Product, error) {
+func (r *tipRepository) AddProduct(
+	ctx context.Context,
+	tipID int,
+	productID int,
+) (models.Product, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -51,7 +55,11 @@ func (r *tipRepository) AddProduct(ctx context.Context, tipID int, productID int
 }
 
 // AddStoragep implements TipRepositorer
-func (r *tipRepository) AddStorage(ctx context.Context, tipID int, storageID int) (models.Storage, error) {
+func (r *tipRepository) AddStorage(
+	ctx context.Context,
+	tipID int,
+	storageID int,
+) (models.Storage, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -77,7 +85,7 @@ func (r *tipRepository) AddStorage(ctx context.Context, tipID int, storageID int
 
 // RemoveProduct implements TipRepositorer
 func (r *tipRepository) RemoveProduct(ctx context.Context, tipID int, productID int) error {
-	var query = `
+	query := `
 		DELETE FROM products_tips
 		WHERE id_tip = $1 AND id_product = $2
 	`
@@ -89,7 +97,7 @@ func (r *tipRepository) RemoveProduct(ctx context.Context, tipID int, productID 
 
 // RemoveStorage implements TipRepositorer
 func (r *tipRepository) RemoveStorage(ctx context.Context, tipID int, storageID int) error {
-	var query = `
+	query := `
 		DELETE FROM storages_tips
 		WHERE id_tip = $1 AND id_storage = $2
 	`
@@ -175,13 +183,11 @@ func (r *tipRepository) FindStorages(ctx context.Context, id int) ([]models.Stor
 
 // Create implements TipRepositorer
 func (r *tipRepository) Create(ctx context.Context, tip *models.Tip) error {
-	var (
-		query = `
+	query := `
 			INSERT INTO tips (description)
 			VALUES ($1)
 			RETURNING id
 		`
-	)
 	if err := r.client.QueryRow(ctx, query, tip.Description).Scan(&tip.ID); err != nil {
 		return fmt.Errorf("failed to create tip: %w", err)
 	}
@@ -190,13 +196,11 @@ func (r *tipRepository) Create(ctx context.Context, tip *models.Tip) error {
 
 // Delete implements TipRepositorer
 func (r *tipRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE tips
 			SET deleted_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to delete tip: %w", err)
 	}
@@ -221,7 +225,10 @@ func (r *tipRepository) FindByID(ctx context.Context, id int) (models.Tip, error
 }
 
 // FindMany implements TipRepositorer
-func (r *tipRepository) FindMany(ctx context.Context, filter models.TipFilter) ([]models.Tip, error) {
+func (r *tipRepository) FindMany(
+	ctx context.Context,
+	filter models.TipFilter,
+) ([]models.Tip, error) {
 	var (
 		query = `
 			SELECT id, description
@@ -250,13 +257,11 @@ func (r *tipRepository) FindMany(ctx context.Context, filter models.TipFilter) (
 
 // Restore implements TipRepositorer
 func (r *tipRepository) Restore(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE tips
 			SET deleted_at = NULL
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to restore tip: %w", err)
 	}
@@ -265,13 +270,11 @@ func (r *tipRepository) Restore(ctx context.Context, id int) error {
 
 // Update implements TipRepositorer
 func (r *tipRepository) Update(ctx context.Context, tip models.Tip) error {
-	var (
-		query = `
+	query := `
 			UPDATE tips
 			SET description = $1
 			WHERE id = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, tip.Description, tip.ID); err != nil {
 		return fmt.Errorf("failed to update tip: %w", err)
 	}

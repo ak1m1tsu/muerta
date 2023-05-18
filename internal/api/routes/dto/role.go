@@ -1,14 +1,14 @@
 package dto
 
-type CreateRoleDTO struct {
-	Name string `json:"name" validate:"required,gte=3,lte=20,alpha"`
+type CreateRole struct {
+	Name string `json:"name" validate:"required,gte=3,lte=20,alpha" example:"admin"`
 }
 
-type UpdateRoleDTO struct {
-	Name string `json:"name" validate:"required,gte=3,lte=20,alpha"`
+type UpdateRole struct {
+	Name string `json:"name" validate:"required,gte=3,lte=20,alpha" example:"admin"`
 }
 
-type FindRoleDTO struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type FindRole struct {
+	ID   int    `json:"id"   example:"1"`
+	Name string `json:"name" example:"admin"`
 }

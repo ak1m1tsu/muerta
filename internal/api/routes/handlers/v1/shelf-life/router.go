@@ -10,7 +10,11 @@ import (
 	service "github.com/romankravchuk/muerta/internal/services/shelf-life"
 )
 
-func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
+func NewRouter(
+	client repositories.PostgresClient,
+	log *log.Logger,
+	jware *jware.JWTMiddleware,
+) *fiber.App {
 	router := fiber.New()
 	repo := repository.New(client)
 	svc := service.New(repo)

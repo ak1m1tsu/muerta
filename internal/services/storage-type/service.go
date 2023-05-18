@@ -11,23 +11,29 @@ import (
 )
 
 type StorageTypeServicer interface {
-	FindStorageTypeByID(ctx context.Context, id int) (dto.FindStorageTypeDTO, error)
-	FindStorageTypes(ctx context.Context, filter *dto.StorageTypeFilterDTO) ([]dto.FindStorageTypeDTO, error)
-	CreateStorageType(ctx context.Context, payload *dto.CreateStorageTypeDTO) error
-	UpdateStorageType(ctx context.Context, id int, payload *dto.UpdateStorageTypeDTO) error
+	FindStorageTypeByID(ctx context.Context, id int) (dto.FindStorageType, error)
+	FindStorageTypes(
+		ctx context.Context,
+		filter *dto.StorageTypeFilter,
+	) ([]dto.FindStorageType, error)
+	CreateStorageType(ctx context.Context, payload *dto.CreateStorageType) error
+	UpdateStorageType(ctx context.Context, id int, payload *dto.UpdateStorageType) error
 	DeleteStorageType(ctx context.Context, id int) error
-	FindStorages(ctx context.Context, id int) ([]dto.FindStorageDTO, error)
-	FindTips(ctx context.Context, id int) ([]dto.FindTipDTO, error)
-	CreateTip(ctx context.Context, id, tipID int) (dto.FindTipDTO, error)
+	FindStorages(ctx context.Context, id int) ([]dto.FindStorage, error)
+	FindTips(ctx context.Context, id int) ([]dto.FindTip, error)
+	CreateTip(ctx context.Context, id, tipID int) (dto.FindTip, error)
 	DeleteTip(ctx context.Context, id, tipID int) error
-	Count(ctx context.Context, filter dto.StorageTypeFilterDTO) (int, error)
+	Count(ctx context.Context, filter dto.StorageTypeFilter) (int, error)
 }
 
 type storageTypeService struct {
 	repo repository.StorageTypeRepositorer
 }
 
-func (s *storageTypeService) Count(ctx context.Context, filter dto.StorageTypeFilterDTO) (int, error) {
+func (s *storageTypeService) Count(
+	ctx context.Context,
+	filter dto.StorageTypeFilter,
+) (int, error) {
 	count, err := s.repo.Count(ctx, models.StorageTypeFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting storages types: %w", err)
@@ -36,12 +42,16 @@ func (s *storageTypeService) Count(ctx context.Context, filter dto.StorageTypeFi
 }
 
 // CreateTip implements StorageTypeServicer
-func (s *storageTypeService) CreateTip(ctx context.Context, id int, tipID int) (dto.FindTipDTO, error) {
+func (s *storageTypeService) CreateTip(
+	ctx context.Context,
+	id int,
+	tipID int,
+) (dto.FindTip, error) {
 	result, err := s.repo.CreateTip(ctx, id, tipID)
 	if err != nil {
-		return dto.FindTipDTO{}, err
+		return dto.FindTip{}, err
 	}
-	return translate.TipModelToFindDTO(&result), nil
+	return translate.TipModelToFind(&result), nil
 }
 
 // DeleteTip implements StorageTypeServicer
@@ -53,26 +63,32 @@ func (s *storageTypeService) DeleteTip(ctx context.Context, id int, tipID int) e
 }
 
 // FindStorages implements StorageTypeServicer
-func (s *storageTypeService) FindStorages(ctx context.Context, id int) ([]dto.FindStorageDTO, error) {
+func (s *storageTypeService) FindStorages(
+	ctx context.Context,
+	id int,
+) ([]dto.FindStorage, error) {
 	result, err := s.repo.FindStorages(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return translate.StorageModelsToFindDTOs(result), nil
+	return translate.StorageModelsToFinds(result), nil
 }
 
 // FindTips implements StorageTypeServicer
-func (s *storageTypeService) FindTips(ctx context.Context, id int) ([]dto.FindTipDTO, error) {
+func (s *storageTypeService) FindTips(ctx context.Context, id int) ([]dto.FindTip, error) {
 	result, err := s.repo.FindTips(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return translate.TipModelsToFindDTOs(result), nil
+	return translate.TipModelsToFinds(result), nil
 }
 
 // CreateStorageType implements StorageTypeServicer
-func (svc *storageTypeService) CreateStorageType(ctx context.Context, payload *dto.CreateStorageTypeDTO) error {
-	model := translate.CreateStorageTypeDTOToModel(payload)
+func (svc *storageTypeService) CreateStorageType(
+	ctx context.Context,
+	payload *dto.CreateStorageType,
+) error {
+	model := translate.CreateStorageTypeToModel(payload)
 	if err := svc.repo.Create(ctx, model); err != nil {
 		return err
 	}
@@ -88,22 +104,28 @@ func (svc *storageTypeService) DeleteStorageType(ctx context.Context, id int) er
 }
 
 // FindStorageTypeByID implements StorageTypeServicer
-func (svc *storageTypeService) FindStorageTypeByID(ctx context.Context, id int) (dto.FindStorageTypeDTO, error) {
+func (svc *storageTypeService) FindStorageTypeByID(
+	ctx context.Context,
+	id int,
+) (dto.FindStorageType, error) {
 	model, err := svc.repo.FindByID(ctx, id)
-	result := translate.StorageTypeModelToFindDTO(&model)
+	result := translate.StorageTypeModelToFind(&model)
 	if err != nil {
-		return dto.FindStorageTypeDTO{}, err
+		return dto.FindStorageType{}, err
 	}
 	return result, nil
 }
 
 // FindStorageTypes implements StorageTypeServicer
-func (svc *storageTypeService) FindStorageTypes(ctx context.Context, filter *dto.StorageTypeFilterDTO) ([]dto.FindStorageTypeDTO, error) {
+func (svc *storageTypeService) FindStorageTypes(
+	ctx context.Context,
+	filter *dto.StorageTypeFilter,
+) ([]dto.FindStorageType, error) {
 	models, err := svc.repo.FindMany(ctx, models.StorageTypeFilter{
 		PageFilter: models.PageFilter{Limit: filter.Limit, Offset: filter.Offset},
 		Name:       filter.Name,
 	})
-	dtos := translate.StorageTypeModelsToFindDTOs(models)
+	dtos := translate.StorageTypeModelsToFinds(models)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +133,11 @@ func (svc *storageTypeService) FindStorageTypes(ctx context.Context, filter *dto
 }
 
 // UpdateStorageType implements StorageTypeServicer
-func (svc *storageTypeService) UpdateStorageType(ctx context.Context, id int, payload *dto.UpdateStorageTypeDTO) error {
+func (svc *storageTypeService) UpdateStorageType(
+	ctx context.Context,
+	id int,
+	payload *dto.UpdateStorageType,
+) error {
 	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err

@@ -26,7 +26,7 @@ func New(svc service.RoleServicer, log *log.Logger) *RoleHandler {
 }
 
 func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
-	filter := new(dto.RoleFilterDTO)
+	filter := new(dto.RoleFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -49,7 +49,9 @@ func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result, "count": count}},
+	)
 }
 
 func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
@@ -64,14 +66,16 @@ func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
 }
 
 func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
-	var payload *dto.CreateRoleDTO
+	var payload *dto.CreateRole
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateRole(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -83,14 +87,16 @@ func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
 
 func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
-	var payload *dto.UpdateRoleDTO
+	var payload *dto.UpdateRole
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateRole(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)

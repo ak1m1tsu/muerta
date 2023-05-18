@@ -37,7 +37,7 @@ func (h *UserSettingHandler) FindByID(ctx *fiber.Ctx) error {
 }
 
 func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
-	filter := new(dto.SettingFilterDTO)
+	filter := new(dto.SettingFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -60,18 +60,25 @@ func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"settings": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{
+			Success: true,
+			Data:    handlers.Data{"settings": result, "count": count},
+		},
+	)
 }
 
 func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateSettingDTO
+	var payload *dto.CreateSetting
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateSetting(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -83,14 +90,16 @@ func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
 
 func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
-	payload := new(dto.UpdateSettingDTO)
+	payload := new(dto.UpdateSetting)
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateSetting(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -112,10 +121,11 @@ func (h *UserSettingHandler) Delete(ctx *fiber.Ctx) error {
 
 func (h *UserSettingHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
-	if err := h.svc.RestoreSetting(ctx.Context(), id); err != nil {
+	result, err := h.svc.RestoreSetting(ctx.Context(), id)
+	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true})
+	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"setting": result}})
 }

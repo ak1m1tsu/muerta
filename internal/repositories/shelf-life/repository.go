@@ -25,7 +25,10 @@ type shelfLifeRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *shelfLifeRepository) Count(ctx context.Context, filter models.ShelfLifeFilter) (int, error) {
+func (r *shelfLifeRepository) Count(
+	ctx context.Context,
+	filter models.ShelfLifeFilter,
+) (int, error) {
 	var (
 		query = `
 			SELECT COUNT(*) FROM shelf_lives WHERE deleted_at IS NULL
@@ -39,7 +42,11 @@ func (r *shelfLifeRepository) Count(ctx context.Context, filter models.ShelfLife
 }
 
 // CreateStatus implements ShelfLifeRepositorer
-func (r *shelfLifeRepository) CreateStatus(ctx context.Context, id int, statusID int) (models.ShelfLifeStatus, error) {
+func (r *shelfLifeRepository) CreateStatus(
+	ctx context.Context,
+	id int,
+	statusID int,
+) (models.ShelfLifeStatus, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -63,7 +70,7 @@ func (r *shelfLifeRepository) CreateStatus(ctx context.Context, id int, statusID
 
 // DeleteStatus implements ShelfLifeRepositorer
 func (r *shelfLifeRepository) DeleteStatus(ctx context.Context, id int, statusID int) error {
-	var query = `
+	query := `
 		DELETE FROM shelf_lives_statuses
 		WHERE id_shelf_life = $1 AND id_status = $2
 	`
@@ -74,7 +81,10 @@ func (r *shelfLifeRepository) DeleteStatus(ctx context.Context, id int, statusID
 }
 
 // FindStatuses implements ShelfLifeRepositorer
-func (r *shelfLifeRepository) FindStatuses(ctx context.Context, id int) ([]models.ShelfLifeStatus, error) {
+func (r *shelfLifeRepository) FindStatuses(
+	ctx context.Context,
+	id int,
+) ([]models.ShelfLifeStatus, error) {
 	var (
 		query = `
 			SELECT s.id, s.name
@@ -101,14 +111,12 @@ func (r *shelfLifeRepository) FindStatuses(ctx context.Context, id int) ([]model
 
 // Create implements ShelfLifeRepositorer
 func (r *shelfLifeRepository) Create(ctx context.Context, model models.ShelfLife) error {
-	var (
-		query = `
+	query := `
 			INSERT INTO shelf_lives
 				(id, id_product, id_storage, id_measure, id_user, quantity, purchase_date, end_date)
 			VALUES
 				($1, $2, $3, $4, $5, $6, $7, $8)
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, model.ID, model.Product.ID, model.Storage.ID, model.Measure.ID, model.User.ID, model.Quantity, model.PurchaseDate, model.EndDate); err != nil {
 		return fmt.Errorf("failed to create shelf life: %w", err)
 	}
@@ -117,14 +125,12 @@ func (r *shelfLifeRepository) Create(ctx context.Context, model models.ShelfLife
 
 // Delete implements ShelfLifeRepositorer
 func (r *shelfLifeRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE shelf_lives
 			SET deleted_at = NOW(),
 				updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to delete shelf life: %w", err)
 	}
@@ -157,7 +163,10 @@ func (r *shelfLifeRepository) FindByID(ctx context.Context, id int) (models.Shel
 }
 
 // FindMany implements ShelfLifeRepositorer
-func (r *shelfLifeRepository) FindMany(ctx context.Context, filter models.ShelfLifeFilter) ([]models.ShelfLife, error) {
+func (r *shelfLifeRepository) FindMany(
+	ctx context.Context,
+	filter models.ShelfLifeFilter,
+) ([]models.ShelfLife, error) {
 	var (
 		query = `
 			SELECT sl.id, 
@@ -193,14 +202,12 @@ func (r *shelfLifeRepository) FindMany(ctx context.Context, filter models.ShelfL
 
 // Restore implements ShelfLifeRepositorer
 func (r *shelfLifeRepository) Restore(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE shelf_lives
 			SET deleted_at = NULL,
 				updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to restore shelf life: %w", err)
 	}
@@ -209,8 +216,7 @@ func (r *shelfLifeRepository) Restore(ctx context.Context, id int) error {
 
 // Update implements ShelfLifeRepositorer
 func (r *shelfLifeRepository) Update(ctx context.Context, model models.ShelfLife) error {
-	var (
-		query = `
+	query := `
 			UPDATE shelf_lives
 			SET id_product = $1,
 				id_storage = $2,
@@ -221,7 +227,6 @@ func (r *shelfLifeRepository) Update(ctx context.Context, model models.ShelfLife
 				updated_at = NOW()
 			WHERE id = $7
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate, model.ID); err != nil {
 		return fmt.Errorf("failed to update shelf life: %w", err)
 	}

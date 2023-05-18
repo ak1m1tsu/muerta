@@ -11,19 +11,19 @@ import (
 )
 
 type MeasureServicer interface {
-	FindMeasureByID(ctx context.Context, id int) (dto.FindMeasureDTO, error)
-	FindMeasures(ctx context.Context, filter *dto.MeasureFilterDTO) ([]dto.FindMeasureDTO, error)
-	CreateMeasure(ctx context.Context, payload *dto.CreateMeasureDTO) error
-	UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasureDTO) error
+	FindMeasureByID(ctx context.Context, id int) (dto.FindMeasure, error)
+	FindMeasures(ctx context.Context, filter *dto.MeasureFilter) ([]dto.FindMeasure, error)
+	CreateMeasure(ctx context.Context, payload *dto.CreateMeasure) error
+	UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasure) error
 	DeleteMeasure(ctx context.Context, id int) error
-	Count(ctx context.Context, filter dto.MeasureFilterDTO) (int, error)
+	Count(ctx context.Context, filter dto.MeasureFilter) (int, error)
 }
 
 type measureService struct {
 	repo repository.MeasureRepositorer
 }
 
-func (s *measureService) Count(ctx context.Context, filter dto.MeasureFilterDTO) (int, error) {
+func (s *measureService) Count(ctx context.Context, filter dto.MeasureFilter) (int, error) {
 	count, err := s.repo.Count(ctx, models.MeasureFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting measures: %w", err)
@@ -32,8 +32,8 @@ func (s *measureService) Count(ctx context.Context, filter dto.MeasureFilterDTO)
 }
 
 // CreateMeasure implements MeasureServicer
-func (svc *measureService) CreateMeasure(ctx context.Context, payload *dto.CreateMeasureDTO) error {
-	model := translate.CreateMeasureDTOToModel(payload)
+func (svc *measureService) CreateMeasure(ctx context.Context, payload *dto.CreateMeasure) error {
+	model := translate.CreateMeasureToModel(payload)
 	if err := svc.repo.Create(ctx, model); err != nil {
 		return err
 	}
@@ -49,17 +49,23 @@ func (svc *measureService) DeleteMeasure(ctx context.Context, id int) error {
 }
 
 // FindMeasureByID implements MeasureServicer
-func (svc *measureService) FindMeasureByID(ctx context.Context, id int) (dto.FindMeasureDTO, error) {
+func (svc *measureService) FindMeasureByID(
+	ctx context.Context,
+	id int,
+) (dto.FindMeasure, error) {
 	model, err := svc.repo.FindByID(ctx, id)
-	result := translate.MeasureModelToFindDTO(&model)
+	result := translate.MeasureModelToFind(&model)
 	if err != nil {
-		return dto.FindMeasureDTO{}, err
+		return dto.FindMeasure{}, err
 	}
 	return result, nil
 }
 
 // FindMeasures implements MeasureServicer
-func (svc *measureService) FindMeasures(ctx context.Context, filter *dto.MeasureFilterDTO) ([]dto.FindMeasureDTO, error) {
+func (svc *measureService) FindMeasures(
+	ctx context.Context,
+	filter *dto.MeasureFilter,
+) ([]dto.FindMeasure, error) {
 	models, err := svc.repo.FindMany(ctx, models.MeasureFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
@@ -67,7 +73,7 @@ func (svc *measureService) FindMeasures(ctx context.Context, filter *dto.Measure
 		},
 		Name: filter.Name,
 	})
-	dtos := translate.MeasureModelsToFindDTOs(models)
+	dtos := translate.MeasureModelsToFinds(models)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +81,11 @@ func (svc *measureService) FindMeasures(ctx context.Context, filter *dto.Measure
 }
 
 // UpdateMeasure implements MeasureServicer
-func (svc *measureService) UpdateMeasure(ctx context.Context, id int, payload *dto.UpdateMeasureDTO) error {
+func (svc *measureService) UpdateMeasure(
+	ctx context.Context,
+	id int,
+	payload *dto.UpdateMeasure,
+) error {
 	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err

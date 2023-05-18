@@ -23,7 +23,12 @@ import (
 	"github.com/romankravchuk/muerta/internal/repositories"
 )
 
-func New(cfg *config.Config, app fiber.Router, client repositories.PostgresClient, logger *log.Logger) {
+func New(
+	cfg *config.Config,
+	app fiber.Router,
+	client repositories.PostgresClient,
+	logger *log.Logger,
+) {
 	jware := jware.New(cfg, logger)
 	app.Mount("/auth", auth.NewRouter(cfg, client, logger, jware))
 	app.Mount("/shelf-life-detector", shelflifedetector.NewRouter(cfg, logger, jware))

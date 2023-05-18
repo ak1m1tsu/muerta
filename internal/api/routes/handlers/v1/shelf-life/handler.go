@@ -26,14 +26,16 @@ func New(svc service.ShelfLifeServicer, log *log.Logger) ShelfLifeHandler {
 }
 
 func (h *ShelfLifeHandler) CreateShelfLife(ctx *fiber.Ctx) error {
-	var payload *dto.CreateShelfLifeDTO
+	var payload *dto.CreateShelfLife
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateShelfLife(ctx.Context(), payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -54,7 +56,7 @@ func (h *ShelfLifeHandler) FindShelfLifeByID(ctx *fiber.Ctx) error {
 }
 
 func (h *ShelfLifeHandler) FindShelfLives(ctx *fiber.Ctx) error {
-	filter := new(dto.ShelfLifeFilterDTO)
+	filter := new(dto.ShelfLifeFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -77,19 +79,26 @@ func (h *ShelfLifeHandler) FindShelfLives(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf_lives": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{
+			Success: true,
+			Data:    handlers.Data{"shelf_lives": result, "count": count},
+		},
+	)
 }
 
 func (h *ShelfLifeHandler) UpdateShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
-	payload := new(dto.UpdateShelfLifeDTO)
+	payload := new(dto.UpdateShelfLife)
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
-			return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateShelfLife(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)
@@ -129,6 +138,7 @@ func (h *ShelfLifeHandler) FindShelfLifeStatuses(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"statuses": result}})
 }
+
 func (h *ShelfLifeHandler) CreateShelfLifeStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	statusID := ctx.Locals(context.StatusID).(int)
@@ -140,6 +150,7 @@ func (h *ShelfLifeHandler) CreateShelfLifeStatus(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"status": result}})
 }
+
 func (h *ShelfLifeHandler) DeleteShelfLifeStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	statusID := ctx.Locals(context.StatusID).(int)

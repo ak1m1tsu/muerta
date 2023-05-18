@@ -27,9 +27,17 @@ type UserRepositorer interface {
 	CreateStorage(ctx context.Context, id int, entity models.Storage) (models.Storage, error)
 	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
 	FindShelfLives(ctx context.Context, userId int) ([]models.ShelfLife, error)
-	CreateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error)
+	CreateShelfLife(
+		ctx context.Context,
+		userId int,
+		model models.ShelfLife,
+	) (models.ShelfLife, error)
 	FindShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error)
-	UpdateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error)
+	UpdateShelfLife(
+		ctx context.Context,
+		userId int,
+		model models.ShelfLife,
+	) (models.ShelfLife, error)
 	DeleteShelfLife(ctx context.Context, userId int, shelfLifeId int) error
 	RestoreShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error)
 	Count(ctx context.Context, filter models.UserFilter) (int, error)
@@ -60,9 +68,12 @@ func (r *userRepository) Count(ctx context.Context, filter models.UserFilter) (i
 }
 
 // CreateShelfLife implements UserRepositorer
-func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error) {
-	var (
-		query = `
+func (r *userRepository) CreateShelfLife(
+	ctx context.Context,
+	userId int,
+	model models.ShelfLife,
+) (models.ShelfLife, error) {
+	query := `
 			WITH inserted AS (
 				INSERT INTO shelf_lives (id_user, id_product, id_storage, id_measure, quantity, purchase_date, end_date)
 				VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -78,7 +89,6 @@ func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model 
 				s.deleted_at IS NULL
 			LIMIT 1
 		`
-	)
 	err := r.client.QueryRow(ctx, query, userId, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate).
 		Scan(&model.ID, &model.Product.Name, &model.Storage.Name, &model.Measure.Name)
 	if err != nil {
@@ -89,14 +99,12 @@ func (r *userRepository) CreateShelfLife(ctx context.Context, userId int, model 
 
 // DeleteShelfLife implements UserRepositorer
 func (r *userRepository) DeleteShelfLife(ctx context.Context, userId int, shelfLifeId int) error {
-	var (
-		query = `
+	query := `
 			UPDATE shelf_lives
 			SET deleted_at = NOW(),
 				updated_at = NOW()
 			WHERE id_user = $1 AND id = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, userId, shelfLifeId); err != nil {
 		return errors.ErrFailedToDeleteShelfLife.With(err)
 	}
@@ -104,7 +112,11 @@ func (r *userRepository) DeleteShelfLife(ctx context.Context, userId int, shelfL
 }
 
 // FindShelfLife implements UserRepositorer
-func (r *userRepository) FindShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error) {
+func (r *userRepository) FindShelfLife(
+	ctx context.Context,
+	userId int,
+	shelfLifeId int,
+) (models.ShelfLife, error) {
 	var (
 		query = `
 			SELECT 
@@ -134,7 +146,10 @@ func (r *userRepository) FindShelfLife(ctx context.Context, userId int, shelfLif
 }
 
 // FindShelfLives implements UserRepositorer
-func (r *userRepository) FindShelfLives(ctx context.Context, userId int) ([]models.ShelfLife, error) {
+func (r *userRepository) FindShelfLives(
+	ctx context.Context,
+	userId int,
+) ([]models.ShelfLife, error) {
 	var (
 		query = `
 			SELECT 
@@ -172,7 +187,11 @@ func (r *userRepository) FindShelfLives(ctx context.Context, userId int) ([]mode
 }
 
 // RestoreShelfLife implements UserRepositorer
-func (r *userRepository) RestoreShelfLife(ctx context.Context, userId int, shelfLifeId int) (models.ShelfLife, error) {
+func (r *userRepository) RestoreShelfLife(
+	ctx context.Context,
+	userId int,
+	shelfLifeId int,
+) (models.ShelfLife, error) {
 	var (
 		query = `
 			WITH updated AS (
@@ -215,9 +234,12 @@ func (r *userRepository) RestoreShelfLife(ctx context.Context, userId int, shelf
 }
 
 // UpdateShelfLife implements UserRepositorer
-func (r *userRepository) UpdateShelfLife(ctx context.Context, userId int, model models.ShelfLife) (models.ShelfLife, error) {
-	var (
-		query = `
+func (r *userRepository) UpdateShelfLife(
+	ctx context.Context,
+	userId int,
+	model models.ShelfLife,
+) (models.ShelfLife, error) {
+	query := `
 			WITH updated AS (
 				UPDATE shelf_lives
 				SET id_product = $3,
@@ -242,7 +264,6 @@ func (r *userRepository) UpdateShelfLife(ctx context.Context, userId int, model 
 				s.deleted_at IS NULL AND
 			LIMIT 1
 		`
-	)
 	if err := r.client.QueryRow(ctx, query, userId, model.ID, model.Product.ID, model.Storage.ID, model.Measure.ID, model.Quantity, model.PurchaseDate, model.EndDate).
 		Scan(
 			&model.Product.ID,
@@ -261,9 +282,12 @@ func (r *userRepository) UpdateShelfLife(ctx context.Context, userId int, model 
 }
 
 // CreateStorage implements UserRepositorer
-func (r *userRepository) CreateStorage(ctx context.Context, id int, entity models.Storage) (models.Storage, error) {
-	var (
-		query = `
+func (r *userRepository) CreateStorage(
+	ctx context.Context,
+	id int,
+	entity models.Storage,
+) (models.Storage, error) {
+	query := `
 			WITH inserted AS (
 				INSERT INTO users_storages (id_user, id_storage)
 				VALUES ($1, $2)
@@ -278,7 +302,6 @@ func (r *userRepository) CreateStorage(ctx context.Context, id int, entity model
 				s.deleted_at IS NULL
 			LIMIT 1
 		`
-	)
 	if err := r.client.QueryRow(ctx, query, id, entity.ID).Scan(
 		&entity.ID,
 		&entity.Name,
@@ -294,12 +317,10 @@ func (r *userRepository) CreateStorage(ctx context.Context, id int, entity model
 
 // DeleteStorage implements UserRepositorer
 func (r *userRepository) DeleteStorage(ctx context.Context, id int, entity models.Storage) error {
-	var (
-		query = `
+	query := `
 			DELETE FROM users_storages
 			WHERE id_user = $1 AND id_storage = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id, entity.ID); err != nil {
 		return fmt.Errorf("failed to create storage: %w", err)
 	}
@@ -387,7 +408,11 @@ func (r *userRepository) FindSettings(ctx context.Context, id int) ([]models.Set
 }
 
 // UpdateSetting implements UserRepositorer
-func (r *userRepository) UpdateSetting(ctx context.Context, id int, setting models.Setting) (models.Setting, error) {
+func (r *userRepository) UpdateSetting(
+	ctx context.Context,
+	id int,
+	setting models.Setting,
+) (models.Setting, error) {
 	var (
 		query = `
 			UPDATE users_settings
@@ -483,7 +508,10 @@ func (repo *userRepository) FindByName(ctx context.Context, name string) (models
 	return user, nil
 }
 
-func (repo *userRepository) FindMany(ctx context.Context, filter models.UserFilter) ([]models.User, error) {
+func (repo *userRepository) FindMany(
+	ctx context.Context,
+	filter models.UserFilter,
+) ([]models.User, error) {
 	var (
 		query = `
 			SELECT id, name, created_at
@@ -510,7 +538,10 @@ func (repo *userRepository) FindMany(ctx context.Context, filter models.UserFilt
 	return users, nil
 }
 
-func (repo *userRepository) FindPassword(ctx context.Context, passhash string) (models.Password, error) {
+func (repo *userRepository) FindPassword(
+	ctx context.Context,
+	passhash string,
+) (models.Password, error) {
 	var (
 		query = `
 			SELECT passhash
@@ -577,14 +608,12 @@ func (repo *userRepository) Create(ctx context.Context, user models.User) error 
 }
 
 func (repo *userRepository) Update(ctx context.Context, user models.User) error {
-	var (
-		query = `
+	query := `
 			UPDATE users
 			SET name = $1,
 				updated_at = NOW()
 			WHERE id = $2
 		`
-	)
 	if _, err := repo.client.Exec(ctx, query, user.Name, user.ID); err != nil {
 		return errors.ErrFailedToUpdateUser.With(err)
 	}
@@ -592,14 +621,12 @@ func (repo *userRepository) Update(ctx context.Context, user models.User) error 
 }
 
 func (repo *userRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE users
 			SET deleted_at = NOW()
 			SET updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := repo.client.Exec(ctx, query, id); err != nil {
 		return errors.ErrFailedToDeleteUser.With(err)
 	}
@@ -607,14 +634,12 @@ func (repo *userRepository) Delete(ctx context.Context, id int) error {
 }
 
 func (repo *userRepository) Restore(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE users
 			SET deleted_at = NULL
 			SET updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := repo.client.Exec(ctx, query, id); err != nil {
 		return errors.ErrFailedToRestoreUser.With(err)
 	}

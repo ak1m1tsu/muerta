@@ -12,7 +12,12 @@ import (
 	"github.com/romankravchuk/muerta/internal/services/auth"
 )
 
-func NewRouter(cfg *config.Config, client repositories.PostgresClient, logger *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
+func NewRouter(
+	cfg *config.Config,
+	client repositories.PostgresClient,
+	logger *log.Logger,
+	jware *jware.JWTMiddleware,
+) *fiber.App {
 	userRepo := user.New(client)
 	roleRepo := role.New(client)
 	svc := auth.New(cfg, userRepo, roleRepo)
