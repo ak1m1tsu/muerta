@@ -19,13 +19,13 @@ func NewRouter(
 	repo := repository.New(client)
 	svc := service.New(repo)
 	handler := New(svc, log)
-	router.Get("/", handler.FindMeasures)
-	router.Post("/", jware.DeserializeUser, handler.CreateMeasure)
+	router.Get("/", handler.FindMany)
+	router.Post("/", jware.DeserializeUser, handler.Create)
 	router.Route(context.MeasureID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.MeasureID))
-		router.Get("/", handler.FindMeasureByID)
-		router.Put("/", jware.DeserializeUser, handler.UpdateMeasure)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteMeasure)
+		router.Get("/", handler.FindOne)
+		router.Put("/", jware.DeserializeUser, handler.Update)
+		router.Delete("/", jware.DeserializeUser, handler.Delete)
 	})
 	return router
 }

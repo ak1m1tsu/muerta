@@ -25,10 +25,10 @@ func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
 	}
 }
 
-// CreateMeasure creates a new measure record
+// Create creates a new measure record
 //
 //	@Summary		Create a new measure record
-//	@Description	Create a new measure record based on the given payload.
+//	@Description	Creates a new measure record based on the given payload.
 //	@Tags			Measures
 //	@Accept			json
 //	@Produce		json
@@ -37,7 +37,7 @@ func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/measures [post]
-func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
+func (h *MeasureHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateMeasure
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
@@ -59,7 +59,7 @@ func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
 	})
 }
 
-// FindMeasureByID finds a measure by ID
+// FindOne finds a measure by ID
 //
 //	@Summary		Find a measure by ID
 //	@Description	Find a measure by ID
@@ -71,7 +71,7 @@ func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
 //	@Failure		404			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/measures/{measure_id} [get]
-func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
+func (h *MeasureHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	dto, err := h.svc.FindMeasureByID(ctx.Context(), id)
 	if err != nil {
@@ -85,7 +85,7 @@ func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
 	})
 }
 
-// FindMeasures returns a list of measures and their count based on the given filter.
+// FindMany returns a list of measures and their count based on the given filter.
 //
 //	@Summary		Find measures
 //	@Description	Returns a list of measures and their count based on the given filter.
@@ -98,7 +98,7 @@ func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/measures [get]
-func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
+func (h *MeasureHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.MeasureFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
@@ -128,10 +128,10 @@ func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
 	})
 }
 
-// UpdateMeasure updates a measure with the given ID using the provided payload
+// Update updates a measure with the given ID using the provided payload
 //
 //	@Summary		Update a measure
-//	@Description	Update a measure with the given ID
+//	@Description	Updates a measure with the given ID
 //	@Tags			Measures
 //	@Accept			json
 //	@Produce		json
@@ -141,7 +141,7 @@ func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/measures/{measure_id} [put]
-func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
+func (h *MeasureHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	payload := new(dto.UpdateMeasure)
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -162,7 +162,7 @@ func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// DeleteMeasure deletes a measure by ID.
+// Delete deletes a measure by ID.
 //
 //	@Summary		Delete a measure
 //	@Description	Deletes a measure by ID.
@@ -174,7 +174,7 @@ func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/measures/{measure_id} [delete]
-func (h *MeasureHandler) DeleteMeasure(ctx *fiber.Ctx) error {
+func (h *MeasureHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	if err := h.svc.DeleteMeasure(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
