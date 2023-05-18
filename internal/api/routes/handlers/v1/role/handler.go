@@ -102,8 +102,6 @@ func (h *RoleHandler) FindOne(ctx *fiber.Ctx) error {
 //	@Failure		500		{object}	handlers.HTTPError
 //	@Router			/roles [post]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RoleHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateRole
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -138,8 +136,6 @@ func (h *RoleHandler) Create(ctx *fiber.Ctx) error {
 //	@Failure		500		{object}	handlers.HTTPError
 //	@Router			/roles/{role_id} [put]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RoleHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	var payload *dto.UpdateRole
@@ -174,8 +170,6 @@ func (h *RoleHandler) Update(ctx *fiber.Ctx) error {
 //	@Failure		500		{object}	handlers.HTTPError
 //	@Router			/roles/{role_id} [delete]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RoleHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.DeleteRole(ctx.Context(), id); err != nil {
@@ -199,8 +193,6 @@ func (h *RoleHandler) Delete(ctx *fiber.Ctx) error {
 //	@Failure		500		{object}	handlers.HTTPError
 //	@Router			/roles/{role_id} [patch]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RoleHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.RestoreRole(ctx.Context(), id); err != nil {

@@ -38,8 +38,6 @@ func New(svc recipe.RecipeServicer, log *log.Logger) *RecipesHandler {
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/recipes [post]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateRecipe
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -144,8 +142,6 @@ func (h *RecipesHandler) FindMany(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id} [put]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	payload := new(dto.UpdateRecipe)
@@ -180,8 +176,6 @@ func (h *RecipesHandler) Update(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id} [delete]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	if err := h.svc.DeleteRecipe(ctx.Context(), id); err != nil {
@@ -204,8 +198,6 @@ func (h *RecipesHandler) Delete(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id} [patch]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	if err := h.svc.RestoreRecipe(ctx.Context(), id); err != nil {
@@ -278,8 +270,6 @@ func (h *RecipesHandler) AddIngredient(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/ingredients [put]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	var payload *dto.UpdateIngredient
@@ -316,8 +306,6 @@ func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/ingredients [delete]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) RemoveIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	var payload *dto.DeleteIngredient
@@ -374,8 +362,6 @@ func (h *RecipesHandler) FindSteps(ctx *fiber.Ctx) error {
 //	@Failure	502			{object}	handlers.HTTPError
 //	@Router		/recipes/{recipe_id}/steps/{step_id} [post]
 //	@Security	Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) AddStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)
@@ -414,8 +400,6 @@ func (h *RecipesHandler) AddStep(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/steps/{step_id} [delete]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *RecipesHandler) RemoveStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)

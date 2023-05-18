@@ -149,8 +149,6 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 //	@Failure		403	{object}	handlers.HTTPError
 //	@Router			/auth/refresh [post]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *AuthHandler) RefreshAccessToken(ctx *fiber.Ctx) error {
 	refreshToken := ctx.Cookies("refresh_token")
 	if refreshToken == "" {
@@ -188,8 +186,6 @@ func (h *AuthHandler) RefreshAccessToken(ctx *fiber.Ctx) error {
 //	@Success		200	{object}	handlers.HTTPSuccess
 //	@Router			/auth/logout [post]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 	expired := time.Now().Add(-time.Hour * 24)
 	ctx.Cookie(&fiber.Cookie{

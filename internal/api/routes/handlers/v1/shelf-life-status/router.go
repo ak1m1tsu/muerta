@@ -18,12 +18,12 @@ func NewRouter(
 	repo := repository.New(client)
 	svc := service.New(repo)
 	handler := New(svc, log)
-	router.Get("/", handler.FindShelfLifeStatuses)
-	router.Post("/", jware.DeserializeUser, handler.CreateShelfLifeStatus)
+	router.Get("/", handler.FindMany)
+	router.Post("/", jware.DeserializeUser, handler.Create)
 	router.Route("/:id", func(router fiber.Router) {
-		router.Get("/", handler.FindShelfLifeStatusByID)
-		router.Put("/", jware.DeserializeUser, handler.UpdateShelfLifeStatus)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteShelfLifeStatus)
+		router.Get("/", handler.FindOne)
+		router.Put("/", jware.DeserializeUser, handler.Update)
+		router.Delete("/", jware.DeserializeUser, handler.Delete)
 	})
 	return router
 }

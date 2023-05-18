@@ -38,8 +38,6 @@ func New(svc service.ShelfLifeServicer, log *log.Logger) ShelfLifeHandler {
 //	@Failure		500		{object}	handlers.HTTPError
 //	@Router			/shelf-lives [post]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *ShelfLifeHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateShelfLife
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -141,8 +139,6 @@ func (h *ShelfLifeHandler) FindMany(ctx *fiber.Ctx) error {
 //	@Failure		500				{object}	handlers.HTTPError
 //	@Router			/shelf-lives/{shelf_life_id} [put]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *ShelfLifeHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	payload := new(dto.UpdateShelfLife)
@@ -177,8 +173,6 @@ func (h *ShelfLifeHandler) Update(ctx *fiber.Ctx) error {
 //	@Failure		500				{object}	handlers.HTTPError
 //	@Router			/shelf-lives/{shelf_life_id} [delete]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *ShelfLifeHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.DeleteShelfLife(ctx.Context(), id); err != nil {
@@ -202,8 +196,6 @@ func (h *ShelfLifeHandler) Delete(ctx *fiber.Ctx) error {
 //	@Failure		500				{object}	handlers.HTTPError
 //	@Router			/shelf-lives/{shelf_life_id} [patch]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *ShelfLifeHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.RestoreShelfLife(ctx.Context(), id); err != nil {

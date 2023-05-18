@@ -88,6 +88,46 @@ definitions:
     required:
     - name
     type: object
+  dto.CreateShelfLife:
+    properties:
+      end_date:
+        type: string
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      id_storage:
+        example: 1
+        type: integer
+      id_user:
+        example: 1
+        type: integer
+      purchase_date:
+        example: "2020-01-01T00:00:00Z"
+        type: string
+      quantity:
+        example: 1
+        type: integer
+    required:
+    - end_date
+    - id_measure
+    - id_product
+    - id_storage
+    - id_user
+    - purchase_date
+    - quantity
+    type: object
+  dto.CreateShelfLifeStatus:
+    properties:
+      name:
+        example: Просрочен
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
   dto.DeleteIngredient:
     properties:
       id_product:
@@ -145,6 +185,25 @@ definitions:
     required:
     - id
     - place
+    type: object
+  dto.ShelfLifeFilter:
+    properties:
+      limit:
+        enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        type: integer
+      offset:
+        example: 0
+        minimum: 0
+        type: integer
+    required:
+    - limit
     type: object
   dto.SignUp:
     properties:
@@ -225,6 +284,36 @@ definitions:
     required:
     - name
     type: object
+  dto.UpdateShelfLife:
+    properties:
+      end_date:
+        example: "2020-01-02T00:00:00Z"
+        type: string
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      id_storage:
+        example: 1
+        type: integer
+      purchase_date:
+        example: "2020-01-01T00:00:00Z"
+        type: string
+      quantity:
+        example: 1
+        type: integer
+    type: object
+  dto.UpdateShelfLifeStatus:
+    properties:
+      name:
+        example: Просрочен
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
   handlers.Data:
     additionalProperties: true
     type: object
@@ -300,6 +389,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/handlers.HTTPSuccess'
+      security:
+      - Bearer: []
       summary: Logout user
       tags:
       - Authentication
@@ -331,6 +422,8 @@ paths:
           description: Forbidden
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Refresh access token
       tags:
       - Authentication
@@ -437,6 +530,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Create a new measure record
       tags:
       - Measures
@@ -466,6 +561,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Delete a measure
       tags:
       - Measures
@@ -528,6 +625,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Update a measure
       tags:
       - Measures
@@ -604,6 +703,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Create product category
       tags:
       - Product Categories
@@ -629,6 +730,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Delete a product category
       tags:
       - Product Categories
@@ -677,6 +780,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Restore a deleted product category
       tags:
       - Product Categories
@@ -716,6 +821,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Update an existing product category by ID
       tags:
       - Product Categories
@@ -791,6 +898,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Create a new product
       tags:
       - Products
@@ -816,6 +925,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Delete a product
       tags:
       - Products
@@ -878,6 +989,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Update a product
       tags:
       - Products
@@ -903,6 +1016,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Restore a deleted product
       tags:
       - Products
@@ -955,6 +1070,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Remove a category from a product
       tags:
       - Products
@@ -984,6 +1101,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Add category to product
       tags:
       - Products
@@ -1035,6 +1154,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Remove a tip from a product
       tags:
       - Products
@@ -1060,6 +1181,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Add a tip for a product
       tags:
       - Products
@@ -1156,6 +1279,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Create a new recipe
       tags:
       - Recipes
@@ -1182,6 +1307,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Delete a recipe
       tags:
       - Recipes
@@ -1234,6 +1361,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Restore a deleted recipe by ID
       tags:
       - Recipes
@@ -1268,6 +1397,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Update a recipe
       tags:
       - Recipes
@@ -1303,6 +1434,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Remove an ingredient from a recipe
       tags:
       - Recipes
@@ -1367,6 +1500,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Update an ingredient of a recipe
       tags:
       - Recipes
@@ -1433,6 +1568,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Remove a recipe step.
       tags:
       - Recipes
@@ -1467,6 +1604,8 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Create a recipe step
       tags:
       - Recipes
@@ -1542,6 +1681,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Create role
       tags:
       - Roles
@@ -1571,6 +1712,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Delete role
       tags:
       - Roles
@@ -1627,6 +1770,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Restore role
       tags:
       - Roles
@@ -1661,9 +1806,500 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Update role
       tags:
       - Roles
+  /shelf-life-detector:
+    post:
+      consumes:
+      - application/json
+      description: detect shelf life dates from file
+      parameters:
+      - description: file to detect
+        in: formData
+        name: fileToDetect
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Detect shelf life dates from file
+      tags:
+      - Shelf Life Detector
+  /shelf-life-statuses:
+    get:
+      consumes:
+      - application/json
+      description: Find many shelf life status
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: просрочен
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many shelf life status
+      tags:
+      - Shelf Life Status
+    post:
+      consumes:
+      - application/json
+      description: Create shelf life status
+      parameters:
+      - description: Shelf Life Status
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShelfLifeStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create shelf life status
+      tags:
+      - Shelf Life Status
+  /shelf-life-statuses/{id_status}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete shelf life status
+      parameters:
+      - description: Shelf life status ID
+        in: path
+        name: id_status
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete shelf life status
+      tags:
+      - Shelf Life Status
+    get:
+      consumes:
+      - application/json
+      description: Find one shelf life status
+      parameters:
+      - description: Shelf Life Status ID
+        in: path
+        name: id_status
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find one shelf life status
+      tags:
+      - Shelf Life Status
+    put:
+      consumes:
+      - application/json
+      description: Update shelf life status
+      parameters:
+      - description: Shelf life status ID
+        in: path
+        name: id_status
+        required: true
+        type: integer
+      - description: Shelf life status
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateShelfLifeStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update shelf life status
+      tags:
+      - Shelf Life Status
+  /shelf-lives:
+    get:
+      consumes:
+      - application/json
+      description: Find many shelf lifes
+      parameters:
+      - description: Shelf Life Filter
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ShelfLifeFilter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many shelf lifes
+      tags:
+      - Shelf Lives
+    post:
+      consumes:
+      - application/json
+      description: Create shelf life
+      parameters:
+      - description: Shelf Life
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create shelf life
+      tags:
+      - Shelf Lives
+  /shelf-lives/{shelf_life_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete shelf life
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete shelf life
+      tags:
+      - Shelf Lives
+    get:
+      consumes:
+      - application/json
+      description: Find shelf life by id
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find shelf life by id
+      tags:
+      - Shelf Lives
+    patch:
+      consumes:
+      - application/json
+      description: Restore shelf life
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore shelf life
+      tags:
+      - Shelf Lives
+    put:
+      consumes:
+      - application/json
+      description: Update shelf life
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      - description: Shelf Life
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update shelf life
+      tags:
+      - Shelf Lives
+  /shelf-lives/{shelf_life_id}/statuses:
+    get:
+      consumes:
+      - application/json
+      description: Find shelf life statuses
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find shelf life statuses
+      tags:
+      - Shelf Lives
+  /shelf-lives/{shelf_life_id}/statuses/{status_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove shelf life status
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      - description: Status ID
+        in: path
+        name: status_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Remove shelf life status
+      tags:
+      - Shelf Lives
+    post:
+      consumes:
+      - application/json
+      description: Add shelf life status
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      - description: Status ID
+        in: path
+        name: status_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Add shelf life status
+      tags:
+      - Shelf Lives
 securityDefinitions:
   BearerAuth:
     in: header

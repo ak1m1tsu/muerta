@@ -38,8 +38,6 @@ func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/measures [post]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *MeasureHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateMeasure
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -145,8 +143,6 @@ func (h *MeasureHandler) FindMany(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/measures/{measure_id} [put]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *MeasureHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	payload := new(dto.UpdateMeasure)
@@ -181,8 +177,6 @@ func (h *MeasureHandler) Update(ctx *fiber.Ctx) error {
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/measures/{measure_id} [delete]
 //	@Security		Bearer
-//	@IsAuthenticated
-//	@IsAuthorized
 func (h *MeasureHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	if err := h.svc.DeleteMeasure(ctx.Context(), id); err != nil {

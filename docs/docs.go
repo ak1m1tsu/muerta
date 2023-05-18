@@ -65,6 +65,11 @@ const docTemplate = `{
         },
         "/auth/logout": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Invalidates access and refresh tokens, logs out user.",
                 "consumes": [
                     "application/json"
@@ -88,6 +93,11 @@ const docTemplate = `{
         },
         "/auth/refresh": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Refreshes the access token using a refresh token cookie.",
                 "consumes": [
                     "application/json"
@@ -255,6 +265,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Creates a new measure record based on the given payload.",
                 "consumes": [
                     "application/json"
@@ -343,6 +358,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Updates a measure with the given ID",
                 "consumes": [
                     "application/json"
@@ -394,6 +414,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Deletes a measure by ID.",
                 "consumes": [
                     "application/json"
@@ -503,6 +528,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Creates a new product category",
                 "consumes": [
                     "application/json"
@@ -591,6 +621,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Updates an existing product category by providing the ID and updated fields in the request body",
                 "consumes": [
                     "application/json"
@@ -648,6 +683,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Deletes a product category by ID",
                 "consumes": [
                     "application/json"
@@ -684,6 +724,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restores a previously deleted product category with the given ID",
                 "tags": [
                     "Product Categories"
@@ -780,6 +825,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create a new product with the given details",
                 "consumes": [
                     "application/json"
@@ -868,6 +918,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an existing product with new details",
                 "consumes": [
                     "application/json"
@@ -919,6 +974,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Delete an existing product by ID",
                 "consumes": [
                     "application/json"
@@ -957,6 +1017,11 @@ const docTemplate = `{
         },
         "/products/{product_id}/": {
             "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore a deleted product by ID",
                 "consumes": [
                     "application/json"
@@ -1033,6 +1098,11 @@ const docTemplate = `{
         },
         "/products/{product_id}/categories/{category_id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Adds category to product given the product ID and category ID",
                 "consumes": [
                     "application/json"
@@ -1076,6 +1146,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Removes a category from a product given the product ID and category ID",
                 "tags": [
                     "Products"
@@ -1153,6 +1228,11 @@ const docTemplate = `{
         },
         "/products/{product_id}/tip/{tip_id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Adds a tip for a product given the product ID and tip ID",
                 "tags": [
                     "Products"
@@ -1190,6 +1270,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Removes a tip from a product given the product ID and tip ID",
                 "tags": [
                     "Products"
@@ -1325,6 +1410,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Creates a new recipe with the provided data",
                 "consumes": [
                     "application/json"
@@ -1413,6 +1503,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update a recipe by its ID.",
                 "consumes": [
                     "application/json"
@@ -1464,6 +1559,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Delete a recipe by ID",
                 "consumes": [
                     "application/json"
@@ -1501,6 +1601,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restores a deleted recipe by ID",
                 "consumes": [
                     "application/json"
@@ -1584,6 +1689,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update an ingredient of a recipe",
                 "consumes": [
                     "application/json"
@@ -1635,6 +1745,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Removes an ingredient from a recipe",
                 "consumes": [
                     "application/json"
@@ -1727,6 +1842,11 @@ const docTemplate = `{
         },
         "/recipes/{recipe_id}/steps/{step_id}": {
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "tags": [
                     "Recipes"
                 ],
@@ -1778,6 +1898,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Removes the specified recipe step of a recipe.",
                 "consumes": [
                     "application/json"
@@ -1902,6 +2027,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Create role",
                 "consumes": [
                     "application/json"
@@ -1990,6 +2120,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Update role",
                 "consumes": [
                     "application/json"
@@ -2041,6 +2176,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Delete role",
                 "consumes": [
                     "application/json"
@@ -2083,6 +2223,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
                 "description": "Restore role",
                 "consumes": [
                     "application/json"
@@ -2099,6 +2244,756 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Role ID",
                         "name": "role_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-life-detector": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "detect shelf life dates from file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Life Detector"
+                ],
+                "summary": "Detect shelf life dates from file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "file to detect",
+                        "name": "fileToDetect",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-life-statuses": {
+            "get": {
+                "description": "Find many shelf life status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Life Status"
+                ],
+                "summary": "Find many shelf life status",
+                "parameters": [
+                    {
+                        "enum": [
+                            5,
+                            10,
+                            15,
+                            20,
+                            25,
+                            30
+                        ],
+                        "type": "integer",
+                        "example": 10,
+                        "name": "limit",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "minLength": 1,
+                        "type": "string",
+                        "example": "просрочен",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "minimum": 0,
+                        "type": "integer",
+                        "example": 0,
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create shelf life status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Life Status"
+                ],
+                "summary": "Create shelf life status",
+                "parameters": [
+                    {
+                        "description": "Shelf Life Status",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateShelfLifeStatus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-life-statuses/{id_status}": {
+            "get": {
+                "description": "Find one shelf life status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Life Status"
+                ],
+                "summary": "Find one shelf life status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life Status ID",
+                        "name": "id_status",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update shelf life status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Life Status"
+                ],
+                "summary": "Update shelf life status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf life status ID",
+                        "name": "id_status",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Shelf life status",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateShelfLifeStatus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete shelf life status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Life Status"
+                ],
+                "summary": "Delete shelf life status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf life status ID",
+                        "name": "id_status",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-lives": {
+            "get": {
+                "description": "Find many shelf lifes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Find many shelf lifes",
+                "parameters": [
+                    {
+                        "description": "Shelf Life Filter",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.ShelfLifeFilter"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create shelf life",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Create shelf life",
+                "parameters": [
+                    {
+                        "description": "Shelf Life",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateShelfLife"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-lives/{shelf_life_id}": {
+            "get": {
+                "description": "Find shelf life by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Find shelf life by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life ID",
+                        "name": "shelf_life_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update shelf life",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Update shelf life",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life ID",
+                        "name": "shelf_life_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Shelf Life",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateShelfLife"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete shelf life",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Delete shelf life",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life ID",
+                        "name": "shelf_life_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Restore shelf life",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Restore shelf life",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life ID",
+                        "name": "shelf_life_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-lives/{shelf_life_id}/statuses": {
+            "get": {
+                "description": "Find shelf life statuses",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Find shelf life statuses",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life ID",
+                        "name": "shelf_life_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/shelf-lives/{shelf_life_id}/statuses/{status_id}": {
+            "post": {
+                "description": "Add shelf life status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Add shelf life status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life ID",
+                        "name": "shelf_life_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Status ID",
+                        "name": "status_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Remove shelf life status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shelf Lives"
+                ],
+                "summary": "Remove shelf life status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Shelf Life ID",
+                        "name": "shelf_life_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Status ID",
+                        "name": "status_id",
                         "in": "path",
                         "required": true
                     }
@@ -2251,6 +3146,60 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateShelfLife": {
+            "type": "object",
+            "required": [
+                "end_date",
+                "id_measure",
+                "id_product",
+                "id_storage",
+                "id_user",
+                "purchase_date",
+                "quantity"
+            ],
+            "properties": {
+                "end_date": {
+                    "type": "string"
+                },
+                "id_measure": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id_product": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id_storage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id_user": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "purchase_date": {
+                    "type": "string",
+                    "example": "2020-01-01T00:00:00Z"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "dto.CreateShelfLifeStatus": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "Просрочен"
+                }
+            }
+        },
         "dto.DeleteIngredient": {
             "type": "object",
             "required": [
@@ -2330,6 +3279,31 @@ const docTemplate = `{
                 "place": {
                     "type": "integer",
                     "example": 1
+                }
+            }
+        },
+        "dto.ShelfLifeFilter": {
+            "type": "object",
+            "required": [
+                "limit"
+            ],
+            "properties": {
+                "limit": {
+                    "type": "integer",
+                    "enum": [
+                        5,
+                        10,
+                        15,
+                        20,
+                        25,
+                        30
+                    ],
+                    "example": 10
+                },
+                "offset": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 0
                 }
             }
         },
@@ -2440,6 +3414,48 @@ const docTemplate = `{
                     "maxLength": 20,
                     "minLength": 3,
                     "example": "admin"
+                }
+            }
+        },
+        "dto.UpdateShelfLife": {
+            "type": "object",
+            "properties": {
+                "end_date": {
+                    "type": "string",
+                    "example": "2020-01-02T00:00:00Z"
+                },
+                "id_measure": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id_product": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id_storage": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "purchase_date": {
+                    "type": "string",
+                    "example": "2020-01-01T00:00:00Z"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "dto.UpdateShelfLifeStatus": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "Просрочен"
                 }
             }
         },
