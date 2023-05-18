@@ -299,7 +299,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/measures/{id}": {
+        "/measures/{measure_id}": {
             "get": {
                 "description": "Find a measure by ID",
                 "consumes": [
@@ -316,7 +316,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Measure ID",
-                        "name": "id",
+                        "name": "measure_id",
                         "in": "path",
                         "required": true
                     }
@@ -358,7 +358,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Measure ID",
-                        "name": "id",
+                        "name": "measure_id",
                         "in": "path",
                         "required": true
                     },
@@ -409,7 +409,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Measure ID",
-                        "name": "id",
+                        "name": "measure_id",
                         "in": "path",
                         "required": true
                     }
@@ -1033,7 +1033,7 @@ const docTemplate = `{
         },
         "/products/{product_id}/categories/{category_id}": {
             "post": {
-                "description": "Creates a new category for a product by product ID and category ID",
+                "description": "Adds category to product given the product ID and category ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -1043,7 +1043,7 @@ const docTemplate = `{
                 "tags": [
                     "Products"
                 ],
-                "summary": "Create a category for a product",
+                "summary": "Add category to product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1076,11 +1076,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Deletes a category from a product given the product ID and category ID",
+                "description": "Removes a category from a product given the product ID and category ID",
                 "tags": [
                     "Products"
                 ],
-                "summary": "Delete a category from a product",
+                "summary": "Remove a category from a product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1153,11 +1153,11 @@ const docTemplate = `{
         },
         "/products/{product_id}/tip/{tip_id}": {
             "post": {
-                "description": "Creates a tip for a product given the product ID and tip ID",
+                "description": "Adds a tip for a product given the product ID and tip ID",
                 "tags": [
                     "Products"
                 ],
-                "summary": "Create a tip for a product",
+                "summary": "Add a tip for a product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1190,11 +1190,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Deletes a tip from a product given the product ID and tip ID",
+                "description": "Removes a tip from a product given the product ID and tip ID",
                 "tags": [
                     "Products"
                 ],
-                "summary": "Delete a tip from a product",
+                "summary": "Remove a tip from a product",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1868,7 +1868,41 @@ const docTemplate = `{
             }
         },
         "dto.CreateRecipe": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "id_user",
+                "ingredients",
+                "name",
+                "steps"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "Салат из миндаля"
+                },
+                "id_user": {
+                    "type": "integer"
+                },
+                "ingredients": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.Ingredient"
+                    }
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "Салат"
+                },
+                "steps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.RecipeStep"
+                    }
+                }
+            }
         },
         "dto.CreateRecipeStep": {
             "type": "object",
@@ -1894,6 +1928,28 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.Ingredient": {
+            "type": "object",
+            "required": [
+                "id_measure",
+                "id_product",
+                "quantity"
+            ],
+            "properties": {
+                "id_measure": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id_product": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
         "dto.Login": {
             "type": "object",
             "required": [
@@ -1910,6 +1966,23 @@ const docTemplate = `{
                     "type": "string",
                     "minLength": 8,
                     "example": "th3B3stUs3rEver"
+                }
+            }
+        },
+        "dto.RecipeStep": {
+            "type": "object",
+            "required": [
+                "id",
+                "place"
+            ],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "place": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },

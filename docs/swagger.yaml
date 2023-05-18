@@ -28,6 +28,31 @@ definitions:
     - name
     type: object
   dto.CreateRecipe:
+    properties:
+      description:
+        example: Салат из миндаля
+        maxLength: 200
+        type: string
+      id_user:
+        type: integer
+      ingredients:
+        items:
+          $ref: '#/definitions/dto.Ingredient'
+        type: array
+      name:
+        example: Салат
+        maxLength: 100
+        minLength: 2
+        type: string
+      steps:
+        items:
+          $ref: '#/definitions/dto.RecipeStep'
+        type: array
+    required:
+    - id_user
+    - ingredients
+    - name
+    - steps
     type: object
   dto.CreateRecipeStep:
     properties:
@@ -45,6 +70,22 @@ definitions:
     required:
     - id_product
     type: object
+  dto.Ingredient:
+    properties:
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      quantity:
+        example: 10
+        type: integer
+    required:
+    - id_measure
+    - id_product
+    - quantity
+    type: object
   dto.Login:
     properties:
       name:
@@ -58,6 +99,18 @@ definitions:
     required:
     - name
     - password
+    type: object
+  dto.RecipeStep:
+    properties:
+      id:
+        example: 1
+        type: integer
+      place:
+        example: 1
+        type: integer
+    required:
+    - id
+    - place
     type: object
   dto.SignUp:
     properties:
@@ -343,7 +396,7 @@ paths:
       summary: Create a new measure record
       tags:
       - Measures
-  /measures/{id}:
+  /measures/{measure_id}:
     delete:
       consumes:
       - application/json
@@ -351,7 +404,7 @@ paths:
       parameters:
       - description: Measure ID
         in: path
-        name: id
+        name: measure_id
         required: true
         type: integer
       produces:
@@ -379,7 +432,7 @@ paths:
       parameters:
       - description: Measure ID
         in: path
-        name: id
+        name: measure_id
         required: true
         type: integer
       produces:
@@ -407,7 +460,7 @@ paths:
       parameters:
       - description: Measure ID
         in: path
-        name: id
+        name: measure_id
         required: true
         type: integer
       - description: Measure payload
@@ -836,7 +889,7 @@ paths:
       - Products
   /products/{product_id}/categories/{category_id}:
     delete:
-      description: Deletes a category from a product given the product ID and category
+      description: Removes a category from a product given the product ID and category
         ID
       parameters:
       - description: Product ID
@@ -858,14 +911,13 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
-      summary: Delete a category from a product
+      summary: Remove a category from a product
       tags:
       - Products
     post:
       consumes:
       - application/json
-      description: Creates a new category for a product by product ID and category
-        ID
+      description: Adds category to product given the product ID and category ID
       parameters:
       - description: Product ID
         in: path
@@ -888,7 +940,7 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
-      summary: Create a category for a product
+      summary: Add category to product
       tags:
       - Products
   /products/{product_id}/recipes:
@@ -918,7 +970,7 @@ paths:
       - Products
   /products/{product_id}/tip/{tip_id}:
     delete:
-      description: Deletes a tip from a product given the product ID and tip ID
+      description: Removes a tip from a product given the product ID and tip ID
       parameters:
       - description: Product ID
         in: path
@@ -939,11 +991,11 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
-      summary: Delete a tip from a product
+      summary: Remove a tip from a product
       tags:
       - Products
     post:
-      description: Creates a tip for a product given the product ID and tip ID
+      description: Adds a tip for a product given the product ID and tip ID
       parameters:
       - description: Product ID
         in: path
@@ -964,7 +1016,7 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
-      summary: Create a tip for a product
+      summary: Add a tip for a product
       tags:
       - Products
   /products/{product_id}/tips:

@@ -4,8 +4,8 @@ type CreateRecipe struct {
 	UserID      int          `json:"id_user"               validate:"required,gt=0"                   exmaple:"1"`
 	Name        string       `json:"name"                  validate:"required,gte=2,lte=100,notblank"             example:"Салат"`
 	Description string       `json:"description,omitempty" validate:"lte=200"                                     example:"Салат из миндаля"`
-	Steps       []RecipeStep `json:"steps"                 validate:"required"                                                               swaggertype:"array"`
-	Ingredients []Ingredient `json:"ingredients"           validate:"required"                                                               swaggertype:"array"`
+	Steps       []RecipeStep `json:"steps"                 validate:"required"`
+	Ingredients []Ingredient `json:"ingredients"           validate:"required"`
 }
 
 type FindRecipe struct {

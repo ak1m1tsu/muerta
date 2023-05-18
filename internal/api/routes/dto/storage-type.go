@@ -1,7 +1,7 @@
 package dto
 
 type FindStorageType struct {
-	ID   int    `json:"id" example:"1"`
+	ID   int    `json:"id"   example:"1"`
 	Name string `json:"name" example:"Для овощей"`
 }
 

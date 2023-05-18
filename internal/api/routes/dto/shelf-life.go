@@ -9,7 +9,7 @@ type CreateShelfLife struct {
 	MeasureID    int        `json:"id_measure"    validate:"required,gt=0"                 example:"1"`
 	Quantity     int        `json:"quantity"      validate:"required,gt=0"                 example:"1"`
 	PurchaseDate *time.Time `json:"purchase_date" validate:"required"                      example:"2020-01-01T00:00:00Z"`
-	EndDate      *time.Time `json:"end_date"      validate:"required,gtfield=PurchaseDate" exmple:"2020-01-02T00:00:00Z"`
+	EndDate      *time.Time `json:"end_date"      validate:"required,gtfield=PurchaseDate"                                exmple:"2020-01-02T00:00:00Z"`
 }
 
 type FindShelfLife struct {

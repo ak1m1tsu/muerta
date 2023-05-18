@@ -25,10 +25,16 @@ swagger:
 
 .PHONY: test
 test:
-	$(GOTEST) -v ./... -count=1
+	$(GOTEST) -v -count=1 ./...
 
-.PHONY: test/cover
-test/cover:
-	$(GOTEST) -v -coverprofile=coverage.out ./...
-	$(GOCOVER) -func=coverage.out
+test100:
+	$(GOTEST) -v -count=100 ./...
+
+race:
+	$(GOTEST) -v -race -count=1 ./...
+
+.PHONY: cover
+cover:
+	$(GOTEST) -short -count=1 -race -coverprofile=coverage.out ./...
 	$(GOCOVER) -html=coverage.out
+	rm coverage.out

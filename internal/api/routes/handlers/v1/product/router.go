@@ -19,33 +19,33 @@ func NewRouter(
 	repository := repo.New(client)
 	service := svc.New(repository)
 	handler := New(service, log)
-	router.Get("/", handler.FindProducts)
-	router.Post("/", jware.DeserializeUser, handler.CreateProduct)
+	router.Get("/", handler.FindMany)
+	router.Post("/", jware.DeserializeUser, handler.Create)
 	router.Route(context.ProductID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.ProductID))
-		router.Get("/", handler.FindProductByID)
+		router.Get("/", handler.FindOne)
 		router.Route("/categories", func(router fiber.Router) {
-			router.Get("/", handler.FindProductCategories)
+			router.Get("/", handler.FindCategories)
 			router.Route(context.CategoryID.Path(), func(router fiber.Router) {
 				router.Use(context.New(log, context.CategoryID))
-				router.Post("/", handler.CreateCategory)
-				router.Delete("/", handler.DeleteCategory)
+				router.Post("/", handler.AddCategory)
+				router.Delete("/", handler.RemoveCategory)
 			})
 		})
 		router.Route("/recipes", func(router fiber.Router) {
-			router.Get("/", handler.FindProductRecipes)
+			router.Get("/", handler.FindRecipes)
 		})
 		router.Route("/tips", func(router fiber.Router) {
-			router.Get("/", handler.FindProductTips)
+			router.Get("/", handler.FindTips)
 			router.Route(context.TipID.Path(), func(router fiber.Router) {
 				router.Use(context.New(log, context.TipID))
-				router.Post("/", handler.CreateProductTip)
-				router.Delete("/", handler.DeleteProductTip)
+				router.Post("/", handler.AddTip)
+				router.Delete("/", handler.RemoveTip)
 			})
 		})
-		router.Put("/", jware.DeserializeUser, handler.UpdateProduct)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteProduct)
-		router.Patch("/", jware.DeserializeUser, handler.RestoreProduct)
+		router.Put("/", jware.DeserializeUser, handler.Update)
+		router.Delete("/", jware.DeserializeUser, handler.Delete)
+		router.Patch("/", jware.DeserializeUser, handler.Restore)
 	})
 	return router
 }
