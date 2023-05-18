@@ -37,6 +37,9 @@ func New(svc service.CategoryServicer, log *log.Logger) *CategoryHandler {
 //	@Failure		404		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/product-categories [post]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *CategoryHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateProductCategory
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -142,6 +145,9 @@ func (h *CategoryHandler) FindMany(ctx *fiber.Ctx) error {
 //	@Failure		404			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/product-categories/{category_id} [put]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	payload := new(dto.UpdateProductCategory)
@@ -174,6 +180,9 @@ func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/product-categories/{category_id} [delete]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *CategoryHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	if err := h.svc.DeleteCategory(ctx.Context(), id); err != nil {
@@ -193,6 +202,9 @@ func (h *CategoryHandler) Delete(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/product-categories/{category_id} [patch]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *CategoryHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	if err := h.svc.RestoreCategory(ctx.Context(), id); err != nil {

@@ -25,7 +25,22 @@ func New(svc service.ShelfLifeServicer, log *log.Logger) ShelfLifeHandler {
 	}
 }
 
-func (h *ShelfLifeHandler) CreateShelfLife(ctx *fiber.Ctx) error {
+// Create godoc
+//
+//	@Summary		Create shelf life
+//	@Description	Create shelf life
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.CreateShelfLife	true	"Shelf Life"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/shelf-lives [post]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
+func (h *ShelfLifeHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateShelfLife
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
@@ -45,7 +60,20 @@ func (h *ShelfLifeHandler) CreateShelfLife(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *ShelfLifeHandler) FindShelfLifeByID(ctx *fiber.Ctx) error {
+// FindOne godoc
+//
+//	@Summary		Find shelf life by id
+//	@Description	Find shelf life by id
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			shelf_life_id	path		int	true	"Shelf Life ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		404				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-lives/{shelf_life_id} [get]
+func (h *ShelfLifeHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	result, err := h.svc.FindShelfLifeByID(ctx.Context(), id)
 	if err != nil {
@@ -55,7 +83,19 @@ func (h *ShelfLifeHandler) FindShelfLifeByID(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf_life": result}})
 }
 
-func (h *ShelfLifeHandler) FindShelfLives(ctx *fiber.Ctx) error {
+// FindMany godoc
+//
+//	@Summary		Find many shelf lifes
+//	@Description	Find many shelf lifes
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.ShelfLifeFilter	true	"Shelf Life Filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/shelf-lives [get]
+func (h *ShelfLifeHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.ShelfLifeFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
@@ -87,7 +127,23 @@ func (h *ShelfLifeHandler) FindShelfLives(ctx *fiber.Ctx) error {
 	)
 }
 
-func (h *ShelfLifeHandler) UpdateShelfLife(ctx *fiber.Ctx) error {
+// Update godoc
+//
+//	@Summary		Update shelf life
+//	@Description	Update shelf life
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			shelf_life_id	path		int					true	"Shelf Life ID"
+//	@Param			payload			body		dto.UpdateShelfLife	true	"Shelf Life"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-lives/{shelf_life_id} [put]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
+func (h *ShelfLifeHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	payload := new(dto.UpdateShelfLife)
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -108,7 +164,22 @@ func (h *ShelfLifeHandler) UpdateShelfLife(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *ShelfLifeHandler) DeleteShelfLife(ctx *fiber.Ctx) error {
+// Delete godoc
+//
+//	@Summary		Delete shelf life
+//	@Description	Delete shelf life
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			shelf_life_id	path		int	true	"Shelf Life ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-lives/{shelf_life_id} [delete]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
+func (h *ShelfLifeHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.DeleteShelfLife(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -118,7 +189,22 @@ func (h *ShelfLifeHandler) DeleteShelfLife(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *ShelfLifeHandler) RestoreShelfLife(ctx *fiber.Ctx) error {
+// Restore godoc
+//
+//	@Summary		Restore shelf life
+//	@Description	Restore shelf life
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			shelf_life_id	path		int	true	"Shelf Life ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-lives/{shelf_life_id} [patch]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
+func (h *ShelfLifeHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.RestoreShelfLife(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -128,7 +214,19 @@ func (h *ShelfLifeHandler) RestoreShelfLife(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *ShelfLifeHandler) FindShelfLifeStatuses(ctx *fiber.Ctx) error {
+// FindStatuses godoc
+//
+//	@Summary		Find shelf life statuses
+//	@Description	Find shelf life statuses
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			shelf_life_id	path		int	true	"Shelf Life ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-lives/{shelf_life_id}/statuses [get]
+func (h *ShelfLifeHandler) FindStatuses(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	result, err := h.svc.FindShelfLifeStatuses(ctx.Context(), id)
 	if err != nil {
@@ -139,7 +237,20 @@ func (h *ShelfLifeHandler) FindShelfLifeStatuses(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"statuses": result}})
 }
 
-func (h *ShelfLifeHandler) CreateShelfLifeStatus(ctx *fiber.Ctx) error {
+// AddStatus godoc
+//
+//	@Summary		Add shelf life status
+//	@Description	Add shelf life status
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			shelf_life_id	path		int	true	"Shelf Life ID"
+//	@Param			status_id		path		int	true	"Status ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-lives/{shelf_life_id}/statuses/{status_id} [post]
+func (h *ShelfLifeHandler) AddStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	statusID := ctx.Locals(context.StatusID).(int)
 	result, err := h.svc.CreateShelfLifeStatus(ctx.Context(), id, statusID)
@@ -151,7 +262,20 @@ func (h *ShelfLifeHandler) CreateShelfLifeStatus(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"status": result}})
 }
 
-func (h *ShelfLifeHandler) DeleteShelfLifeStatus(ctx *fiber.Ctx) error {
+// RemoveStatus godoc
+//
+//	@Summary		Remove shelf life status
+//	@Description	Remove shelf life status
+//	@Tags			Shelf Lives
+//	@Accept			json
+//	@Produce		json
+//	@Param			shelf_life_id	path		int	true	"Shelf Life ID"
+//	@Param			status_id		path		int	true	"Status ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-lives/{shelf_life_id}/statuses/{status_id} [delete]
+func (h *ShelfLifeHandler) RemoveStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	statusID := ctx.Locals(context.StatusID).(int)
 	if err := h.svc.DeleteShelfLifeStatus(ctx.Context(), id, statusID); err != nil {

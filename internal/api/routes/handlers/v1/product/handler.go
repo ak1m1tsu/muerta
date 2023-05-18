@@ -37,6 +37,9 @@ func New(svc service.ProductServicer, log *log.Logger) *ProductHandler {
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/products [post]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateProduct
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -138,6 +141,9 @@ func (h *ProductHandler) FindMany(ctx *fiber.Ctx) error {
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id} [put]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	payload := new(dto.UpdateProduct)
@@ -170,6 +176,9 @@ func (h *ProductHandler) Update(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id} [delete]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.DeleteProduct(ctx.Context(), id); err != nil {
@@ -191,6 +200,9 @@ func (h *ProductHandler) Delete(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id}/ [patch]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.RestoreProduct(ctx.Context(), id); err != nil {
@@ -257,6 +269,9 @@ func (h *ProductHandler) FindRecipes(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id}/categories/{category_id} [post]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) AddCategory(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	categoryID := ctx.Locals(context.CategoryID).(int)
@@ -282,6 +297,9 @@ func (h *ProductHandler) AddCategory(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id}/categories/{category_id} [delete]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) RemoveCategory(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	categoryID := ctx.Locals(context.CategoryID).(int)
@@ -324,6 +342,9 @@ func (h *ProductHandler) FindTips(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id}/tip/{tip_id} [post]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) AddTip(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	tipID := ctx.Locals(context.TipID).(int)
@@ -348,6 +369,9 @@ func (h *ProductHandler) AddTip(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/products/{product_id}/tip/{tip_id} [delete]
+//	@Security		Bearer
+//	@IsAuthenticated
+//	@IsAuthorized
 func (h *ProductHandler) RemoveTip(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	tipID := ctx.Locals(context.TipID).(int)
