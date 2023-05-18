@@ -1,5 +1,21 @@
 basePath: /api/v1
 definitions:
+  dto.CreateIngredient:
+    properties:
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      quantity:
+        example: 10
+        type: integer
+    required:
+    - id_measure
+    - id_product
+    - quantity
+    type: object
   dto.CreateMeasure:
     properties:
       name:
@@ -69,6 +85,14 @@ definitions:
         type: integer
     required:
     - id_product
+    type: object
+  dto.DeleteRecipeStep:
+    properties:
+      place:
+        example: 1
+        type: integer
+    required:
+    - place
     type: object
   dto.Ingredient:
     properties:
@@ -370,7 +394,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new measure record based on the given payload.
+      description: Creates a new measure record based on the given payload.
       parameters:
       - description: Payload of the measure record to create
         in: body
@@ -456,7 +480,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update a measure with the given ID
+      description: Updates a measure with the given ID
       parameters:
       - description: Measure ID
         in: path
@@ -491,7 +515,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Find product categories with optional filters
+      description: Finds product categories with optional filters
       operationId: find-product-categories
       parameters:
       - enum:
@@ -537,7 +561,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new product category
+      description: Creates a new product category
       parameters:
       - description: Payload for creating product category
         in: body
@@ -591,7 +615,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get a product category by ID
+      description: Finds a product category by ID
       parameters:
       - description: Category ID
         in: path
@@ -639,7 +663,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing product category by providing the ID and updated
+      description: Updates an existing product category by providing the ID and updated
         fields in the request body
       parameters:
       - description: Product Category ID
@@ -1044,7 +1068,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Find recipes based on the provided filter
+      description: Finds recipes based on the provided filter
       parameters:
       - enum:
         - 5
@@ -1144,7 +1168,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Find a recipe by its ID
+      description: Finds a recipe by its ID
       parameters:
       - description: Recipe ID
         in: path
@@ -1207,7 +1231,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete an ingredient from a recipe
+      description: Removes an ingredient from a recipe
       parameters:
       - description: Recipe ID
         in: path
@@ -1235,17 +1259,25 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
-      summary: Delete an ingredient from a recipe
+      summary: Remove an ingredient from a recipe
       tags:
       - Recipes
     get:
-      description: Find recipe ingredients by recipe ID
+      consumes:
+      - application/json
+      description: Adds n ingredient to a recipe
       parameters:
       - description: Recipe ID
         in: path
         name: recipe_id
         required: true
         type: integer
+      - description: Create ingredient payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateIngredient'
       produces:
       - application/json
       responses:
@@ -1257,7 +1289,7 @@ paths:
           description: Bad Gateway
           schema:
             $ref: '#/definitions/handlers.HTTPError'
-      summary: Find recipe ingredients by recipe ID
+      summary: Add an ingredient to a recipe
       tags:
       - Recipes
     put:
@@ -1361,12 +1393,12 @@ paths:
         name: step_id
         required: true
         type: integer
-      - description: Step place.
+      - description: Request body
         in: body
-        name: place
+        name: playload
         required: true
         schema:
-          type: integer
+          $ref: '#/definitions/dto.DeleteRecipeStep'
       produces:
       - application/json
       responses:

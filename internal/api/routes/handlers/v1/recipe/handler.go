@@ -25,7 +25,7 @@ func New(svc recipe.RecipeServicer, log *log.Logger) *RecipesHandler {
 	}
 }
 
-// CreateRecipe creates a new recipe with the provided data.
+// Create creates a new recipe with the provided data.
 //
 //	@Summary		Create a new recipe
 //	@Description	Creates a new recipe with the provided data
@@ -37,7 +37,7 @@ func New(svc recipe.RecipeServicer, log *log.Logger) *RecipesHandler {
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/recipes [post]
-func (h *RecipesHandler) CreateRecipe(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateRecipe
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
@@ -57,10 +57,10 @@ func (h *RecipesHandler) CreateRecipe(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// FindRecipeByID finds a recipe by its ID.
+// FindOne finds a recipe by its ID.
 //
 //	@Summary		Find recipe by ID
-//	@Description	Find a recipe by its ID
+//	@Description	Finds a recipe by its ID
 //	@Tags			Recipes
 //	@Accept			json
 //	@Produce		json
@@ -69,7 +69,7 @@ func (h *RecipesHandler) CreateRecipe(ctx *fiber.Ctx) error {
 //	@Failure		404			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id} [get]
-func (h *RecipesHandler) FindRecipeByID(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	result, err := h.svc.FindRecipeByID(ctx.Context(), id)
 	if err != nil {
@@ -77,13 +77,16 @@ func (h *RecipesHandler) FindRecipeByID(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).
 			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"recipe": result}})
+	return ctx.JSON(handlers.HTTPSuccess{
+		Success: true,
+		Data:    handlers.Data{"recipe": result},
+	})
 }
 
-// FindRecipes finds recipes based on the provided filter.
+// FindMany finds recipes based on the provided filter.
 //
 //	@Summary		Find recipes
-//	@Description	Find recipes based on the provided filter
+//	@Description	Finds recipes based on the provided filter
 //	@Tags			Recipes
 //	@Accept			json
 //	@Produce		json
@@ -92,7 +95,7 @@ func (h *RecipesHandler) FindRecipeByID(ctx *fiber.Ctx) error {
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/recipes [get]
-func (h *RecipesHandler) FindRecipes(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.RecipeFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
@@ -117,11 +120,14 @@ func (h *RecipesHandler) FindRecipes(ctx *fiber.Ctx) error {
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(
-		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"recipes": result, "count": count}},
+		handlers.HTTPSuccess{
+			Success: true,
+			Data:    handlers.Data{"recipes": result, "count": count},
+		},
 	)
 }
 
-// UpdateRecipe updates a recipe by its ID.
+// Update updates a recipe by its ID.
 //
 //	@Summary		Update a recipe
 //	@Description	Update a recipe by its ID.
@@ -134,7 +140,7 @@ func (h *RecipesHandler) FindRecipes(ctx *fiber.Ctx) error {
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id} [put]
-func (h *RecipesHandler) UpdateRecipe(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	payload := new(dto.UpdateRecipe)
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -155,7 +161,7 @@ func (h *RecipesHandler) UpdateRecipe(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// DeleteRecipe deletes a recipe by ID.
+// Delete deletes a recipe by ID.
 //
 //	@Summary		Delete a recipe
 //	@Description	Delete a recipe by ID
@@ -167,7 +173,7 @@ func (h *RecipesHandler) UpdateRecipe(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id} [delete]
-func (h *RecipesHandler) DeleteRecipe(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	if err := h.svc.DeleteRecipe(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -177,7 +183,7 @@ func (h *RecipesHandler) DeleteRecipe(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// RestoreRecipe restores a deleted recipe by ID.
+// Restore restores a deleted recipe by ID.
 //
 //	@Summary		Restore a deleted recipe by ID
 //	@Description	Restores a deleted recipe by ID
@@ -188,7 +194,7 @@ func (h *RecipesHandler) DeleteRecipe(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/restore [patch]
-func (h *RecipesHandler) RestoreRecipe(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	if err := h.svc.RestoreRecipe(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -206,20 +212,25 @@ func (h *RecipesHandler) FindRecipeIngredients(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"ingredients": result}})
+	return ctx.JSON(handlers.HTTPSuccess{
+		Success: true,
+		Data:    handlers.Data{"ingredients": result},
+	})
 }
 
-// CreateIngredient creates an ingredient of a recipe.
+// AddIngredient adds an ingredient to a recipe.
 //
-//	@Summary		Find recipe ingredients by recipe ID
-//	@Description	Find recipe ingredients by recipe ID
+//	@Summary		Add an ingredient to a recipe
+//	@Description	Adds n ingredient to a recipe
 //	@Tags			Recipes
-//	@Param			recipe_id	path	int	true	"Recipe ID"
 //	@Produce		json
-//	@Success		200	{object}	handlers.HTTPSuccess
-//	@Failure		502	{object}	handlers.HTTPError
+//	@Accept			json
+//	@Param			recipe_id	path		int						true	"Recipe ID"
+//	@Param			payload		body		dto.CreateIngredient	true	"Create ingredient payload"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/ingredients [get]
-func (h *RecipesHandler) CreateIngredient(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) AddIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	var payload *dto.CreateIngredient
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -276,10 +287,10 @@ func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"ingredient": result}})
 }
 
-// DeleteIngredient deletes an ingredient from a recipe.
+// RemoveIngredient removes an ingredient from a recipe.
 //
-//	@Summary		Delete an ingredient from a recipe
-//	@Description	Delete an ingredient from a recipe
+//	@Summary		Remove an ingredient from a recipe
+//	@Description	Removes an ingredient from a recipe
 //	@Tags			Recipes
 //	@Accept			json
 //	@Produce		json
@@ -289,7 +300,7 @@ func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/ingredients [delete]
-func (h *RecipesHandler) DeleteIngredient(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) RemoveIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	var payload *dto.DeleteIngredient
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -310,7 +321,7 @@ func (h *RecipesHandler) DeleteIngredient(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// FindRecipeSteps finds all the steps for a recipe.
+// FindSteps finds all the steps for a recipe.
 //
 //	@Summary		Find all recipe steps
 //	@Description	Find all steps for a recipe by recipe ID
@@ -322,7 +333,7 @@ func (h *RecipesHandler) DeleteIngredient(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/steps [get]
-func (h *RecipesHandler) FindRecipeSteps(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) FindSteps(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	result, err := h.svc.FindRecipeSteps(ctx.Context(), recipeId)
 	if err != nil {
@@ -333,7 +344,7 @@ func (h *RecipesHandler) FindRecipeSteps(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"steps": result}})
 }
 
-// CreateRecipeStep creates a new recipe step for a given recipe and step ID.
+// AddStep creates a new recipe step for a given recipe and step ID.
 //
 //	@Summary	Create a recipe step
 //	@Tags		Recipes
@@ -344,7 +355,7 @@ func (h *RecipesHandler) FindRecipeSteps(ctx *fiber.Ctx) error {
 //	@Failure	400			{object}	handlers.HTTPError
 //	@Failure	502			{object}	handlers.HTTPError
 //	@Router		/recipes/{recipe_id}/steps/{step_id} [post]
-func (h *RecipesHandler) CreateRecipeStep(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) AddStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)
 	var payload *dto.CreateRecipeStep
@@ -367,21 +378,21 @@ func (h *RecipesHandler) CreateRecipeStep(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
-// DeleteRecipeStep deletes a recipe step.
+// RemoveStep removes a recipe step.
 //
-//	@Summary		Delete a recipe step.
-//	@Description	Deletes the specified recipe step of a recipe.
+//	@Summary		Remove a recipe step.
+//	@Description	Removes the specified recipe step of a recipe.
 //	@Tags			Recipes
 //	@Accept			json
 //	@Produce		json
-//	@Param			recipe_id	path		int	true	"Recipe ID."
-//	@Param			step_id		path		int	true	"Step ID."
-//	@Param			place		body		int	true	"Step place."	mininum(1)
+//	@Param			recipe_id	path		int						true	"Recipe ID."
+//	@Param			step_id		path		int						true	"Step ID."
+//	@Param			playload	body		dto.DeleteRecipeStep	true	"Request body"
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/recipes/{recipe_id}/steps/{step_id} [delete]
-func (h *RecipesHandler) DeleteRecipeStep(ctx *fiber.Ctx) error {
+func (h *RecipesHandler) RemoveStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)
 	var payload *dto.DeleteRecipeStep

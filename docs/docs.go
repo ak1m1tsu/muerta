@@ -255,7 +255,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new measure record based on the given payload.",
+                "description": "Creates a new measure record based on the given payload.",
                 "consumes": [
                     "application/json"
                 ],
@@ -343,7 +343,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update a measure with the given ID",
+                "description": "Updates a measure with the given ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -438,7 +438,7 @@ const docTemplate = `{
         },
         "/product-categories": {
             "get": {
-                "description": "Find product categories with optional filters",
+                "description": "Finds product categories with optional filters",
                 "consumes": [
                     "application/json"
                 ],
@@ -503,7 +503,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new product category",
+                "description": "Creates a new product category",
                 "consumes": [
                     "application/json"
                 ],
@@ -549,7 +549,7 @@ const docTemplate = `{
         },
         "/product-categories/{category_id}": {
             "get": {
-                "description": "Get a product category by ID",
+                "description": "Finds a product category by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -591,7 +591,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update an existing product category by providing the ID and updated fields in the request body",
+                "description": "Updates an existing product category by providing the ID and updated fields in the request body",
                 "consumes": [
                     "application/json"
                 ],
@@ -1261,7 +1261,7 @@ const docTemplate = `{
         },
         "/recipes": {
             "get": {
-                "description": "Find recipes based on the provided filter",
+                "description": "Finds recipes based on the provided filter",
                 "consumes": [
                     "application/json"
                 ],
@@ -1371,7 +1371,7 @@ const docTemplate = `{
         },
         "/recipes/{recipe_id}": {
             "get": {
-                "description": "Find a recipe by its ID",
+                "description": "Finds a recipe by its ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -1503,14 +1503,17 @@ const docTemplate = `{
         },
         "/recipes/{recipe_id}/ingredients": {
             "get": {
-                "description": "Find recipe ingredients by recipe ID",
+                "description": "Adds n ingredient to a recipe",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Recipes"
                 ],
-                "summary": "Find recipe ingredients by recipe ID",
+                "summary": "Add an ingredient to a recipe",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1518,6 +1521,15 @@ const docTemplate = `{
                         "name": "recipe_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Create ingredient payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateIngredient"
+                        }
                     }
                 ],
                 "responses": {
@@ -1587,7 +1599,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete an ingredient from a recipe",
+                "description": "Removes an ingredient from a recipe",
                 "consumes": [
                     "application/json"
                 ],
@@ -1597,7 +1609,7 @@ const docTemplate = `{
                 "tags": [
                     "Recipes"
                 ],
-                "summary": "Delete an ingredient from a recipe",
+                "summary": "Remove an ingredient from a recipe",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1795,12 +1807,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Step place.",
-                        "name": "place",
+                        "description": "Request body",
+                        "name": "playload",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/dto.DeleteRecipeStep"
                         }
                     }
                 ],
@@ -1828,6 +1840,28 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CreateIngredient": {
+            "type": "object",
+            "required": [
+                "id_measure",
+                "id_product",
+                "quantity"
+            ],
+            "properties": {
+                "id_measure": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "id_product": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        },
         "dto.CreateMeasure": {
             "type": "object",
             "required": [
@@ -1923,6 +1957,18 @@ const docTemplate = `{
             ],
             "properties": {
                 "id_product": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "dto.DeleteRecipeStep": {
+            "type": "object",
+            "required": [
+                "place"
+            ],
+            "properties": {
+                "place": {
                     "type": "integer",
                     "example": 1
                 }
