@@ -103,8 +103,8 @@ func (h *RoleHandler) FindOne(ctx *fiber.Ctx) error {
 //	@Router			/roles [post]
 //	@Security		Bearer
 func (h *RoleHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateRole
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateRole)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -138,8 +138,8 @@ func (h *RoleHandler) Create(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *RoleHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
-	var payload *dto.UpdateRole
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.UpdateRole)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

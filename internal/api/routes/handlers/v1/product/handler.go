@@ -39,8 +39,8 @@ func New(svc service.ProductServicer, log *log.Logger) *ProductHandler {
 //	@Router			/products [post]
 //	@Security		Bearer
 func (h *ProductHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateProduct
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateProduct)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -143,7 +143,7 @@ func (h *ProductHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *ProductHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	payload := new(dto.UpdateProduct)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

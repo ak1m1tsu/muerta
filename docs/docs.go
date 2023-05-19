@@ -3660,6 +3660,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/storage-types/{id_type}/tips": {
+            "get": {
+                "description": "Find tips by storage type id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storage Types"
+                ],
+                "summary": "Find tips by storage type id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Storage type id",
+                        "name": "id_type",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
         "/storage-types/{id_type}/tips/{id_tip}": {
             "post": {
                 "security": [
@@ -3824,6 +3874,55 @@ const docTemplate = `{
                         "example": 0,
                         "name": "offset",
                         "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storages"
+                ],
+                "summary": "Create storage",
+                "parameters": [
+                    {
+                        "description": "Storage",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateStorage"
+                        }
                     }
                 ],
                 "responses": {
@@ -4055,6 +4154,50 @@ const docTemplate = `{
                     "Storages"
                 ],
                 "summary": "Find shelf lives",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Storage ID",
+                        "name": "id_storage",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPSuccess"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handlers.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/storages/{id_storage}/tips": {
+            "get": {
+                "description": "Find tips of storage",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Storages"
+                ],
+                "summary": "Find tips of storage",
                 "parameters": [
                     {
                         "type": "integer",
@@ -5964,6 +6107,34 @@ const docTemplate = `{
                 "name": {
                     "type": "string",
                     "example": "Сварить картошку"
+                }
+            }
+        },
+        "dto.CreateStorage": {
+            "type": "object",
+            "required": [
+                "humidity",
+                "id_type",
+                "name",
+                "temperature"
+            ],
+            "properties": {
+                "humidity": {
+                    "type": "number",
+                    "example": 1
+                },
+                "id_type": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "Холодильник"
+                },
+                "temperature": {
+                    "type": "number",
+                    "example": 1
                 }
             }
         },

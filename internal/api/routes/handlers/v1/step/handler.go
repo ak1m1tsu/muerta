@@ -80,8 +80,8 @@ func (h *StepHandler) FinaMany(ctx *fiber.Ctx) error {
 //	@Router			/steps [post]
 //	@Security		Bearer
 func (h *StepHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateStep
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateStep)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -139,8 +139,8 @@ func (h *StepHandler) FindOne(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *StepHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
-	var payload *dto.UpdateStep
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.UpdateStep)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

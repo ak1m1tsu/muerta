@@ -105,8 +105,8 @@ func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 //	@Router			/users [post]
 //	@Security		Bearer
 func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateUser
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateUser)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -140,8 +140,8 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UpdateUser
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.UpdateUser)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -235,8 +235,8 @@ func (h *UserHanlder) FindSettings(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *UserHanlder) UpdateSetting(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UpdateUserSetting
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.UpdateUserSetting)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -398,8 +398,9 @@ func (h *UserHanlder) FindShelfLives(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *UserHanlder) CreateShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.CreateShelfLife = &dto.CreateShelfLife{UserID: id}
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateShelfLife)
+	payload.UserID = id
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -437,8 +438,9 @@ func (h *UserHanlder) CreateShelfLife(ctx *fiber.Ctx) error {
 func (h *UserHanlder) UpdateShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	shelfLifeID := ctx.Locals(context.ShelfLifeID).(int)
-	var payload *dto.UserShelfLife = &dto.UserShelfLife{ShelfLifeID: shelfLifeID}
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.UserShelfLife)
+	payload.ShelfLifeID = shelfLifeID
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

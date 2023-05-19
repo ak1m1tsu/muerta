@@ -39,8 +39,8 @@ func New(svc service.TipServicer, log *log.Logger) *TipHandler {
 //	@Router			/tips [post]
 //	@Security		Bearer
 func (h *TipHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateTip
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateTip)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -141,7 +141,7 @@ func (h *TipHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *TipHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	payload := new(dto.UpdateTip)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

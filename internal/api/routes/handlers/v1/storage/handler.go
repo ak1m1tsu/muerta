@@ -92,9 +92,22 @@ func (h *StorageHandler) FindOne(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storage": result}})
 }
 
+// Create godoc
+//
+//	@Summary		Create storage
+//	@Description	Create storage
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.CreateStorage	true	"Storage"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/storages [post]
+//	@Security		Bearer
 func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateStorage
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateStorage)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -128,8 +141,8 @@ func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
-	var payload *dto.UpdateStorage
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.UpdateStorage)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -193,6 +206,18 @@ func (h *StorageHandler) Restore(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
+// FindTips godoc
+//
+//	@Summary		Find tips of storage
+//	@Description	Find tips of storage
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int	true	"Storage ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage}/tips [get]
 func (h *StorageHandler) FindTips(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.FindTips(ctx.Context(), id)

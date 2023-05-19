@@ -39,8 +39,8 @@ func New(svc service.CategoryServicer, log *log.Logger) *CategoryHandler {
 //	@Router			/product-categories [post]
 //	@Security		Bearer
 func (h *CategoryHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateProductCategory
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateProductCategory)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -147,7 +147,7 @@ func (h *CategoryHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	payload := new(dto.UpdateProductCategory)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

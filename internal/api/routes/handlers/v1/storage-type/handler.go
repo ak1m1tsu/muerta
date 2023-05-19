@@ -39,8 +39,8 @@ func New(svc service.StorageTypeServicer, log *log.Logger) *StorageTypeHandler {
 //	@Router			/storage-types [post]
 //	@Security		Bearer
 func (h *StorageTypeHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateStorageType
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateStorageType)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -140,7 +140,7 @@ func (h *StorageTypeHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *StorageTypeHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
 	payload := new(dto.UpdateStorageType)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -206,6 +206,19 @@ func (h *StorageTypeHandler) FindStorages(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storages": result}})
 }
 
+// FindTips godoc
+//
+//	@Summary		Find tips by storage type id
+//	@Description	Find tips by storage type id
+//	@Tags			Storage Types
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_type	path		int	true	"Storage type id"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/storage-types/{id_type}/tips [get]
 func (h *StorageTypeHandler) FindTips(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
 	result, err := h.svc.FindTips(ctx.Context(), id)

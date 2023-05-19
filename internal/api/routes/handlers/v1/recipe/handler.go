@@ -39,8 +39,8 @@ func New(svc recipe.RecipeServicer, log *log.Logger) *RecipesHandler {
 //	@Router			/recipes [post]
 //	@Security		Bearer
 func (h *RecipesHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateRecipe
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateRecipe)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -145,7 +145,7 @@ func (h *RecipesHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *RecipesHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
 	payload := new(dto.UpdateRecipe)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -236,8 +236,8 @@ func (h *RecipesHandler) FindRecipeIngredients(ctx *fiber.Ctx) error {
 //	@Router			/recipes/{recipe_id}/ingredients [get]
 func (h *RecipesHandler) AddIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
-	var payload *dto.CreateIngredient
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateIngredient)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -272,8 +272,8 @@ func (h *RecipesHandler) AddIngredient(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
-	var payload *dto.UpdateIngredient
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.UpdateIngredient)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -308,8 +308,8 @@ func (h *RecipesHandler) UpdateIngredient(ctx *fiber.Ctx) error {
 //	@Security		Bearer
 func (h *RecipesHandler) RemoveIngredient(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RecipeID).(int)
-	var payload *dto.DeleteIngredient
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.DeleteIngredient)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -365,8 +365,8 @@ func (h *RecipesHandler) FindSteps(ctx *fiber.Ctx) error {
 func (h *RecipesHandler) AddStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)
-	var payload *dto.CreateRecipeStep
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateRecipeStep)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -403,8 +403,8 @@ func (h *RecipesHandler) AddStep(ctx *fiber.Ctx) error {
 func (h *RecipesHandler) RemoveStep(ctx *fiber.Ctx) error {
 	recipeId := ctx.Locals(context.RecipeID).(int)
 	stepId := ctx.Locals(context.StepID).(int)
-	var payload *dto.DeleteRecipeStep
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.DeleteRecipeStep)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

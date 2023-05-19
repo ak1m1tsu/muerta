@@ -39,8 +39,8 @@ func New(svc service.ShelfLifeStatusServicer, log *log.Logger) ShelfLifeStatusHa
 //	@Router			/shelf-life-statuses [post]
 //	@Security		Bearer
 func (h *ShelfLifeStatusHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateShelfLifeStatus
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateShelfLifeStatus)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -140,7 +140,7 @@ func (h *ShelfLifeStatusHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *ShelfLifeStatusHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StatusID).(int)
 	payload := new(dto.UpdateShelfLifeStatus)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

@@ -136,6 +136,27 @@ definitions:
     required:
     - name
     type: object
+  dto.CreateStorage:
+    properties:
+      humidity:
+        example: 1
+        type: number
+      id_type:
+        example: 1
+        type: integer
+      name:
+        example: Холодильник
+        minLength: 3
+        type: string
+      temperature:
+        example: 1
+        type: number
+    required:
+    - humidity
+    - id_type
+    - name
+    - temperature
+    type: object
   dto.CreateStorageType:
     properties:
       name:
@@ -2893,6 +2914,39 @@ paths:
       summary: Find storages by storage type id
       tags:
       - Storage Types
+  /storage-types/{id_type}/tips:
+    get:
+      consumes:
+      - application/json
+      description: Find tips by storage type id
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tips by storage type id
+      tags:
+      - Storage Types
   /storage-types/{id_type}/tips/{id_tip}:
     delete:
       consumes:
@@ -3016,6 +3070,37 @@ paths:
           schema:
             $ref: '#/definitions/handlers.HTTPError'
       summary: Find storages
+      tags:
+      - Storages
+    post:
+      consumes:
+      - application/json
+      description: Create storage
+      parameters:
+      - description: Storage
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStorage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create storage
       tags:
       - Storages
   /storages/{id_storage}:
@@ -3170,6 +3255,35 @@ paths:
           schema:
             $ref: '#/definitions/handlers.HTTPError'
       summary: Find shelf lives
+      tags:
+      - Storages
+  /storages/{id_storage}/tips:
+    get:
+      consumes:
+      - application/json
+      description: Find tips of storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tips of storage
       tags:
       - Storages
   /storages/{id_storage}/tips/{id_tip}:

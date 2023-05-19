@@ -69,8 +69,8 @@ func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
 }
 
 func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateSetting
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateSetting)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -91,7 +91,7 @@ func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
 func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
 	payload := new(dto.UpdateSetting)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

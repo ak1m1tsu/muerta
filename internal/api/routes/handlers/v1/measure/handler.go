@@ -39,8 +39,8 @@ func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
 //	@Router			/measures [post]
 //	@Security		Bearer
 func (h *MeasureHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateMeasure
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.CreateMeasure)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -146,7 +146,7 @@ func (h *MeasureHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *MeasureHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	payload := new(dto.UpdateMeasure)
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).

@@ -45,8 +45,8 @@ func New(cfg *config.Config, svc service.AuthServicer, log *log.Logger) *AuthHan
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/auth/sign-up [post]
 func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
-	var payload *dto.SignUp
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.SignUp)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
@@ -88,8 +88,8 @@ func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/auth/login [post]
 func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
-	var payload *dto.Login
-	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+	payload := new(dto.Login)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
 			return ctx.Status(http.StatusBadRequest).
