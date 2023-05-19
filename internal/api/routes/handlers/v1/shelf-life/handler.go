@@ -242,6 +242,7 @@ func (h *ShelfLifeHandler) FindStatuses(ctx *fiber.Ctx) error {
 //	@Failure		400				{object}	handlers.HTTPError
 //	@Failure		500				{object}	handlers.HTTPError
 //	@Router			/shelf-lives/{shelf_life_id}/statuses/{status_id} [post]
+//	@Security		Bearer
 func (h *ShelfLifeHandler) AddStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	statusID := ctx.Locals(context.StatusID).(int)
@@ -267,6 +268,7 @@ func (h *ShelfLifeHandler) AddStatus(ctx *fiber.Ctx) error {
 //	@Failure		400				{object}	handlers.HTTPError
 //	@Failure		500				{object}	handlers.HTTPError
 //	@Router			/shelf-lives/{shelf_life_id}/statuses/{status_id} [delete]
+//	@Security		Bearer
 func (h *ShelfLifeHandler) RemoveStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	statusID := ctx.Locals(context.StatusID).(int)

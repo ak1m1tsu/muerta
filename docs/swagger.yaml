@@ -136,6 +136,15 @@ definitions:
     required:
     - name
     type: object
+  dto.CreateStorageType:
+    properties:
+      name:
+        example: Для овощей
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
   dto.DeleteIngredient:
     properties:
       id_product:
@@ -326,6 +335,34 @@ definitions:
     properties:
       name:
         example: Сварить картошку
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateStorage:
+    properties:
+      humidity:
+        example: 1
+        minimum: 0
+        type: number
+      id_type:
+        example: 1
+        minimum: 0
+        type: integer
+      name:
+        example: Холодильник
+        minLength: 3
+        type: string
+      temperature:
+        example: 1
+        minimum: 0
+        type: number
+    type: object
+  dto.UpdateStorageType:
+    properties:
+      name:
+        example: Для овощей
+        minLength: 3
         type: string
     required:
     - name
@@ -2512,6 +2549,573 @@ paths:
       summary: Update a step
       tags:
       - Steps
+  /storage-types:
+    get:
+      consumes:
+      - application/json
+      description: Find storage types by filter
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: хрупкое
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storage types by filter
+      tags:
+      - Storage Types
+    post:
+      consumes:
+      - application/json
+      description: Create storage type
+      parameters:
+      - description: Storage type
+        in: body
+        name: storage_type
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStorageType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create storage type
+      tags:
+      - Storage Types
+  /storage-types/{id_type}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete storage type
+      tags:
+      - Storage Types
+    get:
+      consumes:
+      - application/json
+      description: Find storage type by id
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storage type by id
+      tags:
+      - Storage Types
+    put:
+      consumes:
+      - application/json
+      description: Update storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      - description: Storage type
+        in: body
+        name: storage_type
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStorageType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update storage type
+      tags:
+      - Storage Types
+  /storage-types/{id_type}/storages:
+    get:
+      consumes:
+      - application/json
+      description: Find storages by storage type id
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storages by storage type id
+      tags:
+      - Storage Types
+  /storage-types/{id_type}/tips/{id_tip}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove tip from storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      - description: Tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove tip from storage type
+      tags:
+      - Storage Types
+    post:
+      consumes:
+      - application/json
+      description: Add tip to storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      - description: Tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add tip to storage type
+      tags:
+      - Storage Types
+  /storages:
+    get:
+      consumes:
+      - application/json
+      description: Find storages
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: банка
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storages
+      tags:
+      - Storages
+  /storages/{id_storage}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete storage
+      tags:
+      - Storages
+    get:
+      consumes:
+      - application/json
+      description: Find storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storage
+      tags:
+      - Storages
+    patch:
+      consumes:
+      - application/json
+      description: Restore storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore storage
+      tags:
+      - Storages
+    put:
+      consumes:
+      - application/json
+      description: Update storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      - description: Storage
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStorage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update storage
+      tags:
+      - Storages
+  /storages/{id_storage}/shelf-lives:
+    get:
+      consumes:
+      - application/json
+      description: Find shelf lives
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find shelf lives
+      tags:
+      - Storages
+  /storages/{id_storage}/tips/{id_tip}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove tip
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove tip from storage
+      tags:
+      - Storages
+    post:
+      consumes:
+      - application/json
+      description: Add tip
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add tip to storage
+      tags:
+      - Storages
 securityDefinitions:
   BearerAuth:
     in: header

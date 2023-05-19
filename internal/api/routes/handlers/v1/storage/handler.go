@@ -27,16 +27,16 @@ func New(svc service.StorageServicer, log *log.Logger) *StorageHandler {
 
 // FindMany godoc
 //
-// @Summary      Find storages
-// @Description  Find storages
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        filter query dto.StorageFilter true "Filter"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages [get]
+//	@Summary		Find storages
+//	@Description	Find storages
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			filter	query		dto.StorageFilter	true	"Filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/storages [get]
 func (h *StorageHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.StorageFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
@@ -71,16 +71,16 @@ func (h *StorageHandler) FindMany(ctx *fiber.Ctx) error {
 
 // FindOne godoc
 //
-// @Summary      Find storage
-// @Description  Find storage
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        id_storage path int true "Storage ID"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages/{id_storage} [get]
+//	@Summary		Find storage
+//	@Description	Find storage
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int	true	"Storage ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage} [get]
 func (h *StorageHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.FindStorageByID(ctx.Context(), id)
@@ -114,18 +114,18 @@ func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
 
 // Update godoc
 //
-// @Summary      Update storage
-// @Description  Update storage
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        id_storage path int true "Storage ID"
-// @Param        payload body dto.UpdateStorage true "Storage"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages/{id_storage} [put]
-// @Security     Bearer
+//	@Summary		Update storage
+//	@Description	Update storage
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int					true	"Storage ID"
+//	@Param			payload		body		dto.UpdateStorage	true	"Storage"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage} [put]
+//	@Security		Bearer
 func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	var payload *dto.UpdateStorage
@@ -149,17 +149,17 @@ func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 
 // Delete godoc
 //
-// @Summary      Delete storage
-// @Description  Delete storage
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        id_storage path int true "Storage ID"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages/{id_storage} [delete]
-// @Security     Bearer
+//	@Summary		Delete storage
+//	@Description	Delete storage
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int	true	"Storage ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage} [delete]
+//	@Security		Bearer
 func (h *StorageHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.DeleteStorage(ctx.Context(), id); err != nil {
@@ -169,19 +169,20 @@ func (h *StorageHandler) Delete(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
+
 // Restore godoc
 //
-// @Summary      Restore storage
-// @Description  Restore storage
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        id_storage path int true "Storage ID"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages/{id_storage} [patch]
-// @Security     Bearer
+//	@Summary		Restore storage
+//	@Description	Restore storage
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int	true	"Storage ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage} [patch]
+//	@Security		Bearer
 func (h *StorageHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.RestoreStorage(ctx.Context(), id); err != nil {
@@ -205,18 +206,18 @@ func (h *StorageHandler) FindTips(ctx *fiber.Ctx) error {
 
 // AddTip godoc
 //
-// @Summary      Add tip to storage
-// @Description  Add tip
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        id_storage path int true "Storage ID"
-// @Param        id_tip path int true "Tip ID"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages/{id_storage}/tips/{id_tip} [post]
-// @Security     Bearer
+//	@Summary		Add tip to storage
+//	@Description	Add tip
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int	true	"Storage ID"
+//	@Param			id_tip		path		int	true	"Tip ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage}/tips/{id_tip} [post]
+//	@Security		Bearer
 func (h *StorageHandler) AddTip(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	tipID := ctx.Locals(context.TipID).(int)
@@ -231,18 +232,18 @@ func (h *StorageHandler) AddTip(ctx *fiber.Ctx) error {
 
 // RemoveTip godoc
 //
-// @Summary      Remove tip from storage
-// @Description  Remove tip
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        id_storage path int true "Storage ID"
-// @Param        id_tip path int true "Tip ID"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages/{id_storage}/tips/{id_tip} [delete]
-// @Security     Bearer
+//	@Summary		Remove tip from storage
+//	@Description	Remove tip
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int	true	"Storage ID"
+//	@Param			id_tip		path		int	true	"Tip ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage}/tips/{id_tip} [delete]
+//	@Security		Bearer
 func (h *StorageHandler) RemoveTip(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	tipID := ctx.Locals(context.TipID).(int)
@@ -256,16 +257,16 @@ func (h *StorageHandler) RemoveTip(ctx *fiber.Ctx) error {
 
 // FindShelfLives godoc
 //
-// @Summary      Find shelf lives
-// @Description  Find shelf lives
-// @Tags         Storages
-// @Accept       json
-// @Produce      json
-// @Param        id_storage path int true "Storage ID"
-// @Success      200  {object}  handlers.HTTPSuccess
-// @Failure      400  {object}  handlers.HTTPError
-// @Failure      500  {object}  handlers.HTTPError
-// @Router       /storages/{id_storage}/shelf-lives [get]
+//	@Summary		Find shelf lives
+//	@Description	Find shelf lives
+//	@Tags			Storages
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_storage	path		int	true	"Storage ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/storages/{id_storage}/shelf-lives [get]
 func (h *StorageHandler) FindShelfLives(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.FindShelfLives(ctx.Context(), id)
