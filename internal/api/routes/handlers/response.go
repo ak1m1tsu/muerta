@@ -1,8 +1,8 @@
 package handlers
 
 type HTTPSuccess struct {
-	Success bool `json:"success" example:"true"`
-	Data    Data `json:"data"    example:"key:value" swaggertype:"object,string"`
+	Success bool `json:"success"        example:"true"`
+	Data    Data `json:"data,omitempty" example:"key:value" swaggertype:"object,string"`
 }
 
 type HTTPError struct {

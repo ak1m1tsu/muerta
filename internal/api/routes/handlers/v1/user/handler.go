@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gofiber/fiber/v2"
@@ -71,9 +70,7 @@ func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
-	fmt.Printf("%+v\n", filter)
 	result, err := h.svc.FindUsers(ctx.Context(), filter)
-	fmt.Println(result)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
