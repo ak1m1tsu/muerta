@@ -128,6 +128,14 @@ definitions:
     required:
     - name
     type: object
+  dto.CreateStep:
+    properties:
+      name:
+        example: Сварить картошку
+        type: string
+    required:
+    - name
+    type: object
   dto.DeleteIngredient:
     properties:
       id_product:
@@ -310,6 +318,14 @@ definitions:
       name:
         example: Просрочен
         minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateStep:
+    properties:
+      name:
+        example: Сварить картошку
         type: string
     required:
     - name
@@ -1954,12 +1970,6 @@ paths:
       consumes:
       - application/json
       description: Find one shelf life status
-      parameters:
-      - description: Shelf Life Status ID
-        in: path
-        name: id_status
-        required: true
-        type: integer
       produces:
       - application/json
       responses:
@@ -2300,6 +2310,208 @@ paths:
       summary: Add shelf life status
       tags:
       - Shelf Lives
+  /steps:
+    get:
+      consumes:
+      - application/json
+      description: Find many steps
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: налить воду в емкость
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many steps
+      tags:
+      - Steps
+    post:
+      consumes:
+      - application/json
+      description: Create a step
+      parameters:
+      - description: CreateStep
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStep'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create a step
+      tags:
+      - Steps
+  /steps/{id_step}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete a step
+      tags:
+      - Steps
+    get:
+      consumes:
+      - application/json
+      description: Find one step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find one step
+      tags:
+      - Steps
+    patch:
+      consumes:
+      - application/json
+      description: Restore a step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore a step
+      tags:
+      - Steps
+    put:
+      consumes:
+      - application/json
+      description: Update a step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      - description: UpdateStep
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStep'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update a step
+      tags:
+      - Steps
 securityDefinitions:
   BearerAuth:
     in: header

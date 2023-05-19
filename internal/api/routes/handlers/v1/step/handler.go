@@ -25,7 +25,19 @@ func New(svc service.StepServicer, log *log.Logger) *StepHandler {
 	}
 }
 
-func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
+// FindMany godoc
+//
+//	@Summary		Find many steps
+//	@Description	Find many steps
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			filter	query		dto.StepFilter	true	"Filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps [get]
+func (h *StepHandler) FinaMany(ctx *fiber.Ctx) error {
 	filter := new(dto.StepFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
@@ -54,7 +66,20 @@ func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
 	)
 }
 
-func (h *StepHandler) CreateStep(ctx *fiber.Ctx) error {
+// Create godoc
+//
+//	@Summary		Create a step
+//	@Description	Create a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.CreateStep	true	"CreateStep"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps [post]
+//	@Security		Bearer
+func (h *StepHandler) Create(ctx *fiber.Ctx) error {
 	var paylaod *dto.CreateStep
 	if err := ctx.BodyParser(&paylaod); err != nil {
 		h.log.ClientError(ctx, err)
@@ -75,7 +100,19 @@ func (h *StepHandler) CreateStep(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
-func (h *StepHandler) FindStep(ctx *fiber.Ctx) error {
+// FindOne godoc
+//
+//	@Summary		Find one step
+//	@Description	Find one step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int	true	"Step ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [get]
+func (h *StepHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	result, err := h.svc.FindStep(ctx.Context(), id)
 	if err != nil {
@@ -86,7 +123,21 @@ func (h *StepHandler) FindStep(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
-func (h *StepHandler) UpdateStep(ctx *fiber.Ctx) error {
+// Update godoc
+//
+//	@Summary		Update a step
+//	@Description	Update a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int				true	"Step ID"
+//	@Param			payload	body		dto.UpdateStep	true	"UpdateStep"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [put]
+//	@Security		Bearer
+func (h *StepHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	var payload *dto.UpdateStep
 	if err := ctx.BodyParser(&payload); err != nil {
@@ -103,7 +154,20 @@ func (h *StepHandler) UpdateStep(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
-func (h *StepHandler) DeleteStep(ctx *fiber.Ctx) error {
+// Delete godoc
+//
+//	@Summary		Delete a step
+//	@Description	Delete a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int	true	"Step ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [delete]
+//	@Security		Bearer
+func (h *StepHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	if err := h.svc.DeleteStep(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -113,7 +177,20 @@ func (h *StepHandler) DeleteStep(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *StepHandler) RestoreStep(ctx *fiber.Ctx) error {
+// Restore godoc
+//
+//	@Summary		Restore a step
+//	@Description	Restore a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int	true	"Step ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [patch]
+//	@Security		Bearer
+func (h *StepHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	result, err := h.svc.RestoreStep(ctx.Context(), id)
 	if err != nil {

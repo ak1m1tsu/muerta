@@ -19,14 +19,14 @@ func NewRouter(
 	repo := repository.New(client)
 	svc := service.New(repo)
 	handler := New(svc, log)
-	router.Get("/", handler.FindSteps)
-	router.Post("/", jware.DeserializeUser, handler.CreateStep)
+	router.Get("/", handler.FinaMany)
+	router.Post("/", jware.DeserializeUser, handler.Create)
 	router.Route(context.StepID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.StepID))
-		router.Get("/", handler.FindStep)
-		router.Put("/", jware.DeserializeUser, handler.UpdateStep)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteStep)
-		router.Patch("/", jware.DeserializeUser, handler.RestoreStep)
+		router.Get("/", handler.FindOne)
+		router.Put("/", jware.DeserializeUser, handler.Update)
+		router.Delete("/", jware.DeserializeUser, handler.Delete)
+		router.Patch("/", jware.DeserializeUser, handler.Restore)
 	})
 	return router
 }
