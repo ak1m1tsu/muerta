@@ -145,6 +145,16 @@ definitions:
     required:
     - name
     type: object
+  dto.CreateTip:
+    properties:
+      description:
+        example: Хранить в Холодильнике
+        maxLength: 200
+        minLength: 3
+        type: string
+    required:
+    - description
+    type: object
   dto.DeleteIngredient:
     properties:
       id_product:
@@ -366,6 +376,16 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  dto.UpdateTip:
+    properties:
+      description:
+        example: Хранить в Холодильнике
+        maxLength: 200
+        minLength: 3
+        type: string
+    required:
+    - description
     type: object
   handlers.Data:
     additionalProperties: true
@@ -2311,6 +2331,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Remove shelf life status
       tags:
       - Shelf Lives
@@ -2344,6 +2366,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
       summary: Add shelf life status
       tags:
       - Shelf Lives
@@ -3116,6 +3140,446 @@ paths:
       summary: Add tip to storage
       tags:
       - Storages
+  /tips:
+    get:
+      consumes:
+      - application/json
+      description: Find many tips
+      parameters:
+      - example: хранить при низкой температуре
+        in: query
+        minLength: 1
+        name: description
+        type: string
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many tips
+      tags:
+      - Tips
+    post:
+      consumes:
+      - application/json
+      description: Create tip
+      parameters:
+      - description: tip
+        in: body
+        name: tip
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTip'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create tip
+      tags:
+      - Tips
+  /tips/{id_tip}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete tip
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete tip
+      tags:
+      - Tips
+    get:
+      consumes:
+      - application/json
+      description: Find tip by id
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tip by id
+      tags:
+      - Tips
+    patch:
+      consumes:
+      - application/json
+      description: Restore tip
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Restore tip
+      tags:
+      - Tips
+    put:
+      consumes:
+      - application/json
+      description: Update tip
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: tip
+        in: body
+        name: tip
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTip'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update tip
+      tags:
+      - Tips
+  /tips/{id_tip}/products:
+    get:
+      consumes:
+      - application/json
+      description: Find products
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find products
+      tags:
+      - Tips
+  /tips/{id_tip}/products/{id_product}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove product
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: product id
+        in: path
+        name: id_product
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove product
+      tags:
+      - Tips
+    post:
+      consumes:
+      - application/json
+      description: Add product
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: product id
+        in: path
+        name: id_product
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add product
+      tags:
+      - Tips
+  /tips/{id_tip}/storages:
+    get:
+      consumes:
+      - application/json
+      description: Find storages
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storages
+      tags:
+      - Tips
+  /tips/{id_tip}/storages/{id_storage}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove storage
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: storage id
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove storage
+      tags:
+      - Tips
+    post:
+      consumes:
+      - application/json
+      description: Add storage
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: storage id
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add storage
+      tags:
+      - Tips
 securityDefinitions:
   BearerAuth:
     in: header
