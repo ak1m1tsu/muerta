@@ -88,6 +88,23 @@ definitions:
     required:
     - name
     type: object
+  dto.CreateSetting:
+    properties:
+      id_category:
+        example: 1
+        type: integer
+      name:
+        example: Уведомления на почту
+        minLength: 3
+        type: string
+      value:
+        example: XXXXXXXXXXXX
+        type: string
+    required:
+    - id_category
+    - name
+    - value
+    type: object
   dto.CreateShelfLife:
     properties:
       end_date:
@@ -353,6 +370,16 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  dto.UpdateSetting:
+    properties:
+      id_category:
+        example: 1
+        type: integer
+      name:
+        example: Уведомления на почту
+        minLength: 3
+        type: string
     type: object
   dto.UpdateShelfLife:
     properties:
@@ -2008,6 +2035,178 @@ paths:
       summary: Update role
       tags:
       - Roles
+  /settings:
+    get:
+      consumes:
+      - application/json
+      description: Find settings
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: получать рассылку
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find settings
+      tags:
+      - Settings
+    post:
+      consumes:
+      - application/json
+      description: Create setting
+      parameters:
+      - description: Setting
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create setting
+      tags:
+      - Settings
+  /settings/{id_setting}:
+    get:
+      consumes:
+      - application/json
+      description: Find setting
+      parameters:
+      - description: Setting ID
+        in: path
+        name: id_setting
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find setting
+      tags:
+      - Settings
+    patch:
+      consumes:
+      - application/json
+      description: Restore setting
+      parameters:
+      - description: Setting ID
+        in: path
+        name: id_setting
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore setting
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: Update setting
+      parameters:
+      - description: Setting ID
+        in: path
+        name: id_setting
+        required: true
+        type: integer
+      - description: Setting
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update setting
+      tags:
+      - Settings
   /shelf-life-detector:
     post:
       consumes:

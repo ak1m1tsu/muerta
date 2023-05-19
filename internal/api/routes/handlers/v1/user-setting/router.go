@@ -23,7 +23,7 @@ func NewRouter(
 	router.Post("/", jware.DeserializeUser, handler.Create)
 	router.Route(context.SettingID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.SettingID))
-		router.Get("/", handler.FindByID)
+		router.Get("/", handler.FindOne)
 		router.Put("/", jware.DeserializeUser, handler.Update)
 		router.Patch("/", jware.DeserializeUser, handler.Restore)
 		router.Delete("/", jware.DeserializeUser, handler.Delete)
