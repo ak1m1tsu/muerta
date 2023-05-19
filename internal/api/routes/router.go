@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/redirect"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
-	_ "github.com/romankravchuk/muerta/docs"
+	_ "github.com/romankravchuk/muerta/internal/api/docs"
 	v1 "github.com/romankravchuk/muerta/internal/api/routes/handlers/v1"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/pkg/config"

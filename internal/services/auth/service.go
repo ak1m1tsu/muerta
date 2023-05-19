@@ -64,9 +64,9 @@ func (s *AuthService) LoginUser(
 		return nil, nil, fmt.Errorf("invalid name or password")
 	}
 	tokenPayload := &dto.TokenPayload{
-		ID:    model.ID,
-		Name:  payload.Name,
-		Roles: []interface{}{},
+		UserID:   model.ID,
+		Username: payload.Name,
+		Roles:    []string{},
 	}
 	for _, role := range model.Roles {
 		tokenPayload.Roles = append(tokenPayload.Roles, role.Name)

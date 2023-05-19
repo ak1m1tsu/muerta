@@ -17,11 +17,14 @@ var (
 	errParseKey         = errors.New("parse key")
 	errUnexpectedMethod = errors.New("unexpected method")
 	errClaimsType       = errors.New("invalid claims type")
-	errSubType          = errors.New("invalid sub type")
-	errIdType           = errors.New("invalid id type")
-	errNameType         = errors.New("invalid name type")
-	errRolesType        = errors.New("invalid roles type")
 )
+
+type Claims struct {
+	UserID   int      `json:"user_id,omitempty"`
+	Username string   `json:"username,omitempty"`
+	Roles    []string `json:"roles,omitempty"`
+	jwt.RegisteredClaims
+}
 
 // CreateToken creates a new JWT token with the given payload, TTL, and private key.
 // Returns the token details and an error, if any.
@@ -41,19 +44,19 @@ func CreateToken(
 	if err != nil {
 		return nil, errCreateToken.With(errParseToken).With(err)
 	}
-
-	claims := make(jwt.MapClaims)
-	claims["sub"] = map[string]any{
-		"id":    payload.ID,
-		"name":  payload.Name,
-		"roles": payload.Roles,
+	claims := Claims{
+		UserID:   payload.UserID,
+		Username: payload.Username,
+		Roles:    payload.Roles,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
+			NotBefore: jwt.NewNumericDate(now),
+			IssuedAt:  jwt.NewNumericDate(now),
+			ID:        td.UUID,
+		},
 	}
-	claims["token_uuid"] = td.UUID
-	claims["exp"] = td.ExpiresIn
-	claims["iat"] = now.Unix()
-	claims["nbf"] = now.Unix()
 
-	td.Token, err = jwt.NewWithClaims(jwt.SigningMethodRS256, claims).SignedString(key)
+	td.Token, err = jwt.NewWithClaims(jwt.SigningMethodRS256, &claims).SignedString(key)
 	if err != nil {
 		return nil, errCreateToken.With(err)
 	}
@@ -67,39 +70,27 @@ func ValidateToken(token string, publickKey []byte) (*dto.TokenPayload, error) {
 	if err != nil {
 		return nil, errValidateToken.With(errParseKey).With(err)
 	}
-	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, errUnexpectedMethod.With(fmt.Errorf("%s", t.Header["alg"]))
-		}
-		return key, nil
-	})
+	parsedToken, err := jwt.ParseWithClaims(
+		token,
+		&Claims{},
+		func(t *jwt.Token) (interface{}, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, errUnexpectedMethod.With(fmt.Errorf("%s", t.Header["alg"]))
+			}
+			return key, nil
+		},
+	)
 	if err != nil {
 		return nil, errValidateToken.With(errParseToken).With(err)
 	}
-	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	claims, ok := parsedToken.Claims.(*Claims)
 	if !ok {
 		return nil, errValidateToken.With(errClaimsType)
 	}
-	sub, ok := claims["sub"].(map[string]any)
-	if !ok {
-		return nil, errValidateToken.With(errSubType)
+	payload := &dto.TokenPayload{
+		UserID:   claims.UserID,
+		Username: claims.Username,
+		Roles:    claims.Roles,
 	}
-	id, ok := sub["id"].(float64)
-	if !ok {
-		return nil, errValidateToken.With(errIdType)
-	}
-	name, ok := sub["name"].(string)
-	if !ok {
-		return nil, errValidateToken.With(errNameType)
-	}
-	roles, ok := sub["roles"].([]interface{})
-	if !ok {
-		return nil, errValidateToken.With(errRolesType)
-	}
-	paylaod := dto.TokenPayload{
-		ID:    int(id),
-		Name:  name,
-		Roles: roles,
-	}
-	return &paylaod, nil
+	return payload, nil
 }

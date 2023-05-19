@@ -12,9 +12,9 @@ type SignUp struct {
 }
 
 type TokenPayload struct {
-	ID    int
-	Name  string
-	Roles []interface{}
+	UserID   int
+	Username string
+	Roles    []string
 }
 
 type TokenDetails struct {

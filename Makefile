@@ -21,7 +21,7 @@ docker-down:
 	docker compose down --rmi local
 
 swagger:
-	swag fmt && swag init -d ./cmd/muerta/,./internal/api/ -o ./docs
+	swag fmt && swag init -d ./cmd/muerta/,./internal/api/ -o ./internal/api/docs
 
 .PHONY: test
 test:
