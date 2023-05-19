@@ -25,8 +25,20 @@ func New(svc service.StepServicer, log *log.Logger) *StepHandler {
 	}
 }
 
-func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
-	filter := new(dto.StepFilterDTO)
+// FindMany godoc
+//
+//	@Summary		Find many steps
+//	@Description	Find many steps
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			filter	query		dto.StepFilter	true	"Filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps [get]
+func (h *StepHandler) FinaMany(ctx *fiber.Ctx) error {
+	filter := new(dto.StepFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -40,50 +52,100 @@ func (h *StepHandler) FindSteps(ctx *fiber.Ctx) error {
 	result, err := h.svc.FindSteps(ctx.Context(), filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"steps": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"steps": result, "count": count}},
+	)
 }
 
-func (h *StepHandler) CreateStep(ctx *fiber.Ctx) error {
-	var paylaod *dto.CreateStepDTO
-	if err := ctx.BodyParser(&paylaod); err != nil {
+// Create godoc
+//
+//	@Summary		Create a step
+//	@Description	Create a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.CreateStep	true	"CreateStep"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps [post]
+//	@Security		Bearer
+func (h *StepHandler) Create(ctx *fiber.Ctx) error {
+	payload := new(dto.CreateStep)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
-	if errs := validator.Validate(paylaod); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	result, err := h.svc.CreateStep(ctx.Context(), paylaod)
+	result, err := h.svc.CreateStep(ctx.Context(), payload)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
-func (h *StepHandler) FindStep(ctx *fiber.Ctx) error {
+// FindOne godoc
+//
+//	@Summary		Find one step
+//	@Description	Find one step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int	true	"Step ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [get]
+func (h *StepHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	result, err := h.svc.FindStep(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
-func (h *StepHandler) UpdateStep(ctx *fiber.Ctx) error {
+// Update godoc
+//
+//	@Summary		Update a step
+//	@Description	Update a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int				true	"Step ID"
+//	@Param			payload	body		dto.UpdateStep	true	"UpdateStep"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [put]
+//	@Security		Bearer
+func (h *StepHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
-	var payload *dto.UpdateStepDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	payload := new(dto.UpdateStep)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
@@ -91,26 +153,55 @@ func (h *StepHandler) UpdateStep(ctx *fiber.Ctx) error {
 	result, err := h.svc.UpdateStep(ctx.Context(), id, payload)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }
 
-func (h *StepHandler) DeleteStep(ctx *fiber.Ctx) error {
+// Delete godoc
+//
+//	@Summary		Delete a step
+//	@Description	Delete a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int	true	"Step ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [delete]
+//	@Security		Bearer
+func (h *StepHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	if err := h.svc.DeleteStep(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *StepHandler) RestoreStep(ctx *fiber.Ctx) error {
+// Restore godoc
+//
+//	@Summary		Restore a step
+//	@Description	Restore a step
+//	@Tags			Steps
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_step	path		int	true	"Step ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/steps/{id_step} [patch]
+//	@Security		Bearer
+func (h *StepHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	result, err := h.svc.RestoreStep(ctx.Context(), id)
 	if err != nil {
 		h.log.ServerError(ctx, err)
-		return ctx.Status(http.StatusBadGateway).JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
+		return ctx.Status(http.StatusBadGateway).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"step": result}})
 }

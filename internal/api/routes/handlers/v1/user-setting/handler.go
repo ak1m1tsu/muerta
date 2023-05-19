@@ -25,7 +25,19 @@ func New(svc usersetting.UserSettingsServicer, log *log.Logger) *UserSettingHand
 	}
 }
 
-func (h *UserSettingHandler) FindByID(ctx *fiber.Ctx) error {
+// FindOne godoc
+//
+//	@Summary		Find setting
+//	@Description	Find setting
+//	@Tags			Settings
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_setting	path		integer	true	"Setting ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/settings/{id_setting} [get]
+func (h *UserSettingHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
 	result, err := h.svc.FindSettingByID(ctx.Context(), id)
 	if err != nil {
@@ -36,8 +48,20 @@ func (h *UserSettingHandler) FindByID(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"setting": result}})
 }
 
+// FindMany godoc
+//
+//	@Summary		Find settings
+//	@Description	Find settings
+//	@Tags			Settings
+//	@Accept			json
+//	@Produce		json
+//	@Param			filter	query		dto.SettingFilter	true	"Filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/settings [get]
 func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
-	filter := new(dto.SettingFilterDTO)
+	filter := new(dto.SettingFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -60,18 +84,36 @@ func (h *UserSettingHandler) FindMany(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"settings": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{
+			Success: true,
+			Data:    handlers.Data{"settings": result, "count": count},
+		},
+	)
 }
 
+// Create godoc
+//
+//	@Summary		Create setting
+//	@Description	Create setting
+//	@Tags			Settings
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.CreateSetting	true	"Setting"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/settings [post]
+//	@Security		Bearer
 func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
-	var payload *dto.CreateSettingDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	payload := new(dto.CreateSetting)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -83,16 +125,30 @@ func (h *UserSettingHandler) Create(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
+// Update godoc
+//
+//	@Summary		Update setting
+//	@Description	Update setting
+//	@Tags			Settings
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_setting	path		int					true	"Setting ID"
+//	@Param			payload		body		dto.UpdateSetting	true	"Setting"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/settings/{id_setting} [put]
+//	@Security		Bearer
 func (h *UserSettingHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
-	payload := new(dto.UpdateSettingDTO)
-	if err := ctx.BodyParser(&payload); err != nil {
+	payload := new(dto.UpdateSetting)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -114,12 +170,26 @@ func (h *UserSettingHandler) Delete(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
+// Restore godoc
+//
+//	@Summary		Restore setting
+//	@Description	Restore setting
+//	@Tags			Settings
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_setting	path		int	true	"Setting ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/settings/{id_setting} [patch]
+//	@Security		Bearer
 func (h *UserSettingHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.SettingID).(int)
-	if err := h.svc.RestoreSetting(ctx.Context(), id); err != nil {
+	result, err := h.svc.RestoreSetting(ctx.Context(), id)
+	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true})
+	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"setting": result}})
 }

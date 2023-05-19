@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/validator"
@@ -34,24 +35,24 @@ func New(cfg *config.Config, svc service.AuthServicer, log *log.Logger) *AuthHan
 // SignUp signs up a new user
 //
 //	@Summary		Sign up a new user
+//	@Description	sign up a new user with the given information
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			payload	body	dto.SignUpDTO	true	"the sign up information"
-//	@Description	sign up a new user with the given information
-//	@Success		200	{object}	handlers.HTTPSuccess
-//	@Failure		400	{object}	handlers.HTTPError
-//	@Failure		502	{object}	handlers.HTTPError
+//	@Param			payload	body		dto.SignUp	true	"the sign up information"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/auth/sign-up [post]
 func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
-	var payload *dto.SignUpDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	payload := new(dto.SignUp)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -81,22 +82,22 @@ func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Param			login	body		dto.LoginDTO	true	"User credentials"
+//	@Param			login	body		dto.Login	true	"User credentials"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		401		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/auth/login [post]
 func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
-	var payload *dto.LoginDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	payload := new(dto.Login)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusUnauthorized).
-			JSON(handlers.HTTPError{Error: fiber.ErrUnauthorized.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusUnauthorized).
-			JSON(handlers.HTTPError{Error: fiber.ErrUnauthorized.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	access, refresh, err := h.svc.LoginUser(ctx.Context(), payload)
 	if err != nil {
@@ -144,9 +145,10 @@ func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	handlers.HTTPSuccess{data=handlers.Data{access_token=string}}
+//	@Success		200	{object}	handlers.HTTPSuccess{data=handlers.Data{access_token=string,refresh_token=string}}
 //	@Failure		403	{object}	handlers.HTTPError
 //	@Router			/auth/refresh [post]
+//	@Security		Bearer
 func (h *AuthHandler) RefreshAccessToken(ctx *fiber.Ctx) error {
 	refreshToken := ctx.Cookies("refresh_token")
 	if refreshToken == "" {
@@ -183,6 +185,7 @@ func (h *AuthHandler) RefreshAccessToken(ctx *fiber.Ctx) error {
 //	@Produce		json
 //	@Success		200	{object}	handlers.HTTPSuccess
 //	@Router			/auth/logout [post]
+//	@Security		Bearer
 func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
 	expired := time.Now().Add(-time.Hour * 24)
 	ctx.Cookie(&fiber.Cookie{

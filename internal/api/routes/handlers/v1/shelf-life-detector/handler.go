@@ -26,6 +26,19 @@ func New(svc sldetector.DateDetectorServicer, log *log.Logger) *ShelfLifeDetecto
 	}
 }
 
+// DetectDates - detects shelf life dates from file
+//
+//	@Summary		Detect shelf life dates from file
+//	@Description	detect shelf life dates from file
+//	@Tags			Shelf Life Detector
+//	@Accept			json
+//	@Produce		json
+//	@Param			fileToDetect	formData	file	true	"file to detect"
+//	@Success		200				{object}	handlers.HTTPError
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/shelf-life-detector [post]
+//	@Security		Bearer
 func (h *ShelfLifeDetectorHandler) DetectDates(ctx *fiber.Ctx) error {
 	file, err := ctx.FormFile("fileToDetect")
 	if err != nil {

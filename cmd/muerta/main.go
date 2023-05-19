@@ -9,6 +9,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/lib/pq"
+
 	"github.com/romankravchuk/muerta/internal/api"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	logger "github.com/romankravchuk/muerta/internal/pkg/log"

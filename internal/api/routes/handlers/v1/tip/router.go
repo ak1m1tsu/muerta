@@ -2,6 +2,7 @@ package tip
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/access"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
@@ -10,33 +11,47 @@ import (
 	service "github.com/romankravchuk/muerta/internal/services/tip"
 )
 
-func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
+func NewRouter(
+	client repositories.PostgresClient,
+	log *log.Logger,
+	jware *jware.JWTMiddleware,
+) *fiber.App {
 	router := fiber.New()
 	repo := repository.New(client)
 	svc := service.New(repo)
 	handler := New(svc, log)
-	router.Get("/", handler.FindTips)
-	router.Post("/", jware.DeserializeUser, handler.CreateTip)
+	router.Get("/", handler.FindMany)
+	router.Post("/", jware.DeserializeUser, access.AdminOnly(log), handler.Create)
 	router.Route(context.TipID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.TipID))
-		router.Get("/", handler.FindTipByID)
+		router.Get("/", handler.FindOne)
 		router.Route("/products", func(router fiber.Router) {
-			router.Get("/", handler.FindTipProducts)
+			router.Get("/", handler.FindProducts)
 			router.Route(context.ProductID.Path(), func(router fiber.Router) {
-				router.Post("/", jware.DeserializeUser, handler.AddProductToTip)
-				router.Delete("/", jware.DeserializeUser, handler.RemoveProductFromTip)
+				router.Post("/", jware.DeserializeUser, access.AdminOnly(log), handler.AddProduct)
+				router.Delete(
+					"/",
+					jware.DeserializeUser,
+					access.AdminOnly(log),
+					handler.RemoveProduct,
+				)
 			})
 		})
 		router.Route("/storages", func(router fiber.Router) {
-			router.Get("/", handler.FindTipStorages)
+			router.Get("/", handler.FindStorages)
 			router.Route(context.StorageID.Path(), func(router fiber.Router) {
-				router.Post("/", jware.DeserializeUser, handler.AddStorageToTip)
-				router.Delete("/", jware.DeserializeUser, handler.RemoveStorageFromTip)
+				router.Post("/", jware.DeserializeUser, handler.AddStorage)
+				router.Delete(
+					"/",
+					jware.DeserializeUser,
+					access.AdminOnly(log),
+					handler.RemoveStorage,
+				)
 			})
 		})
-		router.Put("/", jware.DeserializeUser, handler.UpdateTip)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteTip)
-		router.Patch("/", jware.DeserializeUser, handler.RestoreTip)
+		router.Put("/", jware.DeserializeUser, access.AdminOnly(log), handler.Update)
+		router.Delete("/", jware.DeserializeUser, access.AdminOnly(log), handler.Delete)
+		router.Patch("/", jware.DeserializeUser, access.AdminOnly(log), handler.Restore)
 	})
 	return router
 }

@@ -11,20 +11,24 @@ import (
 )
 
 type ProductServicer interface {
-	FindProductByID(ctx context.Context, id int) (dto.FindProductDTO, error)
-	FindProducts(ctx context.Context, filter *dto.ProductFilterDTO) ([]dto.FindProductDTO, error)
-	CreateProduct(ctx context.Context, payload *dto.CreateProductDTO) error
-	UpdateProduct(ctx context.Context, id int, payload *dto.UpdateProductDTO) error
+	FindProductByID(ctx context.Context, id int) (dto.FindProduct, error)
+	FindProducts(ctx context.Context, filter *dto.ProductFilter) ([]dto.FindProduct, error)
+	CreateProduct(ctx context.Context, payload *dto.CreateProduct) error
+	UpdateProduct(ctx context.Context, id int, payload *dto.UpdateProduct) error
 	DeleteProduct(ctx context.Context, id int) error
 	RestoreProduct(ctx context.Context, id int) error
-	FindProductCategories(ctx context.Context, id int) ([]dto.FindProductCategoryDTO, error)
-	FindProductRecipes(ctx context.Context, id int) ([]dto.FindRecipeDTO, error)
-	CreateCategory(ctx context.Context, productId int, categoryId int) (dto.FindProductCategoryDTO, error)
+	FindProductCategories(ctx context.Context, id int) ([]dto.FindProductCategory, error)
+	FindProductRecipes(ctx context.Context, id int) ([]dto.FindRecipe, error)
+	CreateCategory(
+		ctx context.Context,
+		productId int,
+		categoryId int,
+	) (dto.FindProductCategory, error)
 	DeleteCategory(ctx context.Context, productId int, categoryId int) error
-	FindProductTips(ctx context.Context, id int) ([]dto.FindTipDTO, error)
-	CreateProductTip(ctx context.Context, productID, tipID int) (dto.FindTipDTO, error)
+	FindProductTips(ctx context.Context, id int) ([]dto.FindTip, error)
+	CreateProductTip(ctx context.Context, productID, tipID int) (dto.FindTip, error)
 	DeleteProductTip(ctx context.Context, productID, tipID int) error
-	Count(ctx context.Context, filter dto.ProductFilterDTO) (int, error)
+	Count(ctx context.Context, filter dto.ProductFilter) (int, error)
 }
 
 type productService struct {
@@ -32,12 +36,16 @@ type productService struct {
 }
 
 // CreateProductTip implements ProductServicer
-func (s *productService) CreateProductTip(ctx context.Context, productID int, tipID int) (dto.FindTipDTO, error) {
+func (s *productService) CreateProductTip(
+	ctx context.Context,
+	productID int,
+	tipID int,
+) (dto.FindTip, error) {
 	model, err := s.repo.CreateTip(ctx, productID, tipID)
 	if err != nil {
-		return dto.FindTipDTO{}, fmt.Errorf("error adding product tip: %w", err)
+		return dto.FindTip{}, fmt.Errorf("error adding product tip: %w", err)
 	}
-	return translate.TipModelToFindDTO(&model), nil
+	return translate.TipModelToFind(&model), nil
 }
 
 // DeleteProductTip implements ProductServicer
@@ -50,15 +58,15 @@ func (s *productService) DeleteProductTip(ctx context.Context, productID int, ti
 }
 
 // FindProductTips implements ProductServicer
-func (s *productService) FindProductTips(ctx context.Context, id int) ([]dto.FindTipDTO, error) {
+func (s *productService) FindProductTips(ctx context.Context, id int) ([]dto.FindTip, error) {
 	result, err := s.repo.FindTips(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("error finding product tips: %w", err)
 	}
-	return translate.TipModelsToFindDTOs(result), nil
+	return translate.TipModelsToFinds(result), nil
 }
 
-func (s *productService) Count(ctx context.Context, filter dto.ProductFilterDTO) (int, error) {
+func (s *productService) Count(ctx context.Context, filter dto.ProductFilter) (int, error) {
 	count, err := s.repo.Count(ctx, models.ProductFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting products: %w", err)
@@ -67,12 +75,16 @@ func (s *productService) Count(ctx context.Context, filter dto.ProductFilterDTO)
 }
 
 // CreateCategory implements ProductServicer
-func (s *productService) CreateCategory(ctx context.Context, productId int, categoryId int) (dto.FindProductCategoryDTO, error) {
+func (s *productService) CreateCategory(
+	ctx context.Context,
+	productId int,
+	categoryId int,
+) (dto.FindProductCategory, error) {
 	model, err := s.repo.CreateCategory(ctx, productId, categoryId)
 	if err != nil {
-		return dto.FindProductCategoryDTO{}, fmt.Errorf("error adding product category: %w", err)
+		return dto.FindProductCategory{}, fmt.Errorf("error adding product category: %w", err)
 	}
-	return translate.ProductCategoryModelToFindDTO(&model), nil
+	return translate.ProductCategoryModelToFind(&model), nil
 }
 
 // DeleteCategory implements ProductServicer
@@ -89,16 +101,22 @@ func New(repo repo.ProductRepositorer) ProductServicer {
 	}
 }
 
-func (svc *productService) FindProductByID(ctx context.Context, id int) (dto.FindProductDTO, error) {
+func (svc *productService) FindProductByID(
+	ctx context.Context,
+	id int,
+) (dto.FindProduct, error) {
 	model, err := svc.repo.FindByID(ctx, id)
-	result := translate.ProductModelToFindDTO(&model)
+	result := translate.ProductModelToFind(&model)
 	if err != nil {
-		return dto.FindProductDTO{}, err
+		return dto.FindProduct{}, err
 	}
 	return result, nil
 }
 
-func (svc *productService) FindProducts(ctx context.Context, filter *dto.ProductFilterDTO) ([]dto.FindProductDTO, error) {
+func (svc *productService) FindProducts(
+	ctx context.Context,
+	filter *dto.ProductFilter,
+) ([]dto.FindProduct, error) {
 	models, err := svc.repo.FindMany(ctx, models.ProductFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
@@ -106,22 +124,26 @@ func (svc *productService) FindProducts(ctx context.Context, filter *dto.Product
 		},
 		Name: filter.Name,
 	})
-	dtos := translate.ProductModelsToFindDTOs(models)
+	dtos := translate.ProductModelsToFinds(models)
 	if err != nil {
 		return nil, err
 	}
 	return dtos, nil
 }
 
-func (svc *productService) CreateProduct(ctx context.Context, payload *dto.CreateProductDTO) error {
-	model := translate.CreateProductDTOToModel(payload)
+func (svc *productService) CreateProduct(ctx context.Context, payload *dto.CreateProduct) error {
+	model := translate.CreateProductToModel(payload)
 	if err := svc.repo.Create(ctx, model); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (svc *productService) UpdateProduct(ctx context.Context, id int, payload *dto.UpdateProductDTO) error {
+func (svc *productService) UpdateProduct(
+	ctx context.Context,
+	id int,
+	payload *dto.UpdateProduct,
+) error {
 	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -149,19 +171,26 @@ func (svc *productService) RestoreProduct(ctx context.Context, id int) error {
 	return nil
 }
 
-func (svc *productService) FindProductCategories(ctx context.Context, id int) ([]dto.FindProductCategoryDTO, error) {
+func (svc *productService) FindProductCategories(
+	ctx context.Context,
+	id int,
+) ([]dto.FindProductCategory, error) {
 	categories, err := svc.repo.FindCategories(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	dtos := translate.CategoryModelsToFindDTOs(categories)
+	dtos := translate.CategoryModelsToFinds(categories)
 	return dtos, nil
 }
-func (svc *productService) FindProductRecipes(ctx context.Context, id int) ([]dto.FindRecipeDTO, error) {
+
+func (svc *productService) FindProductRecipes(
+	ctx context.Context,
+	id int,
+) ([]dto.FindRecipe, error) {
 	recipes, err := svc.repo.FindRecipes(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	dtos := translate.RecipeModelsToFindDTOs(recipes)
+	dtos := translate.RecipeModelsToFinds(recipes)
 	return dtos, nil
 }

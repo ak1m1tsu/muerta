@@ -4,11 +4,15 @@ GOBUILD=$(GO) build
 GOTEST=$(GO) test
 
 .PHONY: build
-build:
+build: format
 	$(GOBUILD) -o ./bin/muerta ./cmd/muerta/
 
 run: build
 	./bin/muerta
+
+format:
+	golines -w /dev/null --base-formatter="gofumpt" ./internal && \
+	 goimports-reviser ./internal
 
 docker-up:
 	docker compose up --build -d
@@ -17,14 +21,20 @@ docker-down:
 	docker compose down --rmi local
 
 swagger:
-	swag fmt && swag init -d ./cmd/muerta/,./internal/api/ -o ./docs
+	swag fmt && swag init -d ./cmd/muerta/,./internal/api/ -o ./internal/api/docs
 
 .PHONY: test
 test:
-	$(GOTEST) -v ./... -count=1
+	$(GOTEST) -v -count=1 ./...
 
-.PHONY: test/cover
-test/cover:
-	$(GOTEST) -v -coverprofile=coverage.out ./...
-	$(GOCOVER) -func=coverage.out
+test100:
+	$(GOTEST) -v -count=100 ./...
+
+race:
+	$(GOTEST) -v -race -count=1 ./...
+
+.PHONY: cover
+cover:
+	$(GOTEST) -short -count=1 -race -coverprofile=coverage.out ./...
 	$(GOCOVER) -html=coverage.out
+	rm coverage.out

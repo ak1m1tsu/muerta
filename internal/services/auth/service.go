@@ -22,8 +22,11 @@ type JWTCredential struct {
 }
 
 type AuthServicer interface {
-	SignUpUser(ctx context.Context, payload *dto.SignUpDTO) error
-	LoginUser(ctx context.Context, payload *dto.LoginDTO) (*dto.TokenDetails, *dto.TokenDetails, error)
+	SignUpUser(ctx context.Context, payload *dto.SignUp) error
+	LoginUser(
+		ctx context.Context,
+		payload *dto.Login,
+	) (*dto.TokenDetails, *dto.TokenDetails, error)
 	RefreshAccessToken(refreshToken string) (*dto.TokenDetails, error)
 }
 
@@ -48,7 +51,10 @@ func (s *AuthService) RefreshAccessToken(refreshToken string) (*dto.TokenDetails
 }
 
 // LoginUser implements AuthServicer
-func (s *AuthService) LoginUser(ctx context.Context, payload *dto.LoginDTO) (*dto.TokenDetails, *dto.TokenDetails, error) {
+func (s *AuthService) LoginUser(
+	ctx context.Context,
+	payload *dto.Login,
+) (*dto.TokenDetails, *dto.TokenDetails, error) {
 	model, err := s.userRepository.FindByName(ctx, payload.Name)
 	if err != nil {
 		return nil, nil, fmt.Errorf("user not found: %w", err)
@@ -58,9 +64,9 @@ func (s *AuthService) LoginUser(ctx context.Context, payload *dto.LoginDTO) (*dt
 		return nil, nil, fmt.Errorf("invalid name or password")
 	}
 	tokenPayload := &dto.TokenPayload{
-		ID:    model.ID,
-		Name:  payload.Name,
-		Roles: []interface{}{},
+		UserID:   model.ID,
+		Username: payload.Name,
+		Roles:    []string{},
 	}
 	for _, role := range model.Roles {
 		tokenPayload.Roles = append(tokenPayload.Roles, role.Name)
@@ -77,7 +83,7 @@ func (s *AuthService) LoginUser(ctx context.Context, payload *dto.LoginDTO) (*dt
 }
 
 // SignUpUser implements AuthServicer
-func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUpDTO) error {
+func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUp) error {
 	if _, err := s.userRepository.FindByName(ctx, payload.Name); err == nil {
 		return fmt.Errorf("user already exists")
 	}
@@ -101,7 +107,11 @@ func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUpDTO) er
 	return nil
 }
 
-func New(cfg *config.Config, repo user.UserRepositorer, roleRepository role.RoleRepositorer) AuthServicer {
+func New(
+	cfg *config.Config,
+	repo user.UserRepositorer,
+	roleRepository role.RoleRepositorer,
+) AuthServicer {
 	return &AuthService{
 		userRepository: repo,
 		roleRepository: roleRepository,

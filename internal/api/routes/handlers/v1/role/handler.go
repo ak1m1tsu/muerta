@@ -25,8 +25,20 @@ func New(svc service.RoleServicer, log *log.Logger) *RoleHandler {
 	}
 }
 
-func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
-	filter := new(dto.RoleFilterDTO)
+// FindMany godoc
+//
+//	@Summary		Find many roles
+//	@Description	Find many roles
+//	@Tags			Roles
+//	@Accept			json
+//	@Produce		json
+//	@Param			filter	query		dto.RoleFilter	true	"Filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/roles [get]
+func (h *RoleHandler) FindMany(ctx *fiber.Ctx) error {
+	filter := new(dto.RoleFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -49,10 +61,24 @@ func (h *RoleHandler) FindRoles(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result, "count": count}},
+	)
 }
 
-func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
+// FindOne godoc
+//
+//	@Summary		Find one role
+//	@Description	Find one role
+//	@Tags			Roles
+//	@Accept			json
+//	@Produce		json
+//	@Param			role_id	path		int	true	"Role ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/roles/{role_id} [get]
+func (h *RoleHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	result, err := h.svc.FindRoleByID(ctx.Context(), id)
 	if err != nil {
@@ -63,15 +89,28 @@ func (h *RoleHandler) FindRole(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result}})
 }
 
-func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
-	var payload *dto.CreateRoleDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+// FindOne godoc
+//
+//	@Summary		Create role
+//	@Description	Create role
+//	@Tags			Roles
+//	@Accept			json
+//	@Produce		json
+//	@Param			role	body		dto.CreateRole	true	"Role"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/roles [post]
+//	@Security		Bearer
+func (h *RoleHandler) Create(ctx *fiber.Ctx) error {
+	payload := new(dto.CreateRole)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -83,16 +122,30 @@ func (h *RoleHandler) CreateRole(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
+// Update godoc
+//
+//	@Summary		Update role
+//	@Description	Update role
+//	@Tags			Roles
+//	@Accept			json
+//	@Produce		json
+//	@Param			role_id	path		int				true	"Role ID"
+//	@Param			role	body		dto.UpdateRole	true	"Role"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/roles/{role_id} [put]
+//	@Security		Bearer
+func (h *RoleHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
-	var payload *dto.UpdateRoleDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+	payload := new(dto.UpdateRole)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -104,7 +157,20 @@ func (h *RoleHandler) UpdateRole(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *RoleHandler) DeleteRole(ctx *fiber.Ctx) error {
+// Delete godoc
+//
+//	@Summary		Delete role
+//	@Description	Delete role
+//	@Tags			Roles
+//	@Accept			json
+//	@Produce		json
+//	@Param			role_id	path		int	true	"Role ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/roles/{role_id} [delete]
+//	@Security		Bearer
+func (h *RoleHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.DeleteRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -114,7 +180,20 @@ func (h *RoleHandler) DeleteRole(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *RoleHandler) RestoreRole(ctx *fiber.Ctx) error {
+// Restore godoc
+//
+//	@Summary		Restore role
+//	@Description	Restore role
+//	@Tags			Roles
+//	@Accept			json
+//	@Produce		json
+//	@Param			role_id	path		int	true	"Role ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/roles/{role_id} [patch]
+//	@Security		Bearer
+func (h *RoleHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.RestoreRole(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)

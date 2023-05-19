@@ -2,6 +2,7 @@ package shelflifestatus
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/access"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
@@ -9,17 +10,21 @@ import (
 	service "github.com/romankravchuk/muerta/internal/services/shelf-life-status"
 )
 
-func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
+func NewRouter(
+	client repositories.PostgresClient,
+	log *log.Logger,
+	jware *jware.JWTMiddleware,
+) *fiber.App {
 	router := fiber.New()
 	repo := repository.New(client)
 	svc := service.New(repo)
 	handler := New(svc, log)
-	router.Get("/", handler.FindShelfLifeStatuses)
-	router.Post("/", jware.DeserializeUser, handler.CreateShelfLifeStatus)
+	router.Get("/", handler.FindMany)
+	router.Post("/", jware.DeserializeUser, access.AdminOnly(log), handler.Create)
 	router.Route("/:id", func(router fiber.Router) {
-		router.Get("/", handler.FindShelfLifeStatusByID)
-		router.Put("/", jware.DeserializeUser, handler.UpdateShelfLifeStatus)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteShelfLifeStatus)
+		router.Get("/", handler.FindOne)
+		router.Put("/", jware.DeserializeUser, access.AdminOnly(log), handler.Update)
+		router.Delete("/", jware.DeserializeUser, access.AdminOnly(log), handler.Delete)
 	})
 	return router
 }

@@ -40,7 +40,7 @@ func (r *stepRepository) Count(ctx context.Context, filter models.StepFilter) (i
 
 // Create implements StepRepositorer
 func (r *stepRepository) Create(ctx context.Context, model *models.Step) error {
-	var query = `
+	query := `
 		INSERT INTO steps (name)
 		VALUES ($1)
 		RETURNING id
@@ -53,7 +53,7 @@ func (r *stepRepository) Create(ctx context.Context, model *models.Step) error {
 
 // Delete implements StepRepositorer
 func (r *stepRepository) Delete(ctx context.Context, id int) error {
-	var query = `
+	query := `
 		UPDATE steps
 		SET deleted_at = NOW(),
 			updated_at = NOW()
@@ -82,7 +82,10 @@ func (r *stepRepository) FindByID(ctx context.Context, id int) (models.Step, err
 }
 
 // FindMany implements StepRepositorer
-func (r *stepRepository) FindMany(ctx context.Context, filter models.StepFilter) ([]models.Step, error) {
+func (r *stepRepository) FindMany(
+	ctx context.Context,
+	filter models.StepFilter,
+) ([]models.Step, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -129,7 +132,7 @@ func (r *stepRepository) Restore(ctx context.Context, id int) (models.Step, erro
 
 // Update implements StepRepositorer
 func (r *stepRepository) Update(ctx context.Context, id int, model models.Step) error {
-	var query = `
+	query := `
 		UPDATE steps
 		SET name = $1,
 			updated_at = NOW()

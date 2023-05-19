@@ -10,7 +10,10 @@ import (
 
 type ShelfLifeStatusRepositorer interface {
 	FindByID(ctx context.Context, id int) (models.ShelfLifeStatus, error)
-	FindMany(ctx context.Context, filter models.ShelfLifeStatusFilter) ([]models.ShelfLifeStatus, error)
+	FindMany(
+		ctx context.Context,
+		filter models.ShelfLifeStatusFilter,
+	) ([]models.ShelfLifeStatus, error)
 	Create(ctx context.Context, shelfLifeStatus models.ShelfLifeStatus) error
 	Update(ctx context.Context, shelfLifeStatus models.ShelfLifeStatus) error
 	Delete(ctx context.Context, id int) error
@@ -21,7 +24,10 @@ type shelfLifeStatusRepository struct {
 	client repositories.PostgresClient
 }
 
-func (r *shelfLifeStatusRepository) Count(ctx context.Context, filter models.ShelfLifeStatusFilter) (int, error) {
+func (r *shelfLifeStatusRepository) Count(
+	ctx context.Context,
+	filter models.ShelfLifeStatusFilter,
+) (int, error) {
 	var (
 		query = `
 			SELECT COUNT(*) 
@@ -37,13 +43,14 @@ func (r *shelfLifeStatusRepository) Count(ctx context.Context, filter models.She
 }
 
 // Create implements ShelfLifeStatusRepositorer
-func (r *shelfLifeStatusRepository) Create(ctx context.Context, shelfLifeStatus models.ShelfLifeStatus) error {
-	var (
-		query = `
+func (r *shelfLifeStatusRepository) Create(
+	ctx context.Context,
+	shelfLifeStatus models.ShelfLifeStatus,
+) error {
+	query := `
 			INSERT INTO statuses (name)
 			VALUES ($1)
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, shelfLifeStatus.Name); err != nil {
 		return fmt.Errorf("failed to create shelfLifeStatus: %w", err)
 	}
@@ -52,12 +59,10 @@ func (r *shelfLifeStatusRepository) Create(ctx context.Context, shelfLifeStatus 
 
 // Delete implements ShelfLifeStatusRepositorer
 func (r *shelfLifeStatusRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			DELETE FROM statuses
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to delete shelfLifeStatus: %w", err)
 	}
@@ -65,7 +70,10 @@ func (r *shelfLifeStatusRepository) Delete(ctx context.Context, id int) error {
 }
 
 // FindByID implements ShelfLifeStatusRepositorer
-func (r *shelfLifeStatusRepository) FindByID(ctx context.Context, id int) (models.ShelfLifeStatus, error) {
+func (r *shelfLifeStatusRepository) FindByID(
+	ctx context.Context,
+	id int,
+) (models.ShelfLifeStatus, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -82,7 +90,10 @@ func (r *shelfLifeStatusRepository) FindByID(ctx context.Context, id int) (model
 }
 
 // FindMany implements ShelfLifeStatusRepositorer
-func (r *shelfLifeStatusRepository) FindMany(ctx context.Context, filter models.ShelfLifeStatusFilter) ([]models.ShelfLifeStatus, error) {
+func (r *shelfLifeStatusRepository) FindMany(
+	ctx context.Context,
+	filter models.ShelfLifeStatusFilter,
+) ([]models.ShelfLifeStatus, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -109,14 +120,15 @@ func (r *shelfLifeStatusRepository) FindMany(ctx context.Context, filter models.
 }
 
 // Update implements ShelfLifeStatusRepositorer
-func (r *shelfLifeStatusRepository) Update(ctx context.Context, shelfLifeStatus models.ShelfLifeStatus) error {
-	var (
-		query = `
+func (r *shelfLifeStatusRepository) Update(
+	ctx context.Context,
+	shelfLifeStatus models.ShelfLifeStatus,
+) error {
+	query := `
 			UPDATE statuses
 			SET name = $1
 			WHERE id = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, shelfLifeStatus.Name, shelfLifeStatus.ID); err != nil {
 		return fmt.Errorf("failed to update shelfLifeStatus: %w", err)
 	}

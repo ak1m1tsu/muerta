@@ -25,27 +25,28 @@ func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
 	}
 }
 
-// CreateMeasure creates a new measure record
+// Create creates a new measure record
 //
 //	@Summary		Create a new measure record
-//	@Description	Create a new measure record based on the given payload.
+//	@Description	Creates a new measure record based on the given payload.
 //	@Tags			Measures
 //	@Accept			json
 //	@Produce		json
-//	@Param			payload	body		dto.CreateMeasureDTO	true	"Payload of the measure record to create"
+//	@Param			payload	body		dto.CreateMeasure	true	"Payload of the measure record to create"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/measures [post]
-func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
-	var payload *dto.CreateMeasureDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+//	@Security		Bearer
+func (h *MeasureHandler) Create(ctx *fiber.Ctx) error {
+	payload := new(dto.CreateMeasure)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -54,22 +55,24 @@ func (h *MeasureHandler) CreateMeasure(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true})
+	return ctx.JSON(handlers.HTTPSuccess{
+		Success: true,
+	})
 }
 
-// FindMeasureByID finds a measure by ID
+// FindOne finds a measure by ID
 //
 //	@Summary		Find a measure by ID
 //	@Description	Find a measure by ID
 //	@Tags			Measures
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"Measure ID"
-//	@Success		200	{object}	handlers.HTTPSuccess
-//	@Failure		404	{object}	handlers.HTTPError
-//	@Failure		502	{object}	handlers.HTTPError
-//	@Router			/measures/{id} [get]
-func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
+//	@Param			measure_id	path		int	true	"Measure ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		502			{object}	handlers.HTTPError
+//	@Router			/measures/{measure_id} [get]
+func (h *MeasureHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	dto, err := h.svc.FindMeasureByID(ctx.Context(), id)
 	if err != nil {
@@ -83,7 +86,7 @@ func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
 	})
 }
 
-// FindMeasures returns a list of measures and their count based on the given filter.
+// FindMany returns a list of measures and their count based on the given filter.
 //
 //	@Summary		Find measures
 //	@Description	Returns a list of measures and their count based on the given filter.
@@ -91,13 +94,13 @@ func (h *MeasureHandler) FindMeasureByID(ctx *fiber.Ctx) error {
 //	@Tags			Measures
 //	@Accept			json
 //	@Produce		json
-//	@Param			filter	query		dto.MeasureFilterDTO	false	"Filter for measures"
+//	@Param			filter	query		dto.MeasureFilter	false	"Filter for measures"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/measures [get]
-func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
-	filter := new(dto.MeasureFilterDTO)
+func (h *MeasureHandler) FindMany(ctx *fiber.Ctx) error {
+	filter := new(dto.MeasureFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -126,29 +129,30 @@ func (h *MeasureHandler) FindMeasures(ctx *fiber.Ctx) error {
 	})
 }
 
-// UpdateMeasure updates a measure with the given ID using the provided payload
+// Update updates a measure with the given ID using the provided payload
 //
 //	@Summary		Update a measure
-//	@Description	Update a measure with the given ID
+//	@Description	Updates a measure with the given ID
 //	@Tags			Measures
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		int						true	"Measure ID"
-//	@Param			payload	body		dto.UpdateMeasureDTO	true	"Measure payload"
-//	@Success		200		{object}	handlers.HTTPSuccess
-//	@Failure		400		{object}	handlers.HTTPError
-//	@Failure		502		{object}	handlers.HTTPError
-//	@Router			/measures/{id} [put]
-func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
+//	@Param			measure_id	path		int					true	"Measure ID"
+//	@Param			payload		body		dto.UpdateMeasure	true	"Measure payload"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		502			{object}	handlers.HTTPError
+//	@Router			/measures/{measure_id} [put]
+//	@Security		Bearer
+func (h *MeasureHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
-	payload := new(dto.UpdateMeasureDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	payload := new(dto.UpdateMeasure)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -160,19 +164,20 @@ func (h *MeasureHandler) UpdateMeasure(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// DeleteMeasure deletes a measure by ID.
+// Delete deletes a measure by ID.
 //
 //	@Summary		Delete a measure
 //	@Description	Deletes a measure by ID.
 //	@Tags			Measures
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"Measure ID"
-//	@Success		200	{object}	handlers.HTTPSuccess
-//	@Failure		400	{object}	handlers.HTTPError
-//	@Failure		502	{object}	handlers.HTTPError
-//	@Router			/measures/{id} [delete]
-func (h *MeasureHandler) DeleteMeasure(ctx *fiber.Ctx) error {
+//	@Param			measure_id	path		int	true	"Measure ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		502			{object}	handlers.HTTPError
+//	@Router			/measures/{measure_id} [delete]
+//	@Security		Bearer
+func (h *MeasureHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	if err := h.svc.DeleteMeasure(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)

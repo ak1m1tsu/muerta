@@ -25,15 +25,28 @@ func New(svc service.TipServicer, log *log.Logger) *TipHandler {
 	}
 }
 
-func (h *TipHandler) CreateTip(ctx *fiber.Ctx) error {
-	var payload *dto.CreateTipDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+// Create godoc
+//
+//	@Summary		Create tip
+//	@Description	Create tip
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			tip	body		dto.CreateTip	true	"tip"
+//	@Success		200	{object}	handlers.HTTPSuccess
+//	@Failure		400	{object}	handlers.HTTPError
+//	@Failure		500	{object}	handlers.HTTPError
+//	@Router			/tips [post]
+//	@Security		Bearer
+func (h *TipHandler) Create(ctx *fiber.Ctx) error {
+	payload := new(dto.CreateTip)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -46,7 +59,20 @@ func (h *TipHandler) CreateTip(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"tip": result}})
 }
 
-func (h *TipHandler) FindTipByID(ctx *fiber.Ctx) error {
+// FindOne godoc
+//
+//	@Summary		Find tip by id
+//	@Description	Find tip by id
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip	path		int	true	"tip id"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip} [get]
+func (h *TipHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.FindTipByID(ctx.Context(), id)
 	if err != nil {
@@ -56,8 +82,20 @@ func (h *TipHandler) FindTipByID(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"tip": result}})
 }
 
-func (h *TipHandler) FindTips(ctx *fiber.Ctx) error {
-	filter := new(dto.TipFilterDTO)
+// FindMany godoc
+//
+//	@Summary		Find many tips
+//	@Description	Find many tips
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			filter	query		dto.TipFilter	true	"filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/tips [get]
+func (h *TipHandler) FindMany(ctx *fiber.Ctx) error {
+	filter := new(dto.TipFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -80,19 +118,36 @@ func (h *TipHandler) FindTips(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"tips": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{Success: true, Data: handlers.Data{"tips": result, "count": count}},
+	)
 }
 
-func (h *TipHandler) UpdateTip(ctx *fiber.Ctx) error {
+// Update godoc
+//
+//	@Summary		Update tip
+//	@Description	Update tip
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip	path		int				true	"tip id"
+//	@Param			tip		body		dto.UpdateTip	true	"tip"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip} [put]
+//	@Security		Bearer
+func (h *TipHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
-	payload := new(dto.UpdateTipDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	payload := new(dto.UpdateTip)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -104,7 +159,21 @@ func (h *TipHandler) UpdateTip(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *TipHandler) DeleteTip(ctx *fiber.Ctx) error {
+// Delete godoc
+//
+//	@Summary		Delete tip
+//	@Description	Delete tip
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip	path		int	true	"tip id"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip} [delete]
+//	@Security		Bearer
+func (h *TipHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	if err := h.svc.DeleteTip(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -114,7 +183,20 @@ func (h *TipHandler) DeleteTip(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *TipHandler) RestoreTip(ctx *fiber.Ctx) error {
+// Restore godoc
+//
+//	@Summary		Restore tip
+//	@Description	Restore tip
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip	path		int	true	"tip id"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip} [patch]
+func (h *TipHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	if err := h.svc.RestoreTip(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -124,7 +206,20 @@ func (h *TipHandler) RestoreTip(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *TipHandler) FindTipStorages(ctx *fiber.Ctx) error {
+// FindStorages godoc
+//
+//	@Summary		Find storages
+//	@Description	Find storages
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip	path		int	true	"tip id"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip}/storages [get]
+func (h *TipHandler) FindStorages(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.FindTipStorages(ctx.Context(), id)
 	if err != nil {
@@ -135,7 +230,20 @@ func (h *TipHandler) FindTipStorages(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storages": result}})
 }
 
-func (h *TipHandler) FindTipProducts(ctx *fiber.Ctx) error {
+// FindProducts godoc
+//
+//	@Summary		Find products
+//	@Description	Find products
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip	path		int	true	"tip id"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip}/products [get]
+func (h *TipHandler) FindProducts(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.FindTipProducts(ctx.Context(), id)
 	if err != nil {
@@ -146,7 +254,22 @@ func (h *TipHandler) FindTipProducts(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"products": result}})
 }
 
-func (h *TipHandler) AddProductToTip(ctx *fiber.Ctx) error {
+// AddProduct godoc
+//
+//	@Summary		Add product
+//	@Description	Add product
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip		path		int	true	"tip id"
+//	@Param			id_product	path		int	true	"product id"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip}/products/{id_product} [post]
+//	@Security		Bearer
+func (h *TipHandler) AddProduct(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	productID := ctx.Locals(context.ProductID).(int)
 	result, err := h.svc.AddProductToTip(ctx.Context(), tipID, productID)
@@ -158,7 +281,22 @@ func (h *TipHandler) AddProductToTip(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"product": result}})
 }
 
-func (h *TipHandler) RemoveProductFromTip(ctx *fiber.Ctx) error {
+// RemoveProduct godoc
+//
+//	@Summary		Remove product
+//	@Description	Remove product
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip		path		int	true	"tip id"
+//	@Param			id_product	path		int	true	"product id"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip}/products/{id_product} [delete]
+//	@Security		Bearer
+func (h *TipHandler) RemoveProduct(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	productID := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.RemoveProductFromTip(ctx.Context(), tipID, productID); err != nil {
@@ -169,7 +307,22 @@ func (h *TipHandler) RemoveProductFromTip(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-func (h *TipHandler) AddStorageToTip(ctx *fiber.Ctx) error {
+// AddStorage godoc
+//
+//	@Summary		Add storage
+//	@Description	Add storage
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip		path		int	true	"tip id"
+//	@Param			id_storage	path		int	true	"storage id"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip}/storages/{id_storage} [post]
+//	@Security		Bearer
+func (h *TipHandler) AddStorage(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	storateID := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.AddStorageToTip(ctx.Context(), tipID, storateID)
@@ -181,7 +334,22 @@ func (h *TipHandler) AddStorageToTip(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storage": result}})
 }
 
-func (h *TipHandler) RemoveStorageFromTip(ctx *fiber.Ctx) error {
+// RemoveStorage godoc
+//
+//	@Summary		Remove storage
+//	@Description	Remove storage
+//	@Tags			Tips
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_tip		path		int	true	"tip id"
+//	@Param			id_storage	path		int	true	"storage id"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/tips/{id_tip}/storages/{id_storage} [delete]
+//	@Security		Bearer
+func (h *TipHandler) RemoveStorage(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	storateID := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.RemoveStorageFromTip(ctx.Context(), tipID, storateID); err != nil {

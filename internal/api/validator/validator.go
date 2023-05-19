@@ -12,7 +12,10 @@ import (
 var validate *validator.Validate
 
 func notBlank(fl validator.FieldLevel) bool {
-	ok, err := regexp.Match(`^(?:[a-zA-Zа-яА-Я]|[a-zA-Zа-яА-Я]+\s)*[a-zA-Zа-яА-Я]$`, []byte(fl.Field().String()))
+	ok, err := regexp.Match(
+		`^(?:[a-zA-Zа-яА-Я]|[a-zA-Zа-яА-Я]+\s)*[a-zA-Zа-яА-Я]$`,
+		[]byte(fl.Field().String()),
+	)
 	if !ok || err != nil {
 		return false
 	}
@@ -38,7 +41,12 @@ type ValidationError struct {
 }
 
 func (e ValidationError) Error() string {
-	return fmt.Sprintf("`%v` with value `%v` doesn't satisfy the `%v` constraint", e.Field, e.Value, e.Tag)
+	return fmt.Sprintf(
+		"`%v` with value `%v` doesn't satisfy the `%v` constraint",
+		e.Field,
+		e.Value,
+		e.Tag,
+	)
 }
 
 func (er ValidationError) MarshalZerologObject(e *zerolog.Event) {

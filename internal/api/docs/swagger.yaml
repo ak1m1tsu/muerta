@@ -1,0 +1,4592 @@
+basePath: /api/v1
+definitions:
+  dto.CreateIngredient:
+    properties:
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      quantity:
+        example: 10
+        type: integer
+    required:
+    - id_measure
+    - id_product
+    - quantity
+    type: object
+  dto.CreateMeasure:
+    properties:
+      name:
+        example: кг
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateProduct:
+    properties:
+      name:
+        example: Томат
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateProductCategory:
+    properties:
+      name:
+        example: Овощь
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateRecipe:
+    properties:
+      description:
+        example: Салат из миндаля
+        maxLength: 200
+        type: string
+      id_user:
+        type: integer
+      ingredients:
+        items:
+          $ref: '#/definitions/dto.Ingredient'
+        type: array
+      name:
+        example: Салат
+        maxLength: 100
+        minLength: 2
+        type: string
+      steps:
+        items:
+          $ref: '#/definitions/dto.RecipeStep'
+        type: array
+    required:
+    - id_user
+    - ingredients
+    - name
+    - steps
+    type: object
+  dto.CreateRecipeStep:
+    properties:
+      place:
+        example: 1
+        type: integer
+    required:
+    - place
+    type: object
+  dto.CreateRole:
+    properties:
+      name:
+        example: admin
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateSetting:
+    properties:
+      id_category:
+        example: 1
+        type: integer
+      name:
+        example: Уведомления на почту
+        minLength: 3
+        type: string
+      value:
+        example: XXXXXXXXXXXX
+        type: string
+    required:
+    - id_category
+    - name
+    - value
+    type: object
+  dto.CreateShelfLife:
+    properties:
+      end_date:
+        type: string
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      id_storage:
+        example: 1
+        type: integer
+      id_user:
+        example: 1
+        type: integer
+      purchase_date:
+        example: "2020-01-01T00:00:00Z"
+        type: string
+      quantity:
+        example: 1
+        type: integer
+    required:
+    - end_date
+    - id_measure
+    - id_product
+    - id_storage
+    - id_user
+    - purchase_date
+    - quantity
+    type: object
+  dto.CreateShelfLifeStatus:
+    properties:
+      name:
+        example: Просрочен
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateStep:
+    properties:
+      name:
+        example: Сварить картошку
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateStorage:
+    properties:
+      humidity:
+        example: 1
+        type: number
+      id_type:
+        example: 1
+        type: integer
+      name:
+        example: Холодильник
+        minLength: 3
+        type: string
+      temperature:
+        example: 1
+        type: number
+    required:
+    - humidity
+    - id_type
+    - name
+    - temperature
+    type: object
+  dto.CreateStorageType:
+    properties:
+      name:
+        example: Для овощей
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.CreateTip:
+    properties:
+      description:
+        example: Хранить в Холодильнике
+        maxLength: 200
+        minLength: 3
+        type: string
+    required:
+    - description
+    type: object
+  dto.CreateUser:
+    properties:
+      name:
+        example: user
+        minLength: 5
+        type: string
+      password:
+        example: th3B3stUs3r
+        minLength: 8
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/dto.UserRole'
+        type: array
+      settings:
+        items:
+          $ref: '#/definitions/dto.UserSetting'
+        type: array
+    required:
+    - name
+    - password
+    type: object
+  dto.DeleteIngredient:
+    properties:
+      id_product:
+        example: 1
+        type: integer
+    required:
+    - id_product
+    type: object
+  dto.DeleteRecipeStep:
+    properties:
+      place:
+        example: 1
+        type: integer
+    required:
+    - place
+    type: object
+  dto.Ingredient:
+    properties:
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      quantity:
+        example: 10
+        type: integer
+    required:
+    - id_measure
+    - id_product
+    - quantity
+    type: object
+  dto.Login:
+    properties:
+      name:
+        example: theBestUserEver
+        minLength: 3
+        type: string
+      password:
+        example: th3B3stUs3rEver
+        minLength: 8
+        type: string
+    required:
+    - name
+    - password
+    type: object
+  dto.RecipeStep:
+    properties:
+      id:
+        example: 1
+        type: integer
+      place:
+        example: 1
+        type: integer
+    required:
+    - id
+    - place
+    type: object
+  dto.ShelfLifeFilter:
+    properties:
+      limit:
+        enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        type: integer
+      offset:
+        example: 0
+        minimum: 0
+        type: integer
+    required:
+    - limit
+    type: object
+  dto.SignUp:
+    properties:
+      name:
+        example: theBestUserEver
+        minLength: 3
+        type: string
+      password:
+        example: th3B3stUs3rEver
+        minLength: 8
+        type: string
+      password_confirm:
+        example: th3B3stUs3rEver
+        minLength: 8
+        type: string
+    required:
+    - name
+    - password
+    - password_confirm
+    type: object
+  dto.UpdateIngredient:
+    properties:
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      quantity:
+        example: 10
+        type: integer
+    type: object
+  dto.UpdateMeasure:
+    properties:
+      name:
+        example: л
+        minLength: 1
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateProduct:
+    properties:
+      name:
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateProductCategory:
+    properties:
+      name:
+        example: Фрукт
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateRecipe:
+    properties:
+      description:
+        example: Салат из миндаля
+        maxLength: 200
+        type: string
+      name:
+        example: Салат
+        maxLength: 100
+        minLength: 2
+        type: string
+    type: object
+  dto.UpdateRole:
+    properties:
+      name:
+        example: admin
+        maxLength: 20
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateSetting:
+    properties:
+      id_category:
+        example: 1
+        type: integer
+      name:
+        example: Уведомления на почту
+        minLength: 3
+        type: string
+    type: object
+  dto.UpdateShelfLife:
+    properties:
+      end_date:
+        example: "2020-01-02T00:00:00Z"
+        type: string
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      id_storage:
+        example: 1
+        type: integer
+      purchase_date:
+        example: "2020-01-01T00:00:00Z"
+        type: string
+      quantity:
+        example: 1
+        type: integer
+    type: object
+  dto.UpdateShelfLifeStatus:
+    properties:
+      name:
+        example: Просрочен
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateStep:
+    properties:
+      name:
+        example: Сварить картошку
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateStorage:
+    properties:
+      humidity:
+        example: 1
+        minimum: 0
+        type: number
+      id_type:
+        example: 1
+        minimum: 0
+        type: integer
+      name:
+        example: Холодильник
+        minLength: 3
+        type: string
+      temperature:
+        example: 1
+        minimum: 0
+        type: number
+    type: object
+  dto.UpdateStorageType:
+    properties:
+      name:
+        example: Для овощей
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateTip:
+    properties:
+      description:
+        example: Хранить в Холодильнике
+        maxLength: 200
+        minLength: 3
+        type: string
+    required:
+    - description
+    type: object
+  dto.UpdateUser:
+    properties:
+      name:
+        example: user
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateUserSetting:
+    properties:
+      value:
+        example: Нет
+        type: string
+    required:
+    - value
+    type: object
+  dto.UserFilter:
+    properties:
+      limit:
+        enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        type: integer
+      name:
+        example: hunter
+        minLength: 1
+        type: string
+      offset:
+        example: 0
+        minimum: 0
+        type: integer
+    required:
+    - limit
+    type: object
+  dto.UserRole:
+    properties:
+      id:
+        example: 1
+        type: integer
+    type: object
+  dto.UserSetting:
+    properties:
+      id:
+        example: 1
+        type: integer
+      value:
+        example: Да
+        type: string
+    required:
+    - id
+    - value
+    type: object
+  dto.UserShelfLife:
+    properties:
+      end_date:
+        example: "2020-01-02T00:00:00Z"
+        type: string
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      id_shelf_life:
+        example: 1
+        type: integer
+      id_storage:
+        example: 1
+        type: integer
+      purchase_date:
+        example: "2020-01-01T00:00:00Z"
+        type: string
+      quantity:
+        example: 1
+        type: integer
+    type: object
+  handlers.Data:
+    additionalProperties: true
+    type: object
+  handlers.HTTPError:
+    properties:
+      error:
+        example: Not Found
+        type: string
+      success:
+        example: false
+        type: boolean
+    type: object
+  handlers.HTTPSuccess:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        example:
+          key: value
+        type: object
+      success:
+        example: true
+        type: boolean
+    type: object
+info:
+  contact: {}
+  description: Web API to control the shelf life of products using computer vision
+  termsOfService: http://swagger.io/terms
+  title: Muerta API
+  version: 1.0.0
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login handles the user login request and returns access and refresh
+        tokens.
+      parameters:
+      - description: User credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/dto.Login'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Login handles the user login request and returns access and refresh
+        tokens.
+      tags:
+      - Authentication
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Invalidates access and refresh tokens, logs out user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+      security:
+      - Bearer: []
+      summary: Logout user
+      tags:
+      - Authentication
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refreshes the access token using a refresh token cookie.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handlers.HTTPSuccess'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/handlers.Data'
+                  - properties:
+                      access_token:
+                        type: string
+                      refresh_token:
+                        type: string
+                    type: object
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Refresh access token
+      tags:
+      - Authentication
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: sign up a new user with the given information
+      parameters:
+      - description: the sign up information
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SignUp'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Sign up a new user
+      tags:
+      - Authentication
+  /measures:
+    get:
+      consumes:
+      - application/json
+      description: Returns a list of measures and their count based on the given filter.
+      operationId: find-measures
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: кг
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find measures
+      tags:
+      - Measures
+    post:
+      consumes:
+      - application/json
+      description: Creates a new measure record based on the given payload.
+      parameters:
+      - description: Payload of the measure record to create
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateMeasure'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create a new measure record
+      tags:
+      - Measures
+  /measures/{measure_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a measure by ID.
+      parameters:
+      - description: Measure ID
+        in: path
+        name: measure_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete a measure
+      tags:
+      - Measures
+    get:
+      consumes:
+      - application/json
+      description: Find a measure by ID
+      parameters:
+      - description: Measure ID
+        in: path
+        name: measure_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find a measure by ID
+      tags:
+      - Measures
+    put:
+      consumes:
+      - application/json
+      description: Updates a measure with the given ID
+      parameters:
+      - description: Measure ID
+        in: path
+        name: measure_id
+        required: true
+        type: integer
+      - description: Measure payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMeasure'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update a measure
+      tags:
+      - Measures
+  /product-categories:
+    get:
+      consumes:
+      - application/json
+      description: Finds product categories with optional filters
+      operationId: find-product-categories
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: овощь
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find product categories
+      tags:
+      - Product Categories
+    post:
+      consumes:
+      - application/json
+      description: Creates a new product category
+      parameters:
+      - description: Payload for creating product category
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProductCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create product category
+      tags:
+      - Product Categories
+  /product-categories/{category_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a product category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete a product category
+      tags:
+      - Product Categories
+    get:
+      consumes:
+      - application/json
+      description: Finds a product category by ID
+      parameters:
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find a product category by ID
+      tags:
+      - Product Categories
+    patch:
+      description: Restores a previously deleted product category with the given ID
+      parameters:
+      - description: Product category ID to be restored
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore a deleted product category
+      tags:
+      - Product Categories
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing product category by providing the ID and updated
+        fields in the request body
+      parameters:
+      - description: Product Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      - description: Updated Product Category Fields
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProductCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update an existing product category by ID
+      tags:
+      - Product Categories
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of products with optional filters
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: помидор
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get a list of products
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product with the given details
+      parameters:
+      - description: Product details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create a new product
+      tags:
+      - Products
+  /products/{product_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an existing product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete a product
+      tags:
+      - Products
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the details of a product with the specified ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get a product by ID
+      tags:
+      - Products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product with new details
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: New product details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update a product
+      tags:
+      - Products
+  /products/{product_id}/:
+    patch:
+      consumes:
+      - application/json
+      description: Restore a deleted product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore a deleted product
+      tags:
+      - Products
+  /products/{product_id}/categories:
+    get:
+      consumes:
+      - application/json
+      description: Get the categories of a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get categories of a product
+      tags:
+      - Products
+  /products/{product_id}/categories/{category_id}:
+    delete:
+      description: Removes a category from a product given the product ID and category
+        ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove a category from a product
+      tags:
+      - Products
+    post:
+      consumes:
+      - application/json
+      description: Adds category to product given the product ID and category ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Category ID
+        in: path
+        name: category_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add category to product
+      tags:
+      - Products
+  /products/{product_id}/recipes:
+    get:
+      consumes:
+      - application/json
+      description: Get the recipes of a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Get recipes of a product
+      tags:
+      - Products
+  /products/{product_id}/tip/{tip_id}:
+    delete:
+      description: Removes a tip from a product given the product ID and tip ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: tip_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove a tip from a product
+      tags:
+      - Products
+    post:
+      description: Adds a tip for a product given the product ID and tip ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: tip_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add a tip for a product
+      tags:
+      - Products
+  /products/{product_id}/tips:
+    get:
+      description: Finds tips for a product given the product ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: product_id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tips for a product
+      tags:
+      - Products
+  /recipes:
+    get:
+      consumes:
+      - application/json
+      description: Finds recipes based on the provided filter
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: салат
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find recipes
+      tags:
+      - Recipes
+    post:
+      consumes:
+      - application/json
+      description: Creates a new recipe with the provided data
+      parameters:
+      - description: Recipe data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRecipe'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create a new recipe
+      tags:
+      - Recipes
+  /recipes/{recipe_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a recipe by ID
+      operationId: delete-recipe-by-id
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete a recipe
+      tags:
+      - Recipes
+    get:
+      consumes:
+      - application/json
+      description: Finds a recipe by its ID
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find recipe by ID
+      tags:
+      - Recipes
+    patch:
+      consumes:
+      - application/json
+      description: Restores a deleted recipe by ID
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore a deleted recipe by ID
+      tags:
+      - Recipes
+    put:
+      consumes:
+      - application/json
+      description: Update a recipe by its ID.
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Recipe data to update
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateRecipe'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update a recipe
+      tags:
+      - Recipes
+  /recipes/{recipe_id}/ingredients:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an ingredient from a recipe
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Delete ingredient payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteIngredient'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove an ingredient from a recipe
+      tags:
+      - Recipes
+    get:
+      consumes:
+      - application/json
+      description: Adds n ingredient to a recipe
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Create ingredient payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateIngredient'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Add an ingredient to a recipe
+      tags:
+      - Recipes
+    put:
+      consumes:
+      - application/json
+      description: Update an ingredient of a recipe
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Update ingredient payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateIngredient'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update an ingredient of a recipe
+      tags:
+      - Recipes
+  /recipes/{recipe_id}/steps:
+    get:
+      consumes:
+      - application/json
+      description: Find all steps for a recipe by recipe ID
+      operationId: find-recipe-steps
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find all recipe steps
+      tags:
+      - Recipes
+  /recipes/{recipe_id}/steps/{step_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes the specified recipe step of a recipe.
+      parameters:
+      - description: Recipe ID.
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Step ID.
+        in: path
+        name: step_id
+        required: true
+        type: integer
+      - description: Request body
+        in: body
+        name: playload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DeleteRecipeStep'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove a recipe step.
+      tags:
+      - Recipes
+    post:
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: recipe_id
+        required: true
+        type: integer
+      - description: Step ID
+        in: path
+        name: step_id
+        required: true
+        type: integer
+      - description: Request body
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRecipeStep'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create a recipe step
+      tags:
+      - Recipes
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: Find many roles
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: user
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many roles
+      tags:
+      - Roles
+    post:
+      consumes:
+      - application/json
+      description: Create role
+      parameters:
+      - description: Role
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRole'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create role
+      tags:
+      - Roles
+  /roles/{role_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete role
+      tags:
+      - Roles
+    get:
+      consumes:
+      - application/json
+      description: Find one role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find one role
+      tags:
+      - Roles
+    patch:
+      consumes:
+      - application/json
+      description: Restore role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore role
+      tags:
+      - Roles
+    put:
+      consumes:
+      - application/json
+      description: Update role
+      parameters:
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: integer
+      - description: Role
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateRole'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update role
+      tags:
+      - Roles
+  /settings:
+    get:
+      consumes:
+      - application/json
+      description: Find settings
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: получать рассылку
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find settings
+      tags:
+      - Settings
+    post:
+      consumes:
+      - application/json
+      description: Create setting
+      parameters:
+      - description: Setting
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create setting
+      tags:
+      - Settings
+  /settings/{id_setting}:
+    get:
+      consumes:
+      - application/json
+      description: Find setting
+      parameters:
+      - description: Setting ID
+        in: path
+        name: id_setting
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find setting
+      tags:
+      - Settings
+    patch:
+      consumes:
+      - application/json
+      description: Restore setting
+      parameters:
+      - description: Setting ID
+        in: path
+        name: id_setting
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore setting
+      tags:
+      - Settings
+    put:
+      consumes:
+      - application/json
+      description: Update setting
+      parameters:
+      - description: Setting ID
+        in: path
+        name: id_setting
+        required: true
+        type: integer
+      - description: Setting
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update setting
+      tags:
+      - Settings
+  /shelf-life-detector:
+    post:
+      consumes:
+      - application/json
+      description: detect shelf life dates from file
+      parameters:
+      - description: file to detect
+        in: formData
+        name: fileToDetect
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Detect shelf life dates from file
+      tags:
+      - Shelf Life Detector
+  /shelf-life-statuses:
+    get:
+      consumes:
+      - application/json
+      description: Find many shelf life status
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: просрочен
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many shelf life status
+      tags:
+      - Shelf Life Status
+    post:
+      consumes:
+      - application/json
+      description: Create shelf life status
+      parameters:
+      - description: Shelf Life Status
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShelfLifeStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create shelf life status
+      tags:
+      - Shelf Life Status
+  /shelf-life-statuses/{id_status}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete shelf life status
+      parameters:
+      - description: Shelf life status ID
+        in: path
+        name: id_status
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete shelf life status
+      tags:
+      - Shelf Life Status
+    get:
+      consumes:
+      - application/json
+      description: Find one shelf life status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find one shelf life status
+      tags:
+      - Shelf Life Status
+    put:
+      consumes:
+      - application/json
+      description: Update shelf life status
+      parameters:
+      - description: Shelf life status ID
+        in: path
+        name: id_status
+        required: true
+        type: integer
+      - description: Shelf life status
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateShelfLifeStatus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update shelf life status
+      tags:
+      - Shelf Life Status
+  /shelf-lives:
+    get:
+      consumes:
+      - application/json
+      description: Find many shelf lifes
+      parameters:
+      - description: Shelf Life Filter
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ShelfLifeFilter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many shelf lifes
+      tags:
+      - Shelf Lives
+    post:
+      consumes:
+      - application/json
+      description: Create shelf life
+      parameters:
+      - description: Shelf Life
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create shelf life
+      tags:
+      - Shelf Lives
+  /shelf-lives/{shelf_life_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete shelf life
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete shelf life
+      tags:
+      - Shelf Lives
+    get:
+      consumes:
+      - application/json
+      description: Find shelf life by id
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find shelf life by id
+      tags:
+      - Shelf Lives
+    patch:
+      consumes:
+      - application/json
+      description: Restore shelf life
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore shelf life
+      tags:
+      - Shelf Lives
+    put:
+      consumes:
+      - application/json
+      description: Update shelf life
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      - description: Shelf Life
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update shelf life
+      tags:
+      - Shelf Lives
+  /shelf-lives/{shelf_life_id}/statuses:
+    get:
+      consumes:
+      - application/json
+      description: Find shelf life statuses
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find shelf life statuses
+      tags:
+      - Shelf Lives
+  /shelf-lives/{shelf_life_id}/statuses/{status_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove shelf life status
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      - description: Status ID
+        in: path
+        name: status_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove shelf life status
+      tags:
+      - Shelf Lives
+    post:
+      consumes:
+      - application/json
+      description: Add shelf life status
+      parameters:
+      - description: Shelf Life ID
+        in: path
+        name: shelf_life_id
+        required: true
+        type: integer
+      - description: Status ID
+        in: path
+        name: status_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add shelf life status
+      tags:
+      - Shelf Lives
+  /steps:
+    get:
+      consumes:
+      - application/json
+      description: Find many steps
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: налить воду в емкость
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many steps
+      tags:
+      - Steps
+    post:
+      consumes:
+      - application/json
+      description: Create a step
+      parameters:
+      - description: CreateStep
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStep'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create a step
+      tags:
+      - Steps
+  /steps/{id_step}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete a step
+      tags:
+      - Steps
+    get:
+      consumes:
+      - application/json
+      description: Find one step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find one step
+      tags:
+      - Steps
+    patch:
+      consumes:
+      - application/json
+      description: Restore a step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore a step
+      tags:
+      - Steps
+    put:
+      consumes:
+      - application/json
+      description: Update a step
+      parameters:
+      - description: Step ID
+        in: path
+        name: id_step
+        required: true
+        type: integer
+      - description: UpdateStep
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStep'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update a step
+      tags:
+      - Steps
+  /storage-types:
+    get:
+      consumes:
+      - application/json
+      description: Find storage types by filter
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: хрупкое
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storage types by filter
+      tags:
+      - Storage Types
+    post:
+      consumes:
+      - application/json
+      description: Create storage type
+      parameters:
+      - description: Storage type
+        in: body
+        name: storage_type
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStorageType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create storage type
+      tags:
+      - Storage Types
+  /storage-types/{id_type}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete storage type
+      tags:
+      - Storage Types
+    get:
+      consumes:
+      - application/json
+      description: Find storage type by id
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storage type by id
+      tags:
+      - Storage Types
+    put:
+      consumes:
+      - application/json
+      description: Update storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      - description: Storage type
+        in: body
+        name: storage_type
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStorageType'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update storage type
+      tags:
+      - Storage Types
+  /storage-types/{id_type}/storages:
+    get:
+      consumes:
+      - application/json
+      description: Find storages by storage type id
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storages by storage type id
+      tags:
+      - Storage Types
+  /storage-types/{id_type}/tips:
+    get:
+      consumes:
+      - application/json
+      description: Find tips by storage type id
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tips by storage type id
+      tags:
+      - Storage Types
+  /storage-types/{id_type}/tips/{id_tip}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove tip from storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      - description: Tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove tip from storage type
+      tags:
+      - Storage Types
+    post:
+      consumes:
+      - application/json
+      description: Add tip to storage type
+      parameters:
+      - description: Storage type id
+        in: path
+        name: id_type
+        required: true
+        type: integer
+      - description: Tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add tip to storage type
+      tags:
+      - Storage Types
+  /storages:
+    get:
+      consumes:
+      - application/json
+      description: Find storages
+      parameters:
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: банка
+        in: query
+        minLength: 1
+        name: name
+        type: string
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storages
+      tags:
+      - Storages
+    post:
+      consumes:
+      - application/json
+      description: Create storage
+      parameters:
+      - description: Storage
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateStorage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create storage
+      tags:
+      - Storages
+  /storages/{id_storage}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete storage
+      tags:
+      - Storages
+    get:
+      consumes:
+      - application/json
+      description: Find storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storage
+      tags:
+      - Storages
+    patch:
+      consumes:
+      - application/json
+      description: Restore storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore storage
+      tags:
+      - Storages
+    put:
+      consumes:
+      - application/json
+      description: Update storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      - description: Storage
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateStorage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update storage
+      tags:
+      - Storages
+  /storages/{id_storage}/shelf-lives:
+    get:
+      consumes:
+      - application/json
+      description: Find shelf lives
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find shelf lives
+      tags:
+      - Storages
+  /storages/{id_storage}/tips:
+    get:
+      consumes:
+      - application/json
+      description: Find tips of storage
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tips of storage
+      tags:
+      - Storages
+  /storages/{id_storage}/tips/{id_tip}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove tip
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove tip from storage
+      tags:
+      - Storages
+    post:
+      consumes:
+      - application/json
+      description: Add tip
+      parameters:
+      - description: Storage ID
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      - description: Tip ID
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add tip to storage
+      tags:
+      - Storages
+  /tips:
+    get:
+      consumes:
+      - application/json
+      description: Find many tips
+      parameters:
+      - example: хранить при низкой температуре
+        in: query
+        minLength: 1
+        name: description
+        type: string
+      - enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - example: 0
+        in: query
+        minimum: 0
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find many tips
+      tags:
+      - Tips
+    post:
+      consumes:
+      - application/json
+      description: Create tip
+      parameters:
+      - description: tip
+        in: body
+        name: tip
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTip'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create tip
+      tags:
+      - Tips
+  /tips/{id_tip}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete tip
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete tip
+      tags:
+      - Tips
+    get:
+      consumes:
+      - application/json
+      description: Find tip by id
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find tip by id
+      tags:
+      - Tips
+    patch:
+      consumes:
+      - application/json
+      description: Restore tip
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Restore tip
+      tags:
+      - Tips
+    put:
+      consumes:
+      - application/json
+      description: Update tip
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: tip
+        in: body
+        name: tip
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTip'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update tip
+      tags:
+      - Tips
+  /tips/{id_tip}/products:
+    get:
+      consumes:
+      - application/json
+      description: Find products
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find products
+      tags:
+      - Tips
+  /tips/{id_tip}/products/{id_product}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove product
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: product id
+        in: path
+        name: id_product
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove product
+      tags:
+      - Tips
+    post:
+      consumes:
+      - application/json
+      description: Add product
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: product id
+        in: path
+        name: id_product
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add product
+      tags:
+      - Tips
+  /tips/{id_tip}/storages:
+    get:
+      consumes:
+      - application/json
+      description: Find storages
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find storages
+      tags:
+      - Tips
+  /tips/{id_tip}/storages/{id_storage}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove storage
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: storage id
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove storage
+      tags:
+      - Tips
+    post:
+      consumes:
+      - application/json
+      description: Add storage
+      parameters:
+      - description: tip id
+        in: path
+        name: id_tip
+        required: true
+        type: integer
+      - description: storage id
+        in: path
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add storage
+      tags:
+      - Tips
+  /users:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Find users
+      parameters:
+      - description: Filter
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserFilter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create user
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update user
+      parameters:
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update user
+      tags:
+      - Users
+  /users/{id_user}:
+    get:
+      consumes:
+      - application/json
+      description: Find user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user by id
+      tags:
+      - Users
+  /users/{id_user}/roles:
+    get:
+      consumes:
+      - application/json
+      description: Find user roles
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user roles
+      tags:
+      - Users
+  /users/{id_user}/settings:
+    get:
+      consumes:
+      - application/json
+      description: Find user settings
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Find user settings
+      tags:
+      - Users
+  /users/{id_user}/settings/{id_setting}:
+    put:
+      consumes:
+      - application/json
+      description: Update user settings
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: User ID
+        in: query
+        name: id_setting
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update user settings
+      tags:
+      - Users
+  /users/{id_user}/shelf-lives:
+    get:
+      consumes:
+      - application/json
+      description: Find user shelf lives
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user shelf lives
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create user shelf life
+      tags:
+      - Users
+  /users/{id_user}/shelf-lives/{id_shelf_life}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Shelf Life ID
+        in: query
+        name: id_shelf_life
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete user shelf life
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Restore user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Shelf Life ID
+        in: query
+        name: id_shelf_life
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore user shelf life
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: User ID
+        in: query
+        name: id_shelf_life
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update user shelf life
+      tags:
+      - Users
+  /users/{id_user}/storages:
+    get:
+      consumes:
+      - application/json
+      description: Find user storages
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user storages
+      tags:
+      - Users
+  /users/{id_user}/storages/{id_storage}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove user storage
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Storage ID
+        in: query
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove user storage
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Add user storage
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Storage ID
+        in: query
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add user storage
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authrization
+    type: apiKey
+swagger: "2.0"

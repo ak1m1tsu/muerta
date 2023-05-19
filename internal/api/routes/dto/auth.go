@@ -1,20 +1,20 @@
 package dto
 
-type LoginDTO struct {
-	Name     string `json:"name" validate:"required,gte=3,alpha"`
-	Password string `json:"password" validate:"required,gte=8,alphanum"`
+type Login struct {
+	Name     string `json:"name"     validate:"required,gte=3,alpha"    example:"theBestUserEver"`
+	Password string `json:"password" validate:"required,gte=8,alphanum" example:"th3B3stUs3rEver"`
 }
 
-type SignUpDTO struct {
-	Name            string `json:"name" validate:"required,gte=3,alpha"`
-	Password        string `json:"password" validate:"required,gte=8,alphanum"`
-	PasswordConfirm string `json:"password_confirm" validate:"required,gte=8,alphanum,eqfield=Password"`
+type SignUp struct {
+	Name            string `json:"name"             validate:"required,gte=3,alpha"                     example:"theBestUserEver"`
+	Password        string `json:"password"         validate:"required,gte=8,alphanum"                  example:"th3B3stUs3rEver"`
+	PasswordConfirm string `json:"password_confirm" validate:"required,gte=8,alphanum,eqfield=Password" example:"th3B3stUs3rEver"`
 }
 
 type TokenPayload struct {
-	ID    int
-	Name  string
-	Roles []interface{}
+	UserID   int
+	Username string
+	Roles    []string
 }
 
 type TokenDetails struct {

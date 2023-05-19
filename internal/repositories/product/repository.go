@@ -30,7 +30,11 @@ type productRepository struct {
 }
 
 // CreateTip implements ProductRepositorer
-func (r *productRepository) CreateTip(ctx context.Context, productID int, tipID int) (models.Tip, error) {
+func (r *productRepository) CreateTip(
+	ctx context.Context,
+	productID int,
+	tipID int,
+) (models.Tip, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -53,7 +57,7 @@ func (r *productRepository) CreateTip(ctx context.Context, productID int, tipID 
 
 // DeleteTip implements ProductRepositorer
 func (r *productRepository) DeleteTip(ctx context.Context, productID int, tipID int) error {
-	var query = `
+	query := `
 		DELETE FROM products_tips
 		WHERE id_product = $1 AND id_tip = $2
 	`
@@ -104,7 +108,11 @@ func (r *productRepository) Count(ctx context.Context, filter models.ProductFilt
 }
 
 // CreateCategory implements ProductRepositorer
-func (r *productRepository) CreateCategory(ctx context.Context, productID int, categoryID int) (models.ProductCategory, error) {
+func (r *productRepository) CreateCategory(
+	ctx context.Context,
+	productID int,
+	categoryID int,
+) (models.ProductCategory, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -127,13 +135,15 @@ func (r *productRepository) CreateCategory(ctx context.Context, productID int, c
 }
 
 // DeleteCategory implements ProductRepositorer
-func (r *productRepository) DeleteCategory(ctx context.Context, productID int, categoryID int) error {
-	var (
-		query = `
+func (r *productRepository) DeleteCategory(
+	ctx context.Context,
+	productID int,
+	categoryID int,
+) error {
+	query := `
 			DELETE FROM products_categories
 			WHERE id_product = $1 AND id_category = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, productID, categoryID); err != nil {
 		return fmt.Errorf("failed to remove product category: %w", err)
 	}
@@ -145,7 +155,10 @@ func New(client repositories.PostgresClient) ProductRepositorer {
 }
 
 // FindCategories implements ProductRepositorer
-func (r *productRepository) FindCategories(ctx context.Context, id int) ([]models.ProductCategory, error) {
+func (r *productRepository) FindCategories(
+	ctx context.Context,
+	id int,
+) ([]models.ProductCategory, error) {
 	var (
 		query = `
 			SELECT c.id, c.name
@@ -212,7 +225,10 @@ func (repo *productRepository) FindByID(ctx context.Context, id int) (models.Pro
 	return product, nil
 }
 
-func (repo *productRepository) FindMany(ctx context.Context, filter models.ProductFilter) ([]models.Product, error) {
+func (repo *productRepository) FindMany(
+	ctx context.Context,
+	filter models.ProductFilter,
+) ([]models.Product, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -241,12 +257,10 @@ func (repo *productRepository) FindMany(ctx context.Context, filter models.Produ
 }
 
 func (repo *productRepository) Create(ctx context.Context, product models.Product) error {
-	var (
-		query = `
+	query := `
 			INSERT INTO products (name)
 			VALUES ($1)
 		`
-	)
 	if _, err := repo.client.Exec(ctx, query, product.Name); err != nil {
 		return fmt.Errorf("failed to create product: %w", err)
 	}
@@ -254,14 +268,12 @@ func (repo *productRepository) Create(ctx context.Context, product models.Produc
 }
 
 func (repo *productRepository) Update(ctx context.Context, product models.Product) error {
-	var (
-		query = `
+	query := `
 			UPDATE products
 			SET name = $1,
 				updated_at = NOW()
 			WHERE id = $2
 		`
-	)
 	if _, err := repo.client.Exec(ctx, query, product.Name, product.ID); err != nil {
 		return fmt.Errorf("failed to update product: %w", err)
 	}
@@ -269,14 +281,12 @@ func (repo *productRepository) Update(ctx context.Context, product models.Produc
 }
 
 func (repo *productRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE products
 			SET deleted_at = NOW(),
 				updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := repo.client.Exec(ctx, query, id); err != nil {
 		return err
 	}
@@ -284,14 +294,12 @@ func (repo *productRepository) Delete(ctx context.Context, id int) error {
 }
 
 func (repo *productRepository) Restore(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			UPDATE products
 			SET deleted_at = NULL,
 				updated_at = NOW()
 			WHERE id = $1
 		`
-	)
 	if _, err := repo.client.Exec(ctx, query, id); err != nil {
 		return err
 	}

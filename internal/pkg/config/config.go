@@ -101,15 +101,18 @@ func New() (*Config, error) {
 			Pass string
 			Name string
 		}{Host: os.Getenv("DB_HOST"), Port: os.Getenv("DB_PORT"), User: os.Getenv("DB_USER"), Pass: os.Getenv("DB_PASSWORD"), Name: os.Getenv("DB_NAME")},
-		AccessTokenPrivateKey:     accessPem,
-		AccessTokenPublicKey:      accessPub,
-		AccessTokenMaxAge:         15,
-		AccessTokenExpiresIn:      time.Minute * 15,
-		RefreshTokenPrivateKey:    refreshPem,
-		RefreshTokenPublicKey:     refreshPub,
-		RefreshTokenMaxAge:        60,
-		RefreshTokenExpiresIn:     time.Hour * 1,
-		AllowOrigins:              strings.Join(strings.Split(os.Getenv("ALLOWED_ORIGINS"), ","), ", "),
+		AccessTokenPrivateKey:  accessPem,
+		AccessTokenPublicKey:   accessPub,
+		AccessTokenMaxAge:      15,
+		AccessTokenExpiresIn:   time.Minute * 15,
+		RefreshTokenPrivateKey: refreshPem,
+		RefreshTokenPublicKey:  refreshPub,
+		RefreshTokenMaxAge:     60,
+		RefreshTokenExpiresIn:  time.Hour * 1,
+		AllowOrigins: strings.Join(
+			strings.Split(os.Getenv("ALLOWED_ORIGINS"), ","),
+			", ",
+		),
 		ShutdownShelfDetectorChan: make(chan struct{}, 1),
 	}
 	return cfg, nil

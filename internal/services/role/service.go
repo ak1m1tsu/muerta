@@ -11,13 +11,13 @@ import (
 )
 
 type RoleServicer interface {
-	FindRoleByID(ctx context.Context, id int) (dto.FindRoleDTO, error)
-	FindRoles(ctx context.Context, filter *dto.RoleFilterDTO) ([]dto.FindRoleDTO, error)
-	CreateRole(ctx context.Context, payload *dto.CreateRoleDTO) error
-	UpdateRole(ctx context.Context, id int, payload *dto.UpdateRoleDTO) error
+	FindRoleByID(ctx context.Context, id int) (dto.FindRole, error)
+	FindRoles(ctx context.Context, filter *dto.RoleFilter) ([]dto.FindRole, error)
+	CreateRole(ctx context.Context, payload *dto.CreateRole) error
+	UpdateRole(ctx context.Context, id int, payload *dto.UpdateRole) error
 	DeleteRole(ctx context.Context, id int) error
 	RestoreRole(ctx context.Context, id int) error
-	Count(ctx context.Context, filter dto.RoleFilterDTO) (int, error)
+	Count(ctx context.Context, filter dto.RoleFilter) (int, error)
 }
 
 type roleService struct {
@@ -30,7 +30,7 @@ func New(repo repository.RoleRepositorer) RoleServicer {
 	}
 }
 
-func (s *roleService) Count(ctx context.Context, filter dto.RoleFilterDTO) (int, error) {
+func (s *roleService) Count(ctx context.Context, filter dto.RoleFilter) (int, error) {
 	count, err := s.repo.Count(ctx, models.RoleFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting roles: %w", err)
@@ -39,8 +39,8 @@ func (s *roleService) Count(ctx context.Context, filter dto.RoleFilterDTO) (int,
 }
 
 // CreateRole implements RoleServicer
-func (s *roleService) CreateRole(ctx context.Context, payload *dto.CreateRoleDTO) error {
-	model := translate.CreateRoleDTOToModel(payload)
+func (s *roleService) CreateRole(ctx context.Context, payload *dto.CreateRole) error {
+	model := translate.CreateRoleToModel(payload)
 	if err := s.repo.Create(ctx, model); err != nil {
 		return fmt.Errorf("failed to create role: %w", err)
 	}
@@ -56,17 +56,20 @@ func (s *roleService) DeleteRole(ctx context.Context, id int) error {
 }
 
 // FindRoleByID implements RoleServicer
-func (s *roleService) FindRoleByID(ctx context.Context, id int) (dto.FindRoleDTO, error) {
+func (s *roleService) FindRoleByID(ctx context.Context, id int) (dto.FindRole, error) {
 	role, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		return dto.FindRoleDTO{}, fmt.Errorf("failed to find role: %w", err)
+		return dto.FindRole{}, fmt.Errorf("failed to find role: %w", err)
 	}
-	dto := translate.RoleModelToFindRoleDTO(&role)
+	dto := translate.RoleModelToFindRole(&role)
 	return dto, nil
 }
 
 // FindRoles implements RoleServicer
-func (s *roleService) FindRoles(ctx context.Context, filter *dto.RoleFilterDTO) ([]dto.FindRoleDTO, error) {
+func (s *roleService) FindRoles(
+	ctx context.Context,
+	filter *dto.RoleFilter,
+) ([]dto.FindRole, error) {
 	roles, err := s.repo.FindMany(ctx, models.RoleFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
@@ -77,7 +80,7 @@ func (s *roleService) FindRoles(ctx context.Context, filter *dto.RoleFilterDTO) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to find roles: %w", err)
 	}
-	dtos := translate.RoleModelsToFindRoleDTOs(roles)
+	dtos := translate.RoleModelsToFindRoles(roles)
 	return dtos, nil
 }
 
@@ -90,7 +93,7 @@ func (s *roleService) RestoreRole(ctx context.Context, id int) error {
 }
 
 // UpdateRole implements RoleServicer
-func (s *roleService) UpdateRole(ctx context.Context, id int, payload *dto.UpdateRoleDTO) error {
+func (s *roleService) UpdateRole(ctx context.Context, id int, payload *dto.UpdateRole) error {
 	model, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("failed to find role: %w", err)

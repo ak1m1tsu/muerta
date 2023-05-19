@@ -26,7 +26,8 @@ docker compose up -d --build
 
 ## Features
 
-- [x] Python service to recognize shelf life on a picture
-- [ ] JWT Authentication
+- [x] Service to recognize shelf life in text from picture
+- [x] JWT Authentication
 - [x] Logging in JSON format
-- [ ] Users with roles and groups
+- [x] Users with roles
+- [x] Swagger API documentation

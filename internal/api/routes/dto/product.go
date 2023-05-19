@@ -1,14 +1,14 @@
 package dto
 
-type CreateProductDTO struct {
-	Name string `json:"name" validate:"required,gte=2,notblank"`
+type CreateProduct struct {
+	Name string `json:"name" validate:"required,gte=2,notblank" example:"Томат"`
 }
 
-type UpdateProductDTO struct {
-	Name string `json:"name" validate:"required,gte=2,notblank"`
+type UpdateProduct struct {
+	Name string `json:"name" validate:"required,gte=2,notblank" exmaple:"Морковь"`
 }
 
-type FindProductDTO struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type FindProduct struct {
+	ID   int    `json:"id"   example:"1"`
+	Name string `json:"name" example:"Морковь"`
 }

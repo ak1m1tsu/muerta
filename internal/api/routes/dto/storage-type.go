@@ -1,14 +1,14 @@
 package dto
 
-type FindStorageTypeDTO struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type FindStorageType struct {
+	ID   int    `json:"id"   example:"1"`
+	Name string `json:"name" example:"Для овощей"`
 }
 
-type UpdateStorageTypeDTO struct {
-	Name string `json:"name" validate:"required,gte=3,notblank"`
+type UpdateStorageType struct {
+	Name string `json:"name" validate:"required,gte=3,notblank" example:"Для овощей"`
 }
 
-type CreateStorageTypeDTO struct {
-	Name string `json:"name" validate:"required,gte=3,notblank"`
+type CreateStorageType struct {
+	Name string `json:"name" validate:"required,gte=3,notblank" example:"Для овощей"`
 }

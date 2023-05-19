@@ -2,6 +2,7 @@ package product
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/romankravchuk/muerta/internal/api/routes/middleware/access"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
@@ -10,38 +11,47 @@ import (
 	svc "github.com/romankravchuk/muerta/internal/services/product"
 )
 
-func NewRouter(client repositories.PostgresClient, log *log.Logger, jware *jware.JWTMiddleware) *fiber.App {
+func NewRouter(
+	client repositories.PostgresClient,
+	log *log.Logger,
+	jware *jware.JWTMiddleware,
+) *fiber.App {
 	router := fiber.New()
 	repository := repo.New(client)
 	service := svc.New(repository)
 	handler := New(service, log)
-	router.Get("/", handler.FindProducts)
-	router.Post("/", jware.DeserializeUser, handler.CreateProduct)
+	router.Get("/", handler.FindMany)
+	router.Post("/", jware.DeserializeUser, access.AdminOnly(log), handler.Create)
 	router.Route(context.ProductID.Path(), func(router fiber.Router) {
 		router.Use(context.New(log, context.ProductID))
-		router.Get("/", handler.FindProductByID)
+		router.Get("/", handler.FindOne)
 		router.Route("/categories", func(router fiber.Router) {
-			router.Get("/", handler.FindProductCategories)
+			router.Get("/", handler.FindCategories)
 			router.Route(context.CategoryID.Path(), func(router fiber.Router) {
 				router.Use(context.New(log, context.CategoryID))
-				router.Post("/", handler.CreateCategory)
-				router.Delete("/", handler.DeleteCategory)
+				router.Post("/", jware.DeserializeUser, access.AdminOnly(log), handler.AddCategory)
+				router.Delete(
+					"/",
+					jware.DeserializeUser,
+					access.AdminOnly(log),
+					handler.RemoveCategory,
+				)
 			})
 		})
 		router.Route("/recipes", func(router fiber.Router) {
-			router.Get("/", handler.FindProductRecipes)
+			router.Get("/", handler.FindRecipes)
 		})
 		router.Route("/tips", func(router fiber.Router) {
-			router.Get("/", handler.FindProductTips)
+			router.Get("/", handler.FindTips)
 			router.Route(context.TipID.Path(), func(router fiber.Router) {
 				router.Use(context.New(log, context.TipID))
-				router.Post("/", handler.CreateProductTip)
-				router.Delete("/", handler.DeleteProductTip)
+				router.Post("/", jware.DeserializeUser, access.AdminOnly(log), handler.AddTip)
+				router.Delete("/", jware.DeserializeUser, access.AdminOnly(log), handler.RemoveTip)
 			})
 		})
-		router.Put("/", jware.DeserializeUser, handler.UpdateProduct)
-		router.Delete("/", jware.DeserializeUser, handler.DeleteProduct)
-		router.Patch("/", jware.DeserializeUser, handler.RestoreProduct)
+		router.Put("/", jware.DeserializeUser, access.AdminOnly(log), handler.Update)
+		router.Delete("/", jware.DeserializeUser, access.AdminOnly(log), handler.Delete)
+		router.Patch("/", jware.DeserializeUser, access.AdminOnly(log), handler.Restore)
 	})
 	return router
 }

@@ -36,12 +36,10 @@ func (r *measureRepository) Count(ctx context.Context, filter models.MeasureFilt
 
 // Create implements MeasureRepositorer
 func (r *measureRepository) Create(ctx context.Context, measure models.Measure) error {
-	var (
-		query = `
+	query := `
 			INSERT INTO measures (name)
 			VALUES ($1)
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, measure.Name); err != nil {
 		return fmt.Errorf("failed to create measure: %w", err)
 	}
@@ -50,12 +48,10 @@ func (r *measureRepository) Create(ctx context.Context, measure models.Measure) 
 
 // Delete implements MeasureRepositorer
 func (r *measureRepository) Delete(ctx context.Context, id int) error {
-	var (
-		query = `
+	query := `
 			DELETE FROM measures
 			WHERE id = $1
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, id); err != nil {
 		return fmt.Errorf("failed to delete measure: %w", err)
 	}
@@ -80,7 +76,10 @@ func (r *measureRepository) FindByID(ctx context.Context, id int) (models.Measur
 }
 
 // FindMany implements MeasureRepositorer
-func (r *measureRepository) FindMany(ctx context.Context, filter models.MeasureFilter) ([]models.Measure, error) {
+func (r *measureRepository) FindMany(
+	ctx context.Context,
+	filter models.MeasureFilter,
+) ([]models.Measure, error) {
 	var (
 		query = `
 			SELECT id, name
@@ -108,13 +107,11 @@ func (r *measureRepository) FindMany(ctx context.Context, filter models.MeasureF
 
 // Update implements MeasureRepositorer
 func (r *measureRepository) Update(ctx context.Context, measure models.Measure) error {
-	var (
-		query = `
+	query := `
 			UPDATE measures
 			SET name = $1
 			WHERE id = $2
 		`
-	)
 	if _, err := r.client.Exec(ctx, query, measure.Name, measure.ID); err != nil {
 		return fmt.Errorf("failed to update measure: %w", err)
 	}

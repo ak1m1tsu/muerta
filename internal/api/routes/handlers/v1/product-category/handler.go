@@ -25,27 +25,28 @@ func New(svc service.CategoryServicer, log *log.Logger) *CategoryHandler {
 	}
 }
 
-// CreateProductCategory creates a new product category
+// Create creates a new product category
 //
 //	@Summary		Create product category
-//	@Description	Create a new product category
+//	@Description	Creates a new product category
 //	@Tags			Product Categories
 //	@Accept			json
 //	@Produce		json
-//	@Param			payload	body		dto.CreateProductCategoryDTO	true	"Payload for creating product category"
+//	@Param			payload	body		dto.CreateProductCategory	true	"Payload for creating product category"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		404		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/product-categories [post]
-func (h *CategoryHandler) CreateProductCategory(ctx *fiber.Ctx) error {
-	var payload *dto.CreateProductCategoryDTO
-	if err := ctx.BodyParser(&payload); err != nil {
+//	@Security		Bearer
+func (h *CategoryHandler) Create(ctx *fiber.Ctx) error {
+	payload := new(dto.CreateProductCategory)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -57,10 +58,10 @@ func (h *CategoryHandler) CreateProductCategory(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// FindProductCategoryByID finds a product category by ID
+// FindOne finds a product category by ID
 //
 //	@Summary		Find a product category by ID
-//	@Description	Get a product category by ID
+//	@Description	Finds a product category by ID
 //	@Tags			Product Categories
 //	@Accept			json
 //	@Produce		json
@@ -69,7 +70,7 @@ func (h *CategoryHandler) CreateProductCategory(ctx *fiber.Ctx) error {
 //	@Failure		404			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/product-categories/{category_id} [get]
-func (h *CategoryHandler) FindProductCategoryByID(ctx *fiber.Ctx) error {
+func (h *CategoryHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	result, err := h.svc.FindCategoryByID(ctx.Context(), id)
 	if err != nil {
@@ -77,28 +78,27 @@ func (h *CategoryHandler) FindProductCategoryByID(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusNotFound).
 			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true,
-		Data: handlers.Data{"category": result},
+	return ctx.JSON(handlers.HTTPSuccess{
+		Success: true,
+		Data:    handlers.Data{"category": result},
 	})
 }
 
-// FindProductCategories finds product categories with optional filters
+// FindMany finds product categories with optional filters
 //
 //	@Summary		Find product categories
-//	@Description	Find product categories with optional filters
+//	@Description	Finds product categories with optional filters
 //	@ID				find-product-categories
 //	@Tags			Product Categories
 //	@Accept			json
 //	@Produce		json
-//	@Param			filter	query		dto.ProductCategoryFilterDTO	false	"Filter criteria for product categories"
-//	@Param			limit	query		int								false	"Limit the number of results returned"
-//	@Param			offset	query		int								false	"Offset for pagination"
+//	@Param			filter	query		dto.ProductCategoryFilter	false	"Filter criteria for product categories"
 //	@Success		200		{object}	handlers.HTTPSuccess
 //	@Failure		400		{object}	handlers.HTTPError
 //	@Failure		502		{object}	handlers.HTTPError
 //	@Router			/product-categories [get]
-func (h *CategoryHandler) FindProductCategories(ctx *fiber.Ctx) error {
-	filter := new(dto.ProductCategoryFilterDTO)
+func (h *CategoryHandler) FindMany(ctx *fiber.Ctx) error {
+	filter := new(dto.ProductCategoryFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
 			h.log.ValidationError(ctx, err)
@@ -121,33 +121,39 @@ func (h *CategoryHandler) FindProductCategories(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
-	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"categories": result, "count": count}})
+	return ctx.JSON(
+		handlers.HTTPSuccess{
+			Success: true,
+			Data:    handlers.Data{"categories": result, "count": count},
+		},
+	)
 }
 
-// UpdateProductCategory updates an existing product category by providing the ID and updated fields in the request body.
+// Update updates an existing product category by providing the ID and updated fields in the request body.
 //
 //	@Summary		Update an existing product category by ID
-//	@Description	Update an existing product category by providing the ID and updated fields in the request body
+//	@Description	Updates an existing product category by providing the ID and updated fields in the request body
 //	@Tags			Product Categories
 //	@Accept			json
 //	@Produce		json
-//	@Param			category_id	path		int								true	"Product Category ID"
-//	@Param			payload		body		dto.UpdateProductCategoryDTO	true	"Updated Product Category Fields"
+//	@Param			category_id	path		int							true	"Product Category ID"
+//	@Param			payload		body		dto.UpdateProductCategory	true	"Updated Product Category Fields"
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		400			{object}	handlers.HTTPError
 //	@Failure		404			{object}	handlers.HTTPError
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/product-categories/{category_id} [put]
-func (h *CategoryHandler) UpdateProductCategory(ctx *fiber.Ctx) error {
+//	@Security		Bearer
+func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
-	payload := new(dto.UpdateProductCategoryDTO)
-	if err := ctx.BodyParser(payload); err != nil {
+	payload := new(dto.UpdateProductCategory)
+	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -159,7 +165,7 @@ func (h *CategoryHandler) UpdateProductCategory(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// DeleteProductCategroy deletes a product category by ID
+// Delete deletes a product category by ID
 //
 //	@Summary		Delete a product category
 //	@Description	Deletes a product category by ID
@@ -170,7 +176,8 @@ func (h *CategoryHandler) UpdateProductCategory(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/product-categories/{category_id} [delete]
-func (h *CategoryHandler) DeleteProductCategroy(ctx *fiber.Ctx) error {
+//	@Security		Bearer
+func (h *CategoryHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	if err := h.svc.DeleteCategory(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)
@@ -180,7 +187,7 @@ func (h *CategoryHandler) DeleteProductCategroy(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
-// RestoreProductCategroy restores a previously deleted product category with the given ID
+// Restore restores a previously deleted product category with the given ID
 //
 //	@Summary		Restore a deleted product category
 //	@Description	Restores a previously deleted product category with the given ID
@@ -189,7 +196,8 @@ func (h *CategoryHandler) DeleteProductCategroy(ctx *fiber.Ctx) error {
 //	@Success		200			{object}	handlers.HTTPSuccess
 //	@Failure		502			{object}	handlers.HTTPError
 //	@Router			/product-categories/{category_id} [patch]
-func (h *CategoryHandler) RestoreProductCategroy(ctx *fiber.Ctx) error {
+//	@Security		Bearer
+func (h *CategoryHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	if err := h.svc.RestoreCategory(ctx.Context(), id); err != nil {
 		h.log.ServerError(ctx, err)

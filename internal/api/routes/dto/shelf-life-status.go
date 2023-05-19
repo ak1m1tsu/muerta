@@ -1,14 +1,14 @@
 package dto
 
-type CreateShelfLifeStatusDTO struct {
-	Name string `json:"name" validate:"required,gte=3,notblank"`
+type CreateShelfLifeStatus struct {
+	Name string `json:"name" validate:"required,gte=3,notblank" example:"Просрочен"`
 }
 
-type UpdateShelfLifeStatusDTO struct {
-	Name string `json:"name" validate:"required,gte=3,notblank"`
+type UpdateShelfLifeStatus struct {
+	Name string `json:"name" validate:"required,gte=3,notblank" example:"Просрочен"`
 }
 
-type FindShelfLifeStatusDTO struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+type FindShelfLifeStatus struct {
+	ID   int    `json:"id"   example:"1"`
+	Name string `json:"name" example:"Просрочен"`
 }

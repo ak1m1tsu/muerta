@@ -34,8 +34,8 @@ func (e *errorWrapper) Error() string {
 }
 
 // Contains returns true if the error message contains the given error message.
-func (e *errorWrapper) Contains(err string) bool {
-	return strings.Contains(e.err, err)
+func (e *errorWrapper) Contains(err ErrorWrapper) bool {
+	return strings.Contains(e.err, err.Error())
 }
 
 // The New function creates a new ErrorWrapper with the given error message.

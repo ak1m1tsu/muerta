@@ -21,7 +21,11 @@ type PostgresClient interface {
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-func doWithTries(fn func() (*pgxpool.Pool, error), attemtps int, delay time.Duration) (*pgxpool.Pool, error) {
+func doWithTries(
+	fn func() (*pgxpool.Pool, error),
+	attemtps int,
+	delay time.Duration,
+) (*pgxpool.Pool, error) {
 	var (
 		err  error
 		pool *pgxpool.Pool
@@ -41,7 +45,11 @@ func doWithTries(fn func() (*pgxpool.Pool, error), attemtps int, delay time.Dura
 // NewPostgresClient returns a new PostgreSQL client connection pool based on the provided config.
 //
 // The function attempts to connect to the database maxAttempts times with a delay of 5 seconds between attempts.
-func NewPostgresClient(ctx context.Context, maxAttempts int, cfg *config.Config) (*pgxpool.Pool, error) {
+func NewPostgresClient(
+	ctx context.Context,
+	maxAttempts int,
+	cfg *config.Config,
+) (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
 		cfg.Database.User,
 		cfg.Database.Pass,

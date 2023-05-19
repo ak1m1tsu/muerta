@@ -11,27 +11,35 @@ import (
 )
 
 type RecipeServicer interface {
-	CreateRecipe(ctx context.Context, payload *dto.CreateRecipeDTO) error
-	FindRecipeByID(ctx context.Context, id int) (dto.FindRecipeDTO, error)
-	FindRecipes(ctx context.Context, filter *dto.RecipeFilterDTO) ([]dto.FindRecipeDTO, error)
-	UpdateRecipe(ctx context.Context, id int, payload *dto.UpdateRecipeDTO) error
+	CreateRecipe(ctx context.Context, payload *dto.CreateRecipe) error
+	FindRecipeByID(ctx context.Context, id int) (dto.FindRecipe, error)
+	FindRecipes(ctx context.Context, filter *dto.RecipeFilter) ([]dto.FindRecipe, error)
+	UpdateRecipe(ctx context.Context, id int, payload *dto.UpdateRecipe) error
 	DeleteRecipe(ctx context.Context, id int) error
 	RestoreRecipe(ctx context.Context, id int) error
-	FindRecipeIngredients(ctx context.Context, id int) ([]dto.FindRecipeIngredientDTO, error)
-	CreateIngredient(ctx context.Context, id int, payload *dto.CreateIngredientDTO) (dto.FindRecipeIngredientDTO, error)
-	UpdateIngredient(ctx context.Context, id int, payload *dto.UpdateIngredientDTO) (dto.FindRecipeIngredientDTO, error)
-	DeleteIngredient(ctx context.Context, id int, payload *dto.DeleteIngredientDTO) error
-	FindRecipeSteps(ctx context.Context, recipeID int) ([]dto.FindStepDTO, error)
-	CreateRecipeStep(ctx context.Context, recipeID, stepID, place int) (dto.FindStepDTO, error)
+	FindRecipeIngredients(ctx context.Context, id int) ([]dto.FindRecipeIngredient, error)
+	CreateIngredient(
+		ctx context.Context,
+		id int,
+		payload *dto.CreateIngredient,
+	) (dto.FindRecipeIngredient, error)
+	UpdateIngredient(
+		ctx context.Context,
+		id int,
+		payload *dto.UpdateIngredient,
+	) (dto.FindRecipeIngredient, error)
+	DeleteIngredient(ctx context.Context, id int, payload *dto.DeleteIngredient) error
+	FindRecipeSteps(ctx context.Context, recipeID int) ([]dto.FindStep, error)
+	CreateRecipeStep(ctx context.Context, recipeID, stepID, place int) (dto.FindStep, error)
 	DeleteRecipeStep(ctx context.Context, recipeID, stepID, place int) error
-	Count(ctx context.Context, filter dto.RecipeFilterDTO) (int, error)
+	Count(ctx context.Context, filter dto.RecipeFilter) (int, error)
 }
 
 type recipeService struct {
 	repo recipes.RecipesRepositorer
 }
 
-func (s *recipeService) Count(ctx context.Context, filter dto.RecipeFilterDTO) (int, error) {
+func (s *recipeService) Count(ctx context.Context, filter dto.RecipeFilter) (int, error) {
 	count, err := s.repo.Count(ctx, models.RecipeFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting recipes: %w", err)
@@ -40,16 +48,26 @@ func (s *recipeService) Count(ctx context.Context, filter dto.RecipeFilterDTO) (
 }
 
 // CreateRecipeStep implements RecipeServicer
-func (s *recipeService) CreateRecipeStep(ctx context.Context, recipeID int, stepID int, place int) (dto.FindStepDTO, error) {
+func (s *recipeService) CreateRecipeStep(
+	ctx context.Context,
+	recipeID int,
+	stepID int,
+	place int,
+) (dto.FindStep, error) {
 	model, err := s.repo.CreateStep(ctx, recipeID, stepID, place)
 	if err != nil {
-		return dto.FindStepDTO{}, fmt.Errorf("create step: %w", err)
+		return dto.FindStep{}, fmt.Errorf("create step: %w", err)
 	}
-	return translate.StepModelToFindDTO(model), nil
+	return translate.StepModelToFind(model), nil
 }
 
 // DeleteRecipeStep implements RecipeServicer
-func (s *recipeService) DeleteRecipeStep(ctx context.Context, recipeID int, stepID int, place int) error {
+func (s *recipeService) DeleteRecipeStep(
+	ctx context.Context,
+	recipeID int,
+	stepID int,
+	place int,
+) error {
 	if err := s.repo.DeleteStep(ctx, recipeID, stepID, place); err != nil {
 		return fmt.Errorf("delete step: %w", err)
 	}
@@ -57,27 +75,38 @@ func (s *recipeService) DeleteRecipeStep(ctx context.Context, recipeID int, step
 }
 
 // FindRecipeSteps implements RecipeServicer
-func (s *recipeService) FindRecipeSteps(ctx context.Context, recipeID int) ([]dto.FindStepDTO, error) {
+func (s *recipeService) FindRecipeSteps(
+	ctx context.Context,
+	recipeID int,
+) ([]dto.FindStep, error) {
 	entities, err := s.repo.FindSteps(ctx, recipeID)
 	if err != nil {
 		return nil, fmt.Errorf("steps not found: %w", err)
 	}
-	return translate.StepModelsToFindDTOs(entities), nil
+	return translate.StepModelsToFinds(entities), nil
 }
 
 // CreateIngredient implements RecipeServicer
-func (s *recipeService) CreateIngredient(ctx context.Context, id int, payload *dto.CreateIngredientDTO) (dto.FindRecipeIngredientDTO, error) {
-	model := translate.CreateIngredientDTOToModel(payload)
+func (s *recipeService) CreateIngredient(
+	ctx context.Context,
+	id int,
+	payload *dto.CreateIngredient,
+) (dto.FindRecipeIngredient, error) {
+	model := translate.CreateIngredientToModel(payload)
 	ingredient, err := s.repo.CreateIngredient(ctx, id, &model)
 	if err != nil {
-		return dto.FindRecipeIngredientDTO{}, fmt.Errorf("create recipe ingredient: %w", err)
+		return dto.FindRecipeIngredient{}, fmt.Errorf("create recipe ingredient: %w", err)
 	}
-	dto := translate.RecipeIngredientModelToFindDTO(&ingredient)
+	dto := translate.RecipeIngredientModelToFind(&ingredient)
 	return dto, nil
 }
 
 // DeleteIngredient implements RecipeServicer
-func (s *recipeService) DeleteIngredient(ctx context.Context, id int, payload *dto.DeleteIngredientDTO) error {
+func (s *recipeService) DeleteIngredient(
+	ctx context.Context,
+	id int,
+	payload *dto.DeleteIngredient,
+) error {
 	if err := s.repo.DeleteIngredient(ctx, id, payload.ProductID); err != nil {
 		return fmt.Errorf("delete recipe ingredient: %w", err)
 	}
@@ -85,23 +114,30 @@ func (s *recipeService) DeleteIngredient(ctx context.Context, id int, payload *d
 }
 
 // FindRecipeIngredients implements RecipeServicer
-func (s *recipeService) FindRecipeIngredients(ctx context.Context, id int) ([]dto.FindRecipeIngredientDTO, error) {
+func (s *recipeService) FindRecipeIngredients(
+	ctx context.Context,
+	id int,
+) ([]dto.FindRecipeIngredient, error) {
 	ingredients, err := s.repo.FindIngredients(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("ingredients not found: %w", err)
 	}
-	result := translate.RecipeIngredientModelsToFindDTOs(ingredients)
+	result := translate.RecipeIngredientModelsToFinds(ingredients)
 	return result, nil
 }
 
 // UpdateIngredient implements RecipeServicer
-func (s *recipeService) UpdateIngredient(ctx context.Context, id int, payload *dto.UpdateIngredientDTO) (dto.FindRecipeIngredientDTO, error) {
-	model := translate.UpdateIngredientDTOToModel(payload)
+func (s *recipeService) UpdateIngredient(
+	ctx context.Context,
+	id int,
+	payload *dto.UpdateIngredient,
+) (dto.FindRecipeIngredient, error) {
+	model := translate.UpdateIngredientToModel(payload)
 	ingredient, err := s.repo.UpdateIngredient(ctx, id, &model)
 	if err != nil {
-		return dto.FindRecipeIngredientDTO{}, fmt.Errorf("update recipe ingredient: %w", err)
+		return dto.FindRecipeIngredient{}, fmt.Errorf("update recipe ingredient: %w", err)
 	}
-	dto := translate.RecipeIngredientModelToFindDTO(&ingredient)
+	dto := translate.RecipeIngredientModelToFind(&ingredient)
 	return dto, nil
 }
 
@@ -109,24 +145,27 @@ func New(repository recipes.RecipesRepositorer) RecipeServicer {
 	return &recipeService{repo: repository}
 }
 
-func (s *recipeService) CreateRecipe(ctx context.Context, payload *dto.CreateRecipeDTO) error {
-	model := translate.CreateRecipeDTOToModel(payload)
+func (s *recipeService) CreateRecipe(ctx context.Context, payload *dto.CreateRecipe) error {
+	model := translate.CreateRecipeToModel(payload)
 	if err := s.repo.Create(ctx, &model); err != nil {
 		return fmt.Errorf("create recipe: %w", err)
 	}
 	return nil
 }
 
-func (s *recipeService) FindRecipeByID(ctx context.Context, id int) (dto.FindRecipeDTO, error) {
+func (s *recipeService) FindRecipeByID(ctx context.Context, id int) (dto.FindRecipe, error) {
 	recipe, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		return dto.FindRecipeDTO{}, fmt.Errorf("recipe not found by id: %w", err)
+		return dto.FindRecipe{}, fmt.Errorf("recipe not found by id: %w", err)
 	}
-	result := translate.RecipeModelToFindDTO(&recipe)
+	result := translate.RecipeModelToFind(&recipe)
 	return result, nil
 }
 
-func (s *recipeService) FindRecipes(ctx context.Context, filter *dto.RecipeFilterDTO) ([]dto.FindRecipeDTO, error) {
+func (s *recipeService) FindRecipes(
+	ctx context.Context,
+	filter *dto.RecipeFilter,
+) ([]dto.FindRecipe, error) {
 	recipes, err := s.repo.FindMany(ctx, models.RecipeFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
@@ -137,11 +176,15 @@ func (s *recipeService) FindRecipes(ctx context.Context, filter *dto.RecipeFilte
 	if err != nil {
 		return nil, fmt.Errorf("recipes not found: %w", err)
 	}
-	result := translate.RecipeModelsToFindDTOs(recipes)
+	result := translate.RecipeModelsToFinds(recipes)
 	return result, nil
 }
 
-func (s *recipeService) UpdateRecipe(ctx context.Context, id int, payload *dto.UpdateRecipeDTO) error {
+func (s *recipeService) UpdateRecipe(
+	ctx context.Context,
+	id int,
+	payload *dto.UpdateRecipe,
+) error {
 	recipe, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return fmt.Errorf("recipe not found by id: %w", err)
