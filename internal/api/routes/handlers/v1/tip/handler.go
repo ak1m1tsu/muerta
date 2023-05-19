@@ -229,6 +229,7 @@ func (h *TipHandler) FindStorages(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storages": result}})
 }
+
 // FindProducts godoc
 //
 //	@Summary		Find products
@@ -252,6 +253,7 @@ func (h *TipHandler) FindProducts(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"products": result}})
 }
+
 // AddProduct godoc
 //
 //	@Summary		Add product
@@ -278,6 +280,7 @@ func (h *TipHandler) AddProduct(ctx *fiber.Ctx) error {
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"product": result}})
 }
+
 // RemoveProduct godoc
 //
 //	@Summary		Remove product
@@ -292,7 +295,7 @@ func (h *TipHandler) AddProduct(ctx *fiber.Ctx) error {
 //	@Failure		404			{object}	handlers.HTTPError
 //	@Failure		500			{object}	handlers.HTTPError
 //	@Router			/tips/{id_tip}/products/{id_product} [delete]
-//	@Security		Bearer 
+//	@Security		Bearer
 func (h *TipHandler) RemoveProduct(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	productID := ctx.Locals(context.ProductID).(int)

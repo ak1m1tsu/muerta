@@ -46,6 +46,8 @@ github.com/gofiber/contrib/fiberzerolog v0.1.0/go.mod h1:Zl0uSvwr/V64uyXwqLynoC0
 github.com/gofiber/fiber/v2 v2.44.0/go.mod h1:VTMtb/au8g01iqvHyaCzftuM/xmZgKOZCtFzz6CdV9w=
 github.com/gofiber/fiber/v2 v2.45.0 h1:p4RpkJT9GAW6parBSbcNFH2ApnAuW3OzaQzbOCoDu+s=
 github.com/gofiber/fiber/v2 v2.45.0/go.mod h1:DNl0/c37WLe0g92U6lx1VMQuxGUQY5V7EIaVoEsUffc=
+github.com/gofiber/fiber/v2 v2.46.0 h1:wkkWotblsGVlLjXj2dpgKQAYHtXumsK/HyFugQM68Ns=
+github.com/gofiber/fiber/v2 v2.46.0/go.mod h1:DNl0/c37WLe0g92U6lx1VMQuxGUQY5V7EIaVoEsUffc=
 github.com/gofiber/swagger v0.1.11 h1:fY4zdtcU45wzWrMe3NUkShfLyWR5FBcRaDJdByxJrfU=
 github.com/gofiber/swagger v0.1.11/go.mod h1:o8IcaqISe1w5uykdTLRPe6AntWFNwoZDS87ww1LxJro=
 github.com/golang-jwt/jwt/v4 v4.5.0 h1:7cYmW1XlMY7h7ii7UhUyChSgS5wUJEnm9uZVTGqOWzg=

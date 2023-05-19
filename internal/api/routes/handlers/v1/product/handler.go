@@ -143,15 +143,15 @@ func (h *ProductHandler) FindMany(ctx *fiber.Ctx) error {
 func (h *ProductHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ProductID).(int)
 	payload := new(dto.UpdateProduct)
-	if err := ctx.BodyParser(payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateProduct(ctx.Context(), id, payload); err != nil {
 		h.log.ServerError(ctx, err)

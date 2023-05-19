@@ -155,6 +155,28 @@ definitions:
     required:
     - description
     type: object
+  dto.CreateUser:
+    properties:
+      name:
+        example: user
+        minLength: 5
+        type: string
+      password:
+        example: th3B3stUs3r
+        minLength: 8
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/dto.UserRole'
+        type: array
+      settings:
+        items:
+          $ref: '#/definitions/dto.UserSetting'
+        type: array
+    required:
+    - name
+    - password
+    type: object
   dto.DeleteIngredient:
     properties:
       id_product:
@@ -386,6 +408,87 @@ definitions:
         type: string
     required:
     - description
+    type: object
+  dto.UpdateUser:
+    properties:
+      name:
+        example: user
+        type: string
+    required:
+    - name
+    type: object
+  dto.UpdateUserSetting:
+    properties:
+      value:
+        example: Нет
+        type: string
+    required:
+    - value
+    type: object
+  dto.UserFilter:
+    properties:
+      limit:
+        enum:
+        - 5
+        - 10
+        - 15
+        - 20
+        - 25
+        - 30
+        example: 10
+        type: integer
+      name:
+        example: hunter
+        minLength: 1
+        type: string
+      offset:
+        example: 0
+        minimum: 0
+        type: integer
+    required:
+    - limit
+    type: object
+  dto.UserRole:
+    properties:
+      id:
+        example: 1
+        type: integer
+    type: object
+  dto.UserSetting:
+    properties:
+      id:
+        example: 1
+        type: integer
+      value:
+        example: Да
+        type: string
+    required:
+    - id
+    - value
+    type: object
+  dto.UserShelfLife:
+    properties:
+      end_date:
+        example: "2020-01-02T00:00:00Z"
+        type: string
+      id_measure:
+        example: 1
+        type: integer
+      id_product:
+        example: 1
+        type: integer
+      id_shelf_life:
+        example: 1
+        type: integer
+      id_storage:
+        example: 1
+        type: integer
+      purchase_date:
+        example: "2020-01-01T00:00:00Z"
+        type: string
+      quantity:
+        example: 1
+        type: integer
     type: object
   handlers.Data:
     additionalProperties: true
@@ -3580,6 +3683,594 @@ paths:
       summary: Add storage
       tags:
       - Tips
+  /users:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete user
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Find users
+      parameters:
+      - description: Filter
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserFilter'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find users
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create user
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update user
+      parameters:
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update user
+      tags:
+      - Users
+  /users/{id_user}:
+    get:
+      consumes:
+      - application/json
+      description: Find user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user by id
+      tags:
+      - Users
+  /users/{id_user}/roles:
+    get:
+      consumes:
+      - application/json
+      description: Find user roles
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user roles
+      tags:
+      - Users
+  /users/{id_user}/settings:
+    get:
+      consumes:
+      - application/json
+      description: Find user settings
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Find user settings
+      tags:
+      - Users
+  /users/{id_user}/settings/{id_setting}:
+    put:
+      consumes:
+      - application/json
+      description: Update user settings
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: User ID
+        in: query
+        name: id_setting
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserSetting'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update user settings
+      tags:
+      - Users
+  /users/{id_user}/shelf-lives:
+    get:
+      consumes:
+      - application/json
+      description: Find user shelf lives
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user shelf lives
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Create user shelf life
+      tags:
+      - Users
+  /users/{id_user}/shelf-lives/{id_shelf_life}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Shelf Life ID
+        in: query
+        name: id_shelf_life
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Delete user shelf life
+      tags:
+      - Users
+    patch:
+      consumes:
+      - application/json
+      description: Restore user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Shelf Life ID
+        in: query
+        name: id_shelf_life
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Restore user shelf life
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update user shelf life
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: User ID
+        in: query
+        name: id_shelf_life
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserShelfLife'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Update user shelf life
+      tags:
+      - Users
+  /users/{id_user}/storages:
+    get:
+      consumes:
+      - application/json
+      description: Find user storages
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      summary: Find user storages
+      tags:
+      - Users
+  /users/{id_user}/storages/{id_storage}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove user storage
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Storage ID
+        in: query
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Remove user storage
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Add user storage
+      parameters:
+      - description: User ID
+        in: query
+        name: id_user
+        required: true
+        type: integer
+      - description: Storage ID
+        in: query
+        name: id_storage
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.HTTPSuccess'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handlers.HTTPError'
+      security:
+      - Bearer: []
+      summary: Add user storage
+      tags:
+      - Users
 securityDefinitions:
   BearerAuth:
     in: header

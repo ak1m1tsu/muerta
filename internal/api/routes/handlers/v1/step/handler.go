@@ -80,18 +80,18 @@ func (h *StepHandler) FinaMany(ctx *fiber.Ctx) error {
 //	@Router			/steps [post]
 //	@Security		Bearer
 func (h *StepHandler) Create(ctx *fiber.Ctx) error {
-	var paylaod *dto.CreateStep
-	if err := ctx.BodyParser(&paylaod); err != nil {
+	var payload *dto.CreateStep
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
-	if errs := validator.Validate(paylaod); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	result, err := h.svc.CreateStep(ctx.Context(), paylaod)
+	result, err := h.svc.CreateStep(ctx.Context(), payload)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
@@ -140,7 +140,12 @@ func (h *StepHandler) FindOne(ctx *fiber.Ctx) error {
 func (h *StepHandler) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StepID).(int)
 	var payload *dto.UpdateStep
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})

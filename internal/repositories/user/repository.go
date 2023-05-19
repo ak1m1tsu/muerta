@@ -23,8 +23,8 @@ type UserRepositorer interface {
 	FindRoles(ctx context.Context, id int) ([]models.Role, error)
 	FindSettings(ctx context.Context, id int) ([]models.Setting, error)
 	UpdateSetting(ctx context.Context, id int, setting models.Setting) (models.Setting, error)
-	DeleteStorage(ctx context.Context, id int, entity models.Storage) error
-	CreateStorage(ctx context.Context, id int, entity models.Storage) (models.Storage, error)
+	RemoveStorage(ctx context.Context, id, storageID int) error
+	AddStorage(ctx context.Context, id, storageID int) (models.Storage, error)
 	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
 	FindShelfLives(ctx context.Context, userId int) ([]models.ShelfLife, error)
 	CreateShelfLife(
@@ -281,13 +281,13 @@ func (r *userRepository) UpdateShelfLife(
 	return model, nil
 }
 
-// CreateStorage implements UserRepositorer
-func (r *userRepository) CreateStorage(
+// AddStorage implements UserRepositorer
+func (r *userRepository) AddStorage(
 	ctx context.Context,
-	id int,
-	entity models.Storage,
+	id, storageID int,
 ) (models.Storage, error) {
-	query := `
+	var (
+		query = `
 			WITH inserted AS (
 				INSERT INTO users_storages (id_user, id_storage)
 				VALUES ($1, $2)
@@ -302,7 +302,9 @@ func (r *userRepository) CreateStorage(
 				s.deleted_at IS NULL
 			LIMIT 1
 		`
-	if err := r.client.QueryRow(ctx, query, id, entity.ID).Scan(
+		entity models.Storage
+	)
+	if err := r.client.QueryRow(ctx, query, id, storageID).Scan(
 		&entity.ID,
 		&entity.Name,
 		&entity.Temperature,
@@ -315,13 +317,13 @@ func (r *userRepository) CreateStorage(
 	return entity, nil
 }
 
-// DeleteStorage implements UserRepositorer
-func (r *userRepository) DeleteStorage(ctx context.Context, id int, entity models.Storage) error {
+// RemoveStorage implements UserRepositorer
+func (r *userRepository) RemoveStorage(ctx context.Context, id, storageID int) error {
 	query := `
 			DELETE FROM users_storages
 			WHERE id_user = $1 AND id_storage = $2
 		`
-	if _, err := r.client.Exec(ctx, query, id, entity.ID); err != nil {
+	if _, err := r.client.Exec(ctx, query, id, storageID); err != nil {
 		return fmt.Errorf("failed to create storage: %w", err)
 	}
 	return nil

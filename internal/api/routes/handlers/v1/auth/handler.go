@@ -89,15 +89,15 @@ func (h *AuthHandler) SignUp(ctx *fiber.Ctx) error {
 //	@Router			/auth/login [post]
 func (h *AuthHandler) Login(ctx *fiber.Ctx) error {
 	var payload *dto.Login
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusUnauthorized).
-			JSON(handlers.HTTPError{Error: fiber.ErrUnauthorized.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusUnauthorized).
-			JSON(handlers.HTTPError{Error: fiber.ErrUnauthorized.Error()})
+		return ctx.Status(http.StatusBadRequest).
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	access, refresh, err := h.svc.LoginUser(ctx.Context(), payload)
 	if err != nil {

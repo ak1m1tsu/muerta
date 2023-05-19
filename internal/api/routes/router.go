@@ -1,11 +1,14 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/bytedance/sonic"
 	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/redirect"
 	"github.com/gofiber/fiber/v2/middleware/requestid"
 	"github.com/gofiber/swagger"
 	_ "github.com/romankravchuk/muerta/docs"
@@ -42,6 +45,12 @@ func (r *Router) mountAPIMiddlewares(cfg *config.Config, logger *log.Logger) {
 		AllowOrigins:     cfg.AllowOrigins,
 		AllowCredentials: true,
 		AllowHeaders:     "Origin, Content-Type, Accept, Accept-Language, Content-Length, Authorization",
+	}))
+	r.Use(redirect.New(redirect.Config{
+		Rules: map[string]string{
+			"/": "/docs",
+		},
+		StatusCode: http.StatusMovedPermanently,
 	}))
 	r.Use(requestid.New())
 	r.Use(recover.New())

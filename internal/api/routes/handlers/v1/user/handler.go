@@ -23,7 +23,20 @@ func New(svc service.UserServicer, log *log.Logger) *UserHanlder {
 	return &UserHanlder{svc: svc, log: log}
 }
 
-func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
+// FindOne godoc
+//
+//	@Summary		Find user by id
+//	@Description	Find user by id
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user	path		int	true	"User ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users/{id_user} [get]
+func (h *UserHanlder) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	user, err := h.svc.FindUserByID(ctx.Context(), id)
 	if err != nil {
@@ -33,6 +46,19 @@ func (h *UserHanlder) FindByID(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"user": user}})
 }
 
+// FindMany godoc
+//
+//	@Summary		Find users
+//	@Description	Find users
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.UserFilter	true	"Filter"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users [get]
 func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.UserFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
@@ -64,6 +90,20 @@ func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 	)
 }
 
+// Create godoc
+//
+//	@Summary		Create user
+//	@Description	Create user
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.CreateUser	true	"User"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users [post]
+//	@Security		Bearer
 func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 	var payload *dto.CreateUser
 	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
@@ -84,15 +124,30 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
+// Update godoc
+//
+//	@Summary		Update user
+//	@Description	Update user
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		dto.UpdateUser	true	"User"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users [put]
+//	@Security		Bearer
 func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	var payload *dto.UpdateUser
-	if err := ctx.BodyParser(&payload); err != nil {
-		return ctx.Status(http.StatusBadRequest).
-			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
+		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
@@ -104,6 +159,19 @@ func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
+// Delete godoc
+//
+//	@Summary		Delete user
+//	@Description	Delete user
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	handlers.HTTPSuccess
+//	@Failure		400	{object}	handlers.HTTPError
+//	@Failure		404	{object}	handlers.HTTPError
+//	@Failure		500	{object}	handlers.HTTPError
+//	@Router			/users [delete]
+//	@Security		Bearer
 func (h *UserHanlder) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	if err := h.svc.DeleteUser(ctx.Context(), id); err != nil {
@@ -124,6 +192,20 @@ func (h *UserHanlder) Restore(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
+// FindSettings godoc
+//
+//	@Summary		Find user settings
+//	@Description	Find user settings
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user	query		int	true	"User ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/settings [get]
+//	@Security		Bearer
 func (h *UserHanlder) FindSettings(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindSettings(ctx.Context(), id)
@@ -135,18 +217,34 @@ func (h *UserHanlder) FindSettings(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"settings": result}})
 }
 
+// UpdateSettings godoc
+//
+//	@Summary		Update user settings
+//	@Description	Update user settings
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user		query		int						true	"User ID"
+//	@Param			id_setting	query		int						true	"User ID"
+//	@Param			payload		body		dto.UpdateUserSetting	true	"User"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/settings/{id_setting} [put]
+//	@Security		Bearer
 func (h *UserHanlder) UpdateSetting(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	var payload *dto.UpdateUserSetting
-	if err := ctx.BodyParser(&payload); err != nil {
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
-			SendString("Bad payload provided")
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Validation error")
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.UpdateSetting(ctx.Context(), id, payload)
 	if err != nil {
@@ -157,6 +255,19 @@ func (h *UserHanlder) UpdateSetting(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"settings": result}})
 }
 
+// FindRoles godoc
+//
+//	@Summary		Find user roles
+//	@Description	Find user roles
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user	query		int	true	"User ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/roles [get]
 func (h *UserHanlder) FindRoles(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindRoles(ctx.Context(), id)
@@ -168,6 +279,19 @@ func (h *UserHanlder) FindRoles(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"roles": result}})
 }
 
+// FindStorages godoc
+//
+//	@Summary		Find user storages
+//	@Description	Find user storages
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user	query		int	true	"User ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/storages [get]
 func (h *UserHanlder) FindStorages(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindStorages(ctx.Context(), id)
@@ -179,20 +303,25 @@ func (h *UserHanlder) FindStorages(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storages": result}})
 }
 
-func (h *UserHanlder) CreateStorage(ctx *fiber.Ctx) error {
+// AddStorage godoc
+//
+//	@Summary		Add user storage
+//	@Description	Add user storage
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user		query		int	true	"User ID"
+//	@Param			id_storage	query		int	true	"Storage ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/storages/{id_storage} [post]
+//	@Security		Bearer
+func (h *UserHanlder) AddStorage(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserStorage
-	if err := ctx.BodyParser(&payload); err != nil {
-		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Bad payload provided")
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			SendString(errs.Error())
-	}
-	result, err := h.svc.CreateStorage(ctx.Context(), id, payload)
+	storageID := ctx.Locals(context.StorageID).(int)
+	result, err := h.svc.AddStorage(ctx.Context(), id, storageID)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
@@ -201,20 +330,25 @@ func (h *UserHanlder) CreateStorage(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"storages": result}})
 }
 
-func (h *UserHanlder) DeleteStorage(ctx *fiber.Ctx) error {
+// RemoveStorage godoc
+//
+//	@Summary		Remove user storage
+//	@Description	Remove user storage
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user		query		int	true	"User ID"
+//	@Param			id_storage	query		int	true	"Storage ID"
+//	@Success		200			{object}	handlers.HTTPSuccess
+//	@Failure		400			{object}	handlers.HTTPError
+//	@Failure		404			{object}	handlers.HTTPError
+//	@Failure		500			{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/storages/{id_storage} [delete]
+//	@Security		Bearer
+func (h *UserHanlder) RemoveStorage(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserStorage
-	if err := ctx.BodyParser(&payload); err != nil {
-		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Bad payload provided")
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			SendString(errs.Error())
-	}
-	err := h.svc.DeleteStorage(ctx.Context(), id, payload)
+	storageID := ctx.Locals(context.StorageID).(int)
+	err := h.svc.RemoveStorage(ctx.Context(), id, storageID)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
@@ -223,6 +357,19 @@ func (h *UserHanlder) DeleteStorage(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true})
 }
 
+// FindShelfLives godoc
+//
+//	@Summary		Find user shelf lives
+//	@Description	Find user shelf lives
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user	query		int	true	"User ID"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/shelf-lives [get]
 func (h *UserHanlder) FindShelfLives(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindShelfLives(ctx.Context(), id)
@@ -234,19 +381,33 @@ func (h *UserHanlder) FindShelfLives(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-lives": result}})
 }
 
+// CreateShelfLife godoc
+//
+//	@Summary		Create user shelf life
+//	@Description	Create user shelf life
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user	query		int					true	"User ID"
+//	@Param			payload	body		dto.CreateShelfLife	true	"User"
+//	@Success		200		{object}	handlers.HTTPSuccess
+//	@Failure		400		{object}	handlers.HTTPError
+//	@Failure		404		{object}	handlers.HTTPError
+//	@Failure		500		{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/shelf-lives [post]
+//	@Security		Bearer
 func (h *UserHanlder) CreateShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.CreateShelfLife
-	if err := ctx.BodyParser(&payload); err != nil {
+	var payload *dto.CreateShelfLife = &dto.CreateShelfLife{UserID: id}
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
-			SendString("Bad body provided")
-	}
-	payload.UserID = id
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Validation error")
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.CreateShelfLife(ctx.Context(), id, payload)
 	if err != nil {
@@ -257,18 +418,35 @@ func (h *UserHanlder) CreateShelfLife(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-life": result}})
 }
 
+// UpdateShelfLife godoc
+//
+//	@Summary		Update user shelf life
+//	@Description	Update user shelf life
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user			query		int					true	"User ID"
+//	@Param			id_shelf_life	query		int					true	"User ID"
+//	@Param			payload			body		dto.UserShelfLife	true	"User"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		404				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/shelf-lives/{id_shelf_life} [put]
+//	@Security		Bearer
 func (h *UserHanlder) UpdateShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserShelfLife
-	if err := ctx.BodyParser(&payload); err != nil {
+	shelfLifeID := ctx.Locals(context.ShelfLifeID).(int)
+	var payload *dto.UserShelfLife = &dto.UserShelfLife{ShelfLifeID: shelfLifeID}
+	if err := common.ParseBodyAndValidate(ctx, &payload); err != nil {
+		if err, ok := err.(validator.ValidationErrors); ok {
+			h.log.ValidationError(ctx, err)
+			return ctx.Status(http.StatusBadRequest).
+				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
+		}
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusBadRequest).
-			SendString("Bad body provided")
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Validation error")
+			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.UpdateShelfLife(ctx.Context(), id, payload)
 	if err != nil {
@@ -279,20 +457,25 @@ func (h *UserHanlder) UpdateShelfLife(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-life": result}})
 }
 
+// RestoreShelfLife godoc
+//
+//	@Summary		Restore user shelf life
+//	@Description	Restore user shelf life
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user			query		int	true	"User ID"
+//	@Param			id_shelf_life	query		int	true	"Shelf Life ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		404				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/shelf-lives/{id_shelf_life} [patch]
+//	@Security		Bearer
 func (h *UserHanlder) RestoreShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserShelfLife
-	if err := ctx.BodyParser(&payload); err != nil {
-		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Bad body provided")
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Validation error")
-	}
-	result, err := h.svc.RestoreShelfLife(ctx.Context(), id, payload)
+	shelfLifeID := ctx.Locals(context.ShelfLifeID).(int)
+	result, err := h.svc.RestoreShelfLife(ctx.Context(), id, shelfLifeID)
 	if err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
@@ -301,20 +484,25 @@ func (h *UserHanlder) RestoreShelfLife(ctx *fiber.Ctx) error {
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf-life": result}})
 }
 
+// DeleteShelfLife godoc
+//
+//	@Summary		Delete user shelf life
+//	@Description	Delete user shelf life
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id_user			query		int	true	"User ID"
+//	@Param			id_shelf_life	query		int	true	"Shelf Life ID"
+//	@Success		200				{object}	handlers.HTTPSuccess
+//	@Failure		400				{object}	handlers.HTTPError
+//	@Failure		404				{object}	handlers.HTTPError
+//	@Failure		500				{object}	handlers.HTTPError
+//	@Router			/users/{id_user}/shelf-lives/{id_shelf_life} [delete]
+//	@Security		Bearer
 func (h *UserHanlder) DeleteShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
-	var payload *dto.UserShelfLife
-	if err := ctx.BodyParser(&payload); err != nil {
-		h.log.ClientError(ctx, err)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Bad body provided")
-	}
-	if errs := validator.Validate(payload); errs != nil {
-		h.log.ValidationError(ctx, errs)
-		return ctx.Status(http.StatusBadRequest).
-			SendString("Validation error")
-	}
-	if err := h.svc.DeleteShelfLife(ctx.Context(), id, payload); err != nil {
+	shelfLifeID := ctx.Locals(context.ShelfLifeID).(int)
+	if err := h.svc.DeleteShelfLife(ctx.Context(), id, shelfLifeID); err != nil {
 		h.log.ServerError(ctx, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
