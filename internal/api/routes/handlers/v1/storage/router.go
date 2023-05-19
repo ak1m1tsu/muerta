@@ -31,8 +31,8 @@ func NewRouter(
 			router.Get("/", handler.FindTips)
 			router.Route(context.TipID.Path(), func(router fiber.Router) {
 				router.Use(context.New(logger, context.TipID))
-				router.Post("/", jware.DeserializeUser, handler.CreateTip)
-				router.Delete("/", jware.DeserializeUser, handler.DeleteTip)
+				router.Post("/", jware.DeserializeUser, handler.AddTip)
+				router.Delete("/", jware.DeserializeUser, handler.RemoveTip)
 			})
 		})
 		router.Route("/shelf-lives", func(router fiber.Router) {
