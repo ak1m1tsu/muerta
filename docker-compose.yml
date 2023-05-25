@@ -13,27 +13,40 @@ services:
       - '5432:5432'
     volumes:
       - data:/var/lib/postgresql/data
-  api:
-    container_name: muerta-api
-    build:
-      context: ./
-      dockerfile: ./Dockerfile
-    environment:
-      - API_NAME=${API_NAME}
-      - PORT=${PORT}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-    depends_on:
-      - db
+  cache:
+    container_name: muerta-cache
+    image: redis:alpine
+    restart: always
     ports:
-      - '0372:${PORT}'
-    links:
-      - db
+      - '6379:${CACHE_PORT}'
     volumes:
-      - ./:/api
+      - cache:/data
+  # api:
+  #   container_name: muerta-api
+  #   build:
+  #     context: ./
+  #     dockerfile: ./Dockerfile
+  #   environment:
+  #     - API_NAME=${API_NAME}
+  #     - PORT=${PORT}
+  #     - DB_HOST=${DB_HOST}
+  #     - DB_PORT=${DB_PORT}
+  #     - DB_USER=${DB_USER}
+  #     - DB_PASSWORD=${DB_PASSWORD}
+  #     - DB_NAME=${DB_NAME}
+  #     - CACHE_HOST=${CACHE_HOST}
+  #     - CACHE_USER=${CACHE_USER}
+  #     - CACHE_PASSWORD=${CACHE_PASSWORD}
+  #     - CACHE_PORT=${CACHE_PORT}
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - '0372:${PORT}'
+  #   links:
+  #     - db
+  #   volumes:
+  #     - ./:/api
 volumes:
+  cache:
   data:
     driver: local

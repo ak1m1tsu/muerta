@@ -52,7 +52,7 @@ func NewPostgresClient(
 ) (*pgxpool.Pool, error) {
 	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
 		cfg.Database.User,
-		cfg.Database.Pass,
+		cfg.Database.Password,
 		cfg.Database.Host,
 		cfg.Database.Port,
 		cfg.Database.Name,

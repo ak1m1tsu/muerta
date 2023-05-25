@@ -10,17 +10,19 @@ import (
 	"github.com/romankravchuk/muerta/internal/repositories/role"
 	"github.com/romankravchuk/muerta/internal/repositories/user"
 	"github.com/romankravchuk/muerta/internal/services/auth"
+	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 func NewRouter(
 	cfg *config.Config,
 	client repositories.PostgresClient,
 	logger *log.Logger,
+	redis redis.Client,
 	jware *jware.JWTMiddleware,
 ) *fiber.App {
 	userRepo := user.New(client)
 	roleRepo := role.New(client)
-	svc := auth.New(cfg, userRepo, roleRepo)
+	svc := auth.New(cfg, userRepo, roleRepo, redis)
 	r := fiber.New()
 	h := New(cfg, svc, logger)
 	r.Post("/sign-up", h.SignUp)

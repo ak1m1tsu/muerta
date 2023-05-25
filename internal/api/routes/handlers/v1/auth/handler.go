@@ -156,7 +156,7 @@ func (h *AuthHandler) RefreshAccessToken(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusForbidden).
 			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 	}
-	access, err := h.svc.RefreshAccessToken(refreshToken)
+	access, err := h.svc.RefreshAccessToken(ctx.Context(), refreshToken)
 	if err != nil {
 		h.log.ClientError(ctx, err)
 		return ctx.Status(http.StatusForbidden).
@@ -187,6 +187,18 @@ func (h *AuthHandler) RefreshAccessToken(ctx *fiber.Ctx) error {
 //	@Router			/auth/logout [post]
 //	@Security		Bearer
 func (h *AuthHandler) Logout(ctx *fiber.Ctx) error {
+	refreshToken := ctx.Cookies("refresh_token")
+	if refreshToken == "" {
+		h.log.ClientError(ctx, fmt.Errorf("refresh token not in cookie"))
+		return ctx.Status(http.StatusForbidden).
+			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
+	}
+	access_token_uuid := ctx.Locals("access_token_uuid").(string)
+	if err := h.svc.LogoutUser(ctx.Context(), refreshToken, access_token_uuid); err != nil {
+		h.log.ClientError(ctx, err)
+		return ctx.Status(http.StatusForbidden).
+			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
+	}
 	expired := time.Now().Add(-time.Hour * 24)
 	ctx.Cookie(&fiber.Cookie{
 		Name:    "access_token",

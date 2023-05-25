@@ -21,16 +21,18 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 func New(
 	cfg *config.Config,
 	app fiber.Router,
 	client repositories.PostgresClient,
+	cache redis.Client,
 	logger *log.Logger,
 ) {
 	jware := jware.New(cfg, logger)
-	app.Mount("/auth", auth.NewRouter(cfg, client, logger, jware))
+	app.Mount("/auth", auth.NewRouter(cfg, client, logger, cache, jware))
 	app.Mount("/shelf-life-detector", shelflifedetector.NewRouter(cfg, logger, jware))
 	app.Mount("/recipes", recipe.NewRouter(client, logger, jware))
 	app.Mount("/users", user.NewRouter(client, logger, jware))

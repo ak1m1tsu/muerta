@@ -12,6 +12,7 @@ type SignUp struct {
 }
 
 type TokenPayload struct {
+	UUID     string
 	UserID   int
 	Username string
 	Roles    []string

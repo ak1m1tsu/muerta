@@ -35,9 +35,19 @@ type Config struct {
 		// Username for the database authentication
 		User string
 		// Password for the database authentication
-		Pass string
+		Password string
 		// Name of the database to connect to
 		Name string
+	}
+	Cache struct {
+		// Host name of the redis server
+		Host string
+		// Port number of the redis server
+		Port string
+		// Username for the redis authentication
+		User string
+		// Password for the redis authentication
+		Password string
 	}
 	// Private key for signing access tokens
 	AccessTokenPrivateKey []byte
@@ -93,14 +103,34 @@ func New() (*Config, error) {
 		API: struct {
 			Name string
 			Port string
-		}{Name: os.Getenv("API_NAME"), Port: os.Getenv("PORT")},
+		}{
+			Name: os.Getenv("API_NAME"),
+			Port: os.Getenv("PORT"),
+		},
 		Database: struct {
-			Host string
-			Port string
-			User string
-			Pass string
-			Name string
-		}{Host: os.Getenv("DB_HOST"), Port: os.Getenv("DB_PORT"), User: os.Getenv("DB_USER"), Pass: os.Getenv("DB_PASSWORD"), Name: os.Getenv("DB_NAME")},
+			Host     string
+			Port     string
+			User     string
+			Password string
+			Name     string
+		}{
+			Host:     os.Getenv("DB_HOST"),
+			Port:     os.Getenv("DB_PORT"),
+			User:     os.Getenv("DB_USER"),
+			Password: os.Getenv("DB_PASSWORD"),
+			Name:     os.Getenv("DB_NAME"),
+		},
+		Cache: struct {
+			Host     string
+			Port     string
+			User     string
+			Password string
+		}{
+			Host:     os.Getenv("CACHE_HOST"),
+			Port:     os.Getenv("CACHE_PORT"),
+			User:     os.Getenv("CACHE_USER"),
+			Password: os.Getenv("CACHE_PASSWORD"),
+		},
 		AccessTokenPrivateKey:  accessPem,
 		AccessTokenPublicKey:   accessPub,
 		AccessTokenMaxAge:      15,

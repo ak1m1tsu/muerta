@@ -17,13 +17,19 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 type Router struct {
 	*fiber.App
 }
 
-func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.Logger) *Router {
+func NewV1(
+	cfg *config.Config,
+	client repositories.PostgresClient,
+	cache redis.Client,
+	logger *log.Logger,
+) *Router {
 	r := &Router{
 		App: fiber.New(fiber.Config{
 			AppName:     "Muerta API v1.0",
@@ -35,7 +41,7 @@ func NewV1(client repositories.PostgresClient, cfg *config.Config, logger *log.L
 	r.Get("/docs/*", swagger.HandlerDefault)
 	api := r.Group("/api")
 	routesV1 := api.Group("/v1")
-	v1.New(cfg, routesV1, client, logger)
+	v1.New(cfg, routesV1, client, cache, logger)
 	r.Use(notfound.New())
 	return r
 }
