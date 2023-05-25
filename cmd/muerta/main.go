@@ -14,10 +14,12 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	logger "github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 var (
 	client *pgxpool.Pool
+	cache  redis.Client
 	cfg    *config.Config
 )
 
@@ -35,6 +37,10 @@ func init() {
 	if err != nil {
 		log.Fatalf("database connection: %v", err)
 	}
+	cache, err = redis.New(cfg)
+	if err != nil {
+		log.Fatalf("redis connection: %v", err)
+	}
 }
 
 // main start point of the application
@@ -51,7 +57,7 @@ func init() {
 //	@name						Authrization
 func main() {
 	logger := logger.New()
-	api := api.New(client, cfg, logger)
+	api := api.New(cfg, client, cache, logger)
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {

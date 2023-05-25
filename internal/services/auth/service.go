@@ -13,6 +13,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/repositories/models"
 	"github.com/romankravchuk/muerta/internal/repositories/role"
 	"github.com/romankravchuk/muerta/internal/repositories/user"
+	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 type JWTCredential struct {
@@ -27,25 +28,44 @@ type AuthServicer interface {
 		ctx context.Context,
 		payload *dto.Login,
 	) (*dto.TokenDetails, *dto.TokenDetails, error)
-	RefreshAccessToken(refreshToken string) (*dto.TokenDetails, error)
+	RefreshAccessToken(ctx context.Context, refreshToken string) (*dto.TokenDetails, error)
+	LogoutUser(ctx context.Context, refreshToken, accessTokenUUID string) error
 }
 
 type AuthService struct {
+	redis          redis.Client
 	userRepository user.UserRepositorer
 	roleRepository role.RoleRepositorer
 	refresh        JWTCredential
 	access         JWTCredential
 }
 
+// LogoutUser implements AuthServicer
+func (s *AuthService) LogoutUser(ctx context.Context, refreshToken, accessTokenUUID string) error {
+	if _, err := s.redis.Del(ctx, accessTokenUUID).Result(); err != nil {
+		return fmt.Errorf("failed to delete access token: %w", err)
+	}
+	return nil
+}
+
 // RefreshAccessToken implements AuthServicer
-func (s *AuthService) RefreshAccessToken(refreshToken string) (*dto.TokenDetails, error) {
+func (s *AuthService) RefreshAccessToken(
+	ctx context.Context,
+	refreshToken string,
+) (*dto.TokenDetails, error) {
 	tokenPayload, err := jwt.ValidateToken(refreshToken, s.refresh.PublicKey)
 	if err != nil {
+		return nil, fmt.Errorf("invalid refresh token: %w", err)
+	}
+	if err := s.redis.Get(ctx, tokenPayload.UUID).Err(); err != nil {
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
 	access, err := jwt.CreateToken(tokenPayload, s.access.TTL, s.access.PrivateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create access token: %w", err)
+	}
+	if err := s.redis.Set(ctx, access.UUID, tokenPayload.UserID, time.Until(time.Unix(access.ExpiresIn, 0))).Err(); err != nil {
+		return nil, fmt.Errorf("failed to set access token in redis: %w", err)
 	}
 	return access, nil
 }
@@ -79,6 +99,13 @@ func (s *AuthService) LoginUser(
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create refresh token: %w", err)
 	}
+	now := time.Now()
+	if err := s.redis.Set(ctx, access.UUID, model.ID, time.Unix(access.ExpiresIn, 0).Sub(now)).Err(); err != nil {
+		return nil, nil, fmt.Errorf("failed to set access token in redis: %w", err)
+	}
+	if err := s.redis.Set(ctx, refresh.UUID, model.ID, time.Unix(refresh.ExpiresIn, 0).Sub(now)).Err(); err != nil {
+		return nil, nil, fmt.Errorf("failed to set refresh token in redis: %w", err)
+	}
 	return access, refresh, nil
 }
 
@@ -111,8 +138,10 @@ func New(
 	cfg *config.Config,
 	repo user.UserRepositorer,
 	roleRepository role.RoleRepositorer,
+	redis redis.Client,
 ) AuthServicer {
 	return &AuthService{
+		redis:          redis,
 		userRepository: repo,
 		roleRepository: roleRepository,
 		refresh: JWTCredential{

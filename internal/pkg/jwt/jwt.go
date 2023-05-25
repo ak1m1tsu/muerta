@@ -88,6 +88,7 @@ func ValidateToken(token string, publickKey []byte) (*dto.TokenPayload, error) {
 		return nil, errValidateToken.With(errClaimsType)
 	}
 	payload := &dto.TokenPayload{
+		UUID:     claims.ID,
 		UserID:   claims.UserID,
 		Username: claims.Username,
 		Roles:    claims.Roles,

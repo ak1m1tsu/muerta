@@ -43,6 +43,7 @@ func (m *JWTMiddleware) DeserializeUser(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusForbidden).
 			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 	}
+	ctx.Locals("access_token_uuid", payload.UUID)
 	ctx.Locals("user", payload)
 	return ctx.Next()
 }

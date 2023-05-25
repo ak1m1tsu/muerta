@@ -7,6 +7,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
 	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 type API struct {
@@ -14,9 +15,14 @@ type API struct {
 	listenAddr string
 }
 
-func New(client repositories.PostgresClient, cfg *config.Config, logger *log.Logger) *API {
+func New(
+	cfg *config.Config,
+	client repositories.PostgresClient,
+	cache redis.Client,
+	logger *log.Logger,
+) *API {
 	return &API{
-		router:     routes.NewV1(client, cfg, logger),
+		router:     routes.NewV1(cfg, client, cache, logger),
 		listenAddr: fmt.Sprintf("0.0.0.0:%s", cfg.API.Port),
 	}
 }
