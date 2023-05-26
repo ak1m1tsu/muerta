@@ -19,7 +19,7 @@ import (
 	usersetting "github.com/romankravchuk/muerta/internal/api/routes/handlers/v1/user-setting"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
@@ -29,7 +29,7 @@ func New(
 	app fiber.Router,
 	client postgres.Client,
 	cache redis.Client,
-	logger *log.Logger,
+	logger logger.Logger,
 ) {
 	jware := jware.New(cfg, logger)
 	app.Mount("/auth", auth.NewRouter(cfg, client, logger, cache, jware))

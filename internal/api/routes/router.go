@@ -15,7 +15,7 @@ import (
 	v1 "github.com/romankravchuk/muerta/internal/api/routes/handlers/v1"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
@@ -28,7 +28,7 @@ func NewV1(
 	cfg *config.Config,
 	client postgres.Client,
 	cache redis.Client,
-	logger *log.Logger,
+	logger logger.Logger,
 ) *Router {
 	r := &Router{
 		App: fiber.New(fiber.Config{
@@ -46,7 +46,7 @@ func NewV1(
 	return r
 }
 
-func (r *Router) mountAPIMiddlewares(cfg *config.Config, logger *log.Logger) {
+func (r *Router) mountAPIMiddlewares(cfg *config.Config, logger logger.Logger) {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     cfg.AllowOrigins,
 		AllowCredentials: true,

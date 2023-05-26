@@ -157,7 +157,7 @@ func (svc *userService) RemoveStorage(
 	ctx context.Context,
 	id, storageID int,
 ) error {
-	err := svc.repo.RemoveStorage(ctx, id, storageID)
+	err := svc.repo.RemoveVault(ctx, id, storageID)
 	if err != nil {
 		return fmt.Errorf("error creating storage: %w", err)
 	}
@@ -169,7 +169,7 @@ func (svc *userService) AddStorage(
 	ctx context.Context,
 	id, storageID int,
 ) (dto.FindStorage, error) {
-	model, err := svc.repo.AddStorage(ctx, id, storageID)
+	model, err := svc.repo.AddVault(ctx, id, storageID)
 	if err != nil {
 		return dto.FindStorage{}, fmt.Errorf("error creating storage: %w", err)
 	}
@@ -178,7 +178,7 @@ func (svc *userService) AddStorage(
 
 // FindStorages implements UserServicer
 func (svc *userService) FindStorages(ctx context.Context, id int) ([]dto.FindStorage, error) {
-	result, err := svc.repo.FindStorages(ctx, id)
+	result, err := svc.repo.FindVaults(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("error finding storages: %w", err)
 	}

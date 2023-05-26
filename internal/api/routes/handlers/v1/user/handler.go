@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/user"
 )
 
 type UserHanlder struct {
 	svc service.UserServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.UserServicer, log *log.Logger) *UserHanlder {
+func New(svc service.UserServicer, log logger.Logger) *UserHanlder {
 	return &UserHanlder{svc: svc, log: log}
 }
 
@@ -39,7 +39,7 @@ func (h *UserHanlder) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	user, err := h.svc.FindUserByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return fiber.ErrNotFound
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"user": user}})
@@ -62,23 +62,23 @@ func (h *UserHanlder) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.UserFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindUsers(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -105,16 +105,16 @@ func (h *UserHanlder) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateUser)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateUser(ctx.Context(), payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -140,16 +140,16 @@ func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateUser)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateUser(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -172,7 +172,7 @@ func (h *UserHanlder) Update(ctx *fiber.Ctx) error {
 func (h *UserHanlder) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	if err := h.svc.DeleteUser(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -182,7 +182,7 @@ func (h *UserHanlder) Delete(ctx *fiber.Ctx) error {
 func (h *UserHanlder) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	if err := h.svc.RestoreUser(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -207,7 +207,7 @@ func (h *UserHanlder) FindSettings(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindSettings(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -235,17 +235,17 @@ func (h *UserHanlder) UpdateSetting(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateUserSetting)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.UpdateSetting(ctx.Context(), id, payload)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -269,7 +269,7 @@ func (h *UserHanlder) FindRoles(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindRoles(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -293,7 +293,7 @@ func (h *UserHanlder) FindStorages(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindStorages(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -320,7 +320,7 @@ func (h *UserHanlder) AddStorage(ctx *fiber.Ctx) error {
 	storageID := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.AddStorage(ctx.Context(), id, storageID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -347,7 +347,7 @@ func (h *UserHanlder) RemoveStorage(ctx *fiber.Ctx) error {
 	storageID := ctx.Locals(context.StorageID).(int)
 	err := h.svc.RemoveStorage(ctx.Context(), id, storageID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -371,7 +371,7 @@ func (h *UserHanlder) FindShelfLives(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	result, err := h.svc.FindShelfLives(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -399,17 +399,17 @@ func (h *UserHanlder) CreateShelfLife(ctx *fiber.Ctx) error {
 	payload.UserID = id
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.CreateShelfLife(ctx.Context(), id, payload)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -439,17 +439,17 @@ func (h *UserHanlder) UpdateShelfLife(ctx *fiber.Ctx) error {
 	payload.ShelfLifeID = shelfLifeID
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.UpdateShelfLife(ctx.Context(), id, payload)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -476,7 +476,7 @@ func (h *UserHanlder) RestoreShelfLife(ctx *fiber.Ctx) error {
 	shelfLifeID := ctx.Locals(context.ShelfLifeID).(int)
 	result, err := h.svc.RestoreShelfLife(ctx.Context(), id, shelfLifeID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}
@@ -502,7 +502,7 @@ func (h *UserHanlder) DeleteShelfLife(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.UserID).(int)
 	shelfLifeID := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.DeleteShelfLife(ctx.Context(), id, shelfLifeID); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			SendString("Bad Gateway")
 	}

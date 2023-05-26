@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/role"
 )
 
 type RoleHandler struct {
 	svc service.RoleServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.RoleServicer, log *log.Logger) *RoleHandler {
+func New(svc service.RoleServicer, log logger.Logger) *RoleHandler {
 	return &RoleHandler{
 		svc: svc,
 		log: log,
@@ -41,23 +41,23 @@ func (h *RoleHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.RoleFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindRoles(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -82,7 +82,7 @@ func (h *RoleHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	result, err := h.svc.FindRoleByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -106,16 +106,16 @@ func (h *RoleHandler) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateRole)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateRole(ctx.Context(), payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -141,16 +141,16 @@ func (h *RoleHandler) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateRole)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateRole(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -173,7 +173,7 @@ func (h *RoleHandler) Update(ctx *fiber.Ctx) error {
 func (h *RoleHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.DeleteRole(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -196,7 +196,7 @@ func (h *RoleHandler) Delete(ctx *fiber.Ctx) error {
 func (h *RoleHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.RoleID).(int)
 	if err := h.svc.RestoreRole(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}

@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/category"
 )
 
 type CategoryHandler struct {
 	svc service.CategoryServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.CategoryServicer, log *log.Logger) *CategoryHandler {
+func New(svc service.CategoryServicer, log logger.Logger) *CategoryHandler {
 	return &CategoryHandler{
 		svc: svc,
 		log: log,
@@ -42,16 +42,16 @@ func (h *CategoryHandler) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateProductCategory)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateCategory(ctx.Context(), payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -74,7 +74,7 @@ func (h *CategoryHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	result, err := h.svc.FindCategoryByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusNotFound).
 			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
@@ -101,23 +101,23 @@ func (h *CategoryHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.ProductCategoryFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindCategorys(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -149,16 +149,16 @@ func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateProductCategory)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateCategory(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -180,7 +180,7 @@ func (h *CategoryHandler) Update(ctx *fiber.Ctx) error {
 func (h *CategoryHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	if err := h.svc.DeleteCategory(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -200,7 +200,7 @@ func (h *CategoryHandler) Delete(ctx *fiber.Ctx) error {
 func (h *CategoryHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.CategoryID).(int)
 	if err := h.svc.RestoreCategory(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}

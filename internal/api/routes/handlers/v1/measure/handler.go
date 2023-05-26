@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/measure"
 )
 
 type MeasureHandler struct {
 	svc service.MeasureServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.MeasureServicer, log *log.Logger) MeasureHandler {
+func New(svc service.MeasureServicer, log logger.Logger) MeasureHandler {
 	return MeasureHandler{
 		svc: svc,
 		log: log,
@@ -42,16 +42,16 @@ func (h *MeasureHandler) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateMeasure)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateMeasure(ctx.Context(), payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -76,7 +76,7 @@ func (h *MeasureHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	dto, err := h.svc.FindMeasureByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusNotFound).
 			JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 	}
@@ -103,23 +103,23 @@ func (h *MeasureHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.MeasureFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindMeasures(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -148,16 +148,16 @@ func (h *MeasureHandler) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateMeasure)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateMeasure(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -180,7 +180,7 @@ func (h *MeasureHandler) Update(ctx *fiber.Ctx) error {
 func (h *MeasureHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.MeasureID).(int)
 	if err := h.svc.DeleteMeasure(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}

@@ -5,7 +5,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/access"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	usersetting "github.com/romankravchuk/muerta/internal/services/user-setting"
 	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/postgres/setting"
@@ -13,7 +13,7 @@ import (
 
 func NewRouter(
 	client postgres.Client,
-	log *log.Logger,
+	log logger.Logger,
 	jware *jware.JWTMiddleware,
 ) *fiber.App {
 	router := fiber.New()

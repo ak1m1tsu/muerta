@@ -12,7 +12,7 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
-	logger "github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )

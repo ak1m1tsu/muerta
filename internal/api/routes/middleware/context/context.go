@@ -7,14 +7,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/romankravchuk/muerta/internal/api/routes/common"
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 )
 
-func New(log *log.Logger, key idKey) func(ctx *fiber.Ctx) error {
+func New(log logger.Logger, key idKey) func(ctx *fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
 		id, err := common.ParseIDFromPath(ctx, key.String())
 		if err != nil {
-			log.ClientError(ctx, err)
+			log.Error(ctx, logger.Client, err)
 			return ctx.Status(http.StatusNotFound).
 				JSON(handlers.HTTPError{Error: fiber.ErrNotFound.Error()})
 		}

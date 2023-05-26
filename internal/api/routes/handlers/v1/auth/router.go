@@ -5,7 +5,7 @@ import (
 
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	"github.com/romankravchuk/muerta/internal/services/auth"
 	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/postgres/role"
@@ -16,7 +16,7 @@ import (
 func NewRouter(
 	cfg *config.Config,
 	client postgres.Client,
-	logger *log.Logger,
+	logger logger.Logger,
 	redis redis.Client,
 	jware *jware.JWTMiddleware,
 ) *fiber.App {

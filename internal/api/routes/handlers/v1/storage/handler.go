@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/storage"
 )
 
 type StorageHandler struct {
 	svc service.StorageServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.StorageServicer, log *log.Logger) *StorageHandler {
+func New(svc service.StorageServicer, log logger.Logger) *StorageHandler {
 	return &StorageHandler{
 		svc: svc,
 		log: log,
@@ -41,23 +41,23 @@ func (h *StorageHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.StorageFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindStorages(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -85,7 +85,7 @@ func (h *StorageHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.FindStorageByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -109,16 +109,16 @@ func (h *StorageHandler) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateStorage)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateStorage(ctx.Context(), payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -144,16 +144,16 @@ func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateStorage)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateStorage(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -176,7 +176,7 @@ func (h *StorageHandler) Update(ctx *fiber.Ctx) error {
 func (h *StorageHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.DeleteStorage(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -199,7 +199,7 @@ func (h *StorageHandler) Delete(ctx *fiber.Ctx) error {
 func (h *StorageHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.RestoreStorage(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -222,7 +222,7 @@ func (h *StorageHandler) FindTips(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.FindTips(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -248,7 +248,7 @@ func (h *StorageHandler) AddTip(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.CreateTip(ctx.Context(), id, tipID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -273,7 +273,7 @@ func (h *StorageHandler) RemoveTip(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	tipID := ctx.Locals(context.TipID).(int)
 	if err := h.svc.DeleteTip(ctx.Context(), id, tipID); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -296,7 +296,7 @@ func (h *StorageHandler) FindShelfLives(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.FindShelfLives(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}

@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/storage-type"
 )
 
 type StorageTypeHandler struct {
 	svc service.StorageTypeServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.StorageTypeServicer, log *log.Logger) *StorageTypeHandler {
+func New(svc service.StorageTypeServicer, log logger.Logger) *StorageTypeHandler {
 	return &StorageTypeHandler{
 		svc: svc,
 		log: log,
@@ -42,16 +42,16 @@ func (h *StorageTypeHandler) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateStorageType)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateStorageType(ctx.Context(), payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -75,7 +75,7 @@ func (h *StorageTypeHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
 	result, err := h.svc.FindStorageTypeByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return fiber.ErrNotFound
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"type": result}})
@@ -97,23 +97,23 @@ func (h *StorageTypeHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.StorageTypeFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindStorageTypes(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -142,16 +142,16 @@ func (h *StorageTypeHandler) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateStorageType)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateStorageType(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -175,7 +175,7 @@ func (h *StorageTypeHandler) Update(ctx *fiber.Ctx) error {
 func (h *StorageTypeHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
 	if err := h.svc.DeleteStorageType(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -199,7 +199,7 @@ func (h *StorageTypeHandler) FindStorages(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
 	result, err := h.svc.FindStorages(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -223,7 +223,7 @@ func (h *StorageTypeHandler) FindTips(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
 	result, err := h.svc.FindTips(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -250,7 +250,7 @@ func (h *StorageTypeHandler) AddTip(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.CreateTip(ctx.Context(), id, tipID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -276,7 +276,7 @@ func (h *StorageTypeHandler) RemoveTip(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TypeID).(int)
 	tipID := ctx.Locals(context.TipID).(int)
 	if err := h.svc.DeleteTip(ctx.Context(), id, tipID); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}

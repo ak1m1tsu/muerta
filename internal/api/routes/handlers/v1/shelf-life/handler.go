@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/shelf-life"
 )
 
 type ShelfLifeHandler struct {
 	svc service.ShelfLifeServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.ShelfLifeServicer, log *log.Logger) ShelfLifeHandler {
+func New(svc service.ShelfLifeServicer, log logger.Logger) ShelfLifeHandler {
 	return ShelfLifeHandler{
 		svc: svc,
 		log: log,
@@ -42,16 +42,16 @@ func (h *ShelfLifeHandler) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateShelfLife)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.CreateShelfLife(ctx.Context(), payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -75,7 +75,7 @@ func (h *ShelfLifeHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	result, err := h.svc.FindShelfLifeByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return fiber.ErrNotFound
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"shelf_life": result}})
@@ -97,23 +97,23 @@ func (h *ShelfLifeHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.ShelfLifeFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindShelfLifes(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -144,16 +144,16 @@ func (h *ShelfLifeHandler) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateShelfLife)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateShelfLife(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -176,7 +176,7 @@ func (h *ShelfLifeHandler) Update(ctx *fiber.Ctx) error {
 func (h *ShelfLifeHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.DeleteShelfLife(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -199,7 +199,7 @@ func (h *ShelfLifeHandler) Delete(ctx *fiber.Ctx) error {
 func (h *ShelfLifeHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	if err := h.svc.RestoreShelfLife(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -222,7 +222,7 @@ func (h *ShelfLifeHandler) FindStatuses(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	result, err := h.svc.FindShelfLifeStatuses(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -248,7 +248,7 @@ func (h *ShelfLifeHandler) AddStatus(ctx *fiber.Ctx) error {
 	statusID := ctx.Locals(context.StatusID).(int)
 	result, err := h.svc.CreateShelfLifeStatus(ctx.Context(), id, statusID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -273,7 +273,7 @@ func (h *ShelfLifeHandler) RemoveStatus(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.ShelfLifeID).(int)
 	statusID := ctx.Locals(context.StatusID).(int)
 	if err := h.svc.DeleteShelfLifeStatus(ctx.Context(), id, statusID); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}

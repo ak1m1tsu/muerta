@@ -8,14 +8,14 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/pkg/errors"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 )
 
-func AdminOnly(log *log.Logger) func(ctx *fiber.Ctx) error {
+func AdminOnly(l logger.Logger) func(ctx *fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
 		payload, ok := ctx.Locals("user").(*dto.TokenPayload)
 		if !ok {
-			log.ClientError(ctx, errors.ErrFailedToGetTokenPayload)
+			l.Error(ctx, logger.Client, errors.ErrFailedToGetTokenPayload)
 			return ctx.Status(http.StatusForbidden).
 				JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 		}
@@ -24,23 +24,23 @@ func AdminOnly(log *log.Logger) func(ctx *fiber.Ctx) error {
 				return ctx.Next()
 			}
 		}
-		log.ClientError(ctx, errors.ErrNotAdmin)
+		l.Error(ctx, logger.Client, errors.ErrNotAdmin)
 		return ctx.Status(http.StatusForbidden).
 			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 	}
 }
 
-func OwnerOnly(log *log.Logger) func(ctx *fiber.Ctx) error {
+func OwnerOnly(l logger.Logger) func(ctx *fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
 		id, ok := ctx.Locals(context.UserID).(int)
 		if !ok {
-			log.ClientError(ctx, errors.ErrFailedToGetUserId)
+			l.Error(ctx, logger.Client, errors.ErrFailedToGetUserId)
 			return ctx.Status(http.StatusForbidden).
 				JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 		}
 		payload, ok := ctx.Locals("user").(*dto.TokenPayload)
 		if !ok {
-			log.ClientError(ctx, errors.ErrFailedToGetTokenPayload)
+			l.Error(ctx, logger.Client, errors.ErrFailedToGetTokenPayload)
 			return ctx.Status(http.StatusForbidden).
 				JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 		}
@@ -52,7 +52,7 @@ func OwnerOnly(log *log.Logger) func(ctx *fiber.Ctx) error {
 				return ctx.Next()
 			}
 		}
-		log.ClientError(ctx, errors.ErrNotOwner)
+		l.Error(ctx, logger.Client, errors.ErrNotOwner)
 		return ctx.Status(http.StatusForbidden).
 			JSON(handlers.HTTPError{Error: fiber.ErrForbidden.Error()})
 	}

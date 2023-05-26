@@ -9,16 +9,16 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/handlers"
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	"github.com/romankravchuk/muerta/internal/api/validator"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	service "github.com/romankravchuk/muerta/internal/services/tip"
 )
 
 type TipHandler struct {
 	svc service.TipServicer
-	log *log.Logger
+	log logger.Logger
 }
 
-func New(svc service.TipServicer, log *log.Logger) *TipHandler {
+func New(svc service.TipServicer, log logger.Logger) *TipHandler {
 	return &TipHandler{
 		svc: svc,
 		log: log,
@@ -42,17 +42,17 @@ func (h *TipHandler) Create(ctx *fiber.Ctx) error {
 	payload := new(dto.CreateTip)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.CreateTip(ctx.Context(), payload)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -76,7 +76,7 @@ func (h *TipHandler) FindOne(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.FindTipByID(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return fiber.ErrNotFound
 	}
 	return ctx.JSON(handlers.HTTPSuccess{Success: true, Data: handlers.Data{"tip": result}})
@@ -98,23 +98,23 @@ func (h *TipHandler) FindMany(ctx *fiber.Ctx) error {
 	filter := new(dto.TipFilter)
 	if err := common.ParseFilterAndValidate(ctx, filter); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	result, err := h.svc.FindTips(ctx.Context(), filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
 	count, err := h.svc.Count(ctx.Context(), *filter)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -143,16 +143,16 @@ func (h *TipHandler) Update(ctx *fiber.Ctx) error {
 	payload := new(dto.UpdateTip)
 	if err := common.ParseBodyAndValidate(ctx, payload); err != nil {
 		if err, ok := err.(validator.ValidationErrors); ok {
-			h.log.ValidationError(ctx, err)
+			h.log.Error(ctx, logger.Validation, err)
 			return ctx.Status(http.StatusBadRequest).
 				JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 		}
-		h.log.ClientError(ctx, err)
+		h.log.Error(ctx, logger.Client, err)
 		return ctx.Status(http.StatusBadRequest).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadRequest.Error()})
 	}
 	if err := h.svc.UpdateTip(ctx.Context(), id, payload); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -176,7 +176,7 @@ func (h *TipHandler) Update(ctx *fiber.Ctx) error {
 func (h *TipHandler) Delete(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	if err := h.svc.DeleteTip(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -199,7 +199,7 @@ func (h *TipHandler) Delete(ctx *fiber.Ctx) error {
 func (h *TipHandler) Restore(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	if err := h.svc.RestoreTip(ctx.Context(), id); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -223,7 +223,7 @@ func (h *TipHandler) FindStorages(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.FindTipStorages(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -247,7 +247,7 @@ func (h *TipHandler) FindProducts(ctx *fiber.Ctx) error {
 	id := ctx.Locals(context.TipID).(int)
 	result, err := h.svc.FindTipProducts(ctx.Context(), id)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -274,7 +274,7 @@ func (h *TipHandler) AddProduct(ctx *fiber.Ctx) error {
 	productID := ctx.Locals(context.ProductID).(int)
 	result, err := h.svc.AddProductToTip(ctx.Context(), tipID, productID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -300,7 +300,7 @@ func (h *TipHandler) RemoveProduct(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	productID := ctx.Locals(context.ProductID).(int)
 	if err := h.svc.RemoveProductFromTip(ctx.Context(), tipID, productID); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -327,7 +327,7 @@ func (h *TipHandler) AddStorage(ctx *fiber.Ctx) error {
 	storateID := ctx.Locals(context.StorageID).(int)
 	result, err := h.svc.AddStorageToTip(ctx.Context(), tipID, storateID)
 	if err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
@@ -353,7 +353,7 @@ func (h *TipHandler) RemoveStorage(ctx *fiber.Ctx) error {
 	tipID := ctx.Locals(context.TipID).(int)
 	storateID := ctx.Locals(context.StorageID).(int)
 	if err := h.svc.RemoveStorageFromTip(ctx.Context(), tipID, storateID); err != nil {
-		h.log.ServerError(ctx, err)
+		h.log.Error(ctx, logger.Server, err)
 		return ctx.Status(http.StatusBadGateway).
 			JSON(handlers.HTTPError{Error: fiber.ErrBadGateway.Error()})
 	}
