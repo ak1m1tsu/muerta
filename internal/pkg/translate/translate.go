@@ -4,7 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/auth"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 func RecipeModelToFind(model *models.Recipe) dto.FindRecipe {
@@ -137,7 +137,7 @@ func CreateSettingToModel(dto *dto.CreateSetting) models.Setting {
 	}
 }
 
-func StorageModelToFind(model *models.Storage) dto.FindStorage {
+func StorageModelToFind(model *models.Vault) dto.FindStorage {
 	return dto.FindStorage{
 		ID:          model.ID,
 		Name:        model.Name,
@@ -151,7 +151,7 @@ func StorageModelToFind(model *models.Storage) dto.FindStorage {
 	}
 }
 
-func StorageModelsToFinds(models []models.Storage) []dto.FindStorage {
+func StorageModelsToFinds(models []models.Vault) []dto.FindStorage {
 	dtos := make([]dto.FindStorage, len(models))
 	for i, model := range models {
 		dtos[i] = StorageModelToFind(&model)
@@ -159,8 +159,8 @@ func StorageModelsToFinds(models []models.Storage) []dto.FindStorage {
 	return dtos
 }
 
-func CreateStorageToModel(dto *dto.CreateStorage) models.Storage {
-	return models.Storage{
+func CreateStorageToModel(dto *dto.CreateStorage) models.Vault {
+	return models.Vault{
 		Name:        dto.Name,
 		Temperature: dto.Temperature,
 		Humidity:    dto.Humidity,
@@ -302,7 +302,7 @@ func CreateShelfLifeToModel(dto *dto.CreateShelfLife) models.ShelfLife {
 		Product: models.Product{
 			ID: dto.ProductID,
 		},
-		Storage: models.Storage{
+		Storage: models.Vault{
 			ID: dto.StorageID,
 		},
 		Measure: models.Measure{
@@ -422,8 +422,8 @@ func UpdateSettingToModel(payload *dto.UpdateUserSetting) models.Setting {
 	}
 }
 
-func UserStorageToModel(payload *dto.UserStorage) models.Storage {
-	return models.Storage{
+func UserStorageToModel(payload *dto.UserStorage) models.Vault {
+	return models.Vault{
 		ID: payload.StorageID,
 	}
 }

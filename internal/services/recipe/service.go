@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	recipes "github.com/romankravchuk/muerta/internal/repositories/recipe"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	recipes "github.com/romankravchuk/muerta/internal/storage/postgres/recipe"
 )
 
 type RecipeServicer interface {

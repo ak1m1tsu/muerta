@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	repo "github.com/romankravchuk/muerta/internal/repositories/product"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	repo "github.com/romankravchuk/muerta/internal/storage/postgres/product"
 )
 
 type ProductServicer interface {

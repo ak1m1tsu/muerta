@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	repository "github.com/romankravchuk/muerta/internal/repositories/role"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	repository "github.com/romankravchuk/muerta/internal/storage/postgres/role"
 )
 
 type RoleServicer interface {

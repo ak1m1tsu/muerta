@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	repo "github.com/romankravchuk/muerta/internal/repositories/user"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	repo "github.com/romankravchuk/muerta/internal/storage/postgres/user"
 )
 
 type UserServicer interface {
@@ -50,7 +50,7 @@ type UserServicer interface {
 }
 
 type userService struct {
-	repo repo.UserRepositorer
+	repo repo.UserStorage
 }
 
 // Count implements UserServicer
@@ -62,7 +62,7 @@ func (s *userService) Count(ctx context.Context, filter dto.UserFilter) (int, er
 	return count, nil
 }
 
-func New(repo repo.UserRepositorer) UserServicer {
+func New(repo repo.UserStorage) UserServicer {
 	return &userService{
 		repo: repo,
 	}

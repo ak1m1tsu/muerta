@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type TipRepositorer interface {
@@ -16,16 +16,16 @@ type TipRepositorer interface {
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
 	FindProducts(ctx context.Context, id int) ([]models.Product, error)
-	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
+	FindStorages(ctx context.Context, id int) ([]models.Vault, error)
 	AddProduct(ctx context.Context, tipID, productID int) (models.Product, error)
 	RemoveProduct(ctx context.Context, tipID, productID int) error
-	AddStorage(ctx context.Context, tipID, storageID int) (models.Storage, error)
+	AddStorage(ctx context.Context, tipID, storageID int) (models.Vault, error)
 	RemoveStorage(ctx context.Context, tipID, storageID int) error
 	Count(ctx context.Context, filter models.TipFilter) (int, error)
 }
 
 type tipRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 // AddProduct implements TipRepositorer
@@ -59,7 +59,7 @@ func (r *tipRepository) AddStorage(
 	ctx context.Context,
 	tipID int,
 	storageID int,
-) (models.Storage, error) {
+) (models.Vault, error) {
 	var (
 		query = `
 			WITH inserted AS (
@@ -73,12 +73,12 @@ func (r *tipRepository) AddStorage(
 			JOIN inserted i ON i.id_storage = s.id
 			WHERE s.id = i.id_storage AND s.deleted_at IS NULL
 		`
-		model models.Storage
+		model models.Vault
 	)
 	if err := r.client.QueryRow(ctx, query, tipID, storageID).Scan(
 		&model.ID, &model.Name, &model.Type.ID, &model.Type.Name, &model.Temperature, &model.Humidity,
 	); err != nil {
-		return models.Storage{}, fmt.Errorf("failed to add storage: %w", err)
+		return models.Vault{}, fmt.Errorf("failed to add storage: %w", err)
 	}
 	return model, nil
 }
@@ -107,7 +107,7 @@ func (r *tipRepository) RemoveStorage(ctx context.Context, tipID int, storageID 
 	return nil
 }
 
-func New(client repositories.PostgresClient) TipRepositorer {
+func New(client postgres.Client) TipRepositorer {
 	return &tipRepository{
 		client: client,
 	}
@@ -156,7 +156,7 @@ func (r *tipRepository) FindProducts(ctx context.Context, id int) ([]models.Prod
 }
 
 // FindStorages implements TipRepositorer
-func (r *tipRepository) FindStorages(ctx context.Context, id int) ([]models.Storage, error) {
+func (r *tipRepository) FindStorages(ctx context.Context, id int) ([]models.Vault, error) {
 	var (
 		query = `
 			SELECT s.id, s.name
@@ -164,7 +164,7 @@ func (r *tipRepository) FindStorages(ctx context.Context, id int) ([]models.Stor
 			JOIN storages_tips st ON s.id = st.id_storage
 			WHERE st.id_tip = $1 AND s.deleted_at IS NULL
 		`
-		storages []models.Storage
+		storages []models.Vault
 	)
 	rows, err := r.client.Query(ctx, query, id)
 	if err != nil {
@@ -172,7 +172,7 @@ func (r *tipRepository) FindStorages(ctx context.Context, id int) ([]models.Stor
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var storage models.Storage
+		var storage models.Vault
 		if err := rows.Scan(&storage.ID, &storage.Name); err != nil {
 			return storages, fmt.Errorf("failed to scan storage: %w", err)
 		}

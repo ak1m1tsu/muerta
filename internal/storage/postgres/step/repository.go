@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type StepRepositorer interface {
@@ -19,7 +19,7 @@ type StepRepositorer interface {
 }
 
 type stepRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *stepRepository) Count(ctx context.Context, filter models.StepFilter) (int, error) {
@@ -145,7 +145,7 @@ func (r *stepRepository) Update(ctx context.Context, id int, model models.Step) 
 	return nil
 }
 
-func New(client repositories.PostgresClient) StepRepositorer {
+func New(client postgres.Client) StepRepositorer {
 	return &stepRepository{
 		client: client,
 	}

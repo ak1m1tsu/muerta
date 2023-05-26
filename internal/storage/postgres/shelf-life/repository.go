@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type ShelfLifeRepositorer interface {
@@ -22,7 +22,7 @@ type ShelfLifeRepositorer interface {
 }
 
 type shelfLifeRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *shelfLifeRepository) Count(
@@ -233,7 +233,7 @@ func (r *shelfLifeRepository) Update(ctx context.Context, model models.ShelfLife
 	return nil
 }
 
-func New(client repositories.PostgresClient) ShelfLifeRepositorer {
+func New(client postgres.Client) ShelfLifeRepositorer {
 	return &shelfLifeRepository{
 		client: client,
 	}

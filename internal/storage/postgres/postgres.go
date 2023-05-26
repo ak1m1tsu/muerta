@@ -1,5 +1,5 @@
 // repositories provides functions for interacting with a PostgreSQL database.
-package repositories
+package postgres
 
 import (
 	"context"
@@ -13,15 +13,15 @@ import (
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 )
 
-// PostgresClient is an interface for defining methods to interact with a PostgreSQL client.
-type PostgresClient interface {
+// Client is an interface for defining methods to interact with a PostgreSQL client.
+type Client interface {
 	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
 	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
 	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 	Begin(ctx context.Context) (pgx.Tx, error)
 }
 
-func doWithTries(
+func connectWithTries(
 	fn func() (*pgxpool.Pool, error),
 	attemtps int,
 	delay time.Duration,
@@ -42,10 +42,10 @@ func doWithTries(
 	return nil, err
 }
 
-// NewPostgresClient returns a new PostgreSQL client connection pool based on the provided config.
+// New returns a new PostgreSQL client connection pool based on the provided config.
 //
 // The function attempts to connect to the database maxAttempts times with a delay of 5 seconds between attempts.
-func NewPostgresClient(
+func New(
 	ctx context.Context,
 	maxAttempts int,
 	cfg *config.Config,
@@ -57,7 +57,7 @@ func NewPostgresClient(
 		cfg.Database.Port,
 		cfg.Database.Name,
 	)
-	pool, err := doWithTries(func() (*pgxpool.Pool, error) {
+	pool, err := connectWithTries(func() (*pgxpool.Pool, error) {
 		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 		pool, err := pgxpool.New(ctx, dsn)

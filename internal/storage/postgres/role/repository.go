@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type RoleRepositorer interface {
@@ -20,7 +20,7 @@ type RoleRepositorer interface {
 }
 
 type roleRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 // FindByName implements RoleRepositorer
@@ -39,7 +39,7 @@ func (r *roleRepository) FindByName(ctx context.Context, name string) (models.Ro
 	return role, nil
 }
 
-func New(client repositories.PostgresClient) RoleRepositorer {
+func New(client postgres.Client) RoleRepositorer {
 	return &roleRepository{
 		client: client,
 	}

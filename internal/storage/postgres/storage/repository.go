@@ -4,15 +4,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type StorageRepositorer interface {
-	FindByID(ctx context.Context, id int) (models.Storage, error)
-	FindMany(ctx context.Context, filter models.StorageFilter) ([]models.Storage, error)
-	Create(ctx context.Context, storage *models.Storage) error
-	Update(ctx context.Context, storage *models.Storage) error
+	FindByID(ctx context.Context, id int) (models.Vault, error)
+	FindMany(ctx context.Context, filter models.StorageFilter) ([]models.Vault, error)
+	Create(ctx context.Context, storage *models.Vault) error
+	Update(ctx context.Context, storage *models.Vault) error
 	Delete(ctx context.Context, id int) error
 	Restore(ctx context.Context, id int) error
 	CreateTip(ctx context.Context, id, tipID int) (models.Tip, error)
@@ -23,7 +23,7 @@ type StorageRepositorer interface {
 }
 
 type storageRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *storageRepository) FindShelfLives(
@@ -142,13 +142,13 @@ func (r *storageRepository) FindTips(ctx context.Context, id int) ([]models.Tip,
 	return tips, nil
 }
 
-func New(client repositories.PostgresClient) StorageRepositorer {
+func New(client postgres.Client) StorageRepositorer {
 	return &storageRepository{
 		client: client,
 	}
 }
 
-func (r *storageRepository) FindByID(ctx context.Context, id int) (models.Storage, error) {
+func (r *storageRepository) FindByID(ctx context.Context, id int) (models.Vault, error) {
 	var (
 		query = `
 			SELECT 
@@ -160,10 +160,10 @@ func (r *storageRepository) FindByID(ctx context.Context, id int) (models.Storag
 			WHERE s.id = $1 AND s.deleted_at IS NULL
 			LIMIT 1
 		`
-		storage models.Storage
+		storage models.Vault
 	)
 	if err := r.client.QueryRow(ctx, query, id).Scan(&storage.ID, &storage.Name, &storage.Temperature, &storage.Humidity, &storage.CreatedAt, &storage.Type.ID, &storage.Type.Name); err != nil {
-		return models.Storage{}, fmt.Errorf("find storage by id: %w", err)
+		return models.Vault{}, fmt.Errorf("find storage by id: %w", err)
 	}
 	return storage, nil
 }
@@ -171,7 +171,7 @@ func (r *storageRepository) FindByID(ctx context.Context, id int) (models.Storag
 func (r *storageRepository) FindMany(
 	ctx context.Context,
 	filter models.StorageFilter,
-) ([]models.Storage, error) {
+) ([]models.Vault, error) {
 	var (
 		query = `
 			SELECT 
@@ -185,7 +185,7 @@ func (r *storageRepository) FindMany(
 			ORDER BY s.created_at DESC
 			LIMIT $1 OFFSET $2
 		`
-		storages []models.Storage
+		storages []models.Vault
 	)
 	rows, err := r.client.Query(ctx, query, filter.Limit, filter.Offset, "%"+filter.Name+"%")
 	if err != nil {
@@ -193,7 +193,7 @@ func (r *storageRepository) FindMany(
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var storage models.Storage
+		var storage models.Vault
 		if err := rows.Scan(&storage.ID, &storage.Name, &storage.Temperature, &storage.Humidity, &storage.CreatedAt, &storage.Type.ID, &storage.Type.Name); err != nil {
 			return nil, fmt.Errorf("scan storage: %w", err)
 		}
@@ -202,7 +202,7 @@ func (r *storageRepository) FindMany(
 	return storages, nil
 }
 
-func (r *storageRepository) Create(ctx context.Context, storage *models.Storage) error {
+func (r *storageRepository) Create(ctx context.Context, storage *models.Vault) error {
 	query := `
 			INSERT INTO storages 
 				(name, temperature, humidity, id_type)
@@ -216,7 +216,7 @@ func (r *storageRepository) Create(ctx context.Context, storage *models.Storage)
 	return nil
 }
 
-func (r *storageRepository) Update(ctx context.Context, storage *models.Storage) error {
+func (r *storageRepository) Update(ctx context.Context, storage *models.Vault) error {
 	query := `
 			UPDATE storages
 			SET name = $1,

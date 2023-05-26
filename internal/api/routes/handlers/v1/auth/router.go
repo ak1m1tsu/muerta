@@ -6,16 +6,16 @@ import (
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/role"
-	"github.com/romankravchuk/muerta/internal/repositories/user"
 	"github.com/romankravchuk/muerta/internal/services/auth"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/role"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/user"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 func NewRouter(
 	cfg *config.Config,
-	client repositories.PostgresClient,
+	client postgres.Client,
 	logger *log.Logger,
 	redis redis.Client,
 	jware *jware.JWTMiddleware,

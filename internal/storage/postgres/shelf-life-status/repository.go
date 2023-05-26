@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type ShelfLifeStatusRepositorer interface {
@@ -21,7 +21,7 @@ type ShelfLifeStatusRepositorer interface {
 }
 
 type shelfLifeStatusRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *shelfLifeStatusRepository) Count(
@@ -135,7 +135,7 @@ func (r *shelfLifeStatusRepository) Update(
 	return nil
 }
 
-func New(client repositories.PostgresClient) ShelfLifeStatusRepositorer {
+func New(client postgres.Client) ShelfLifeStatusRepositorer {
 	return &shelfLifeStatusRepository{
 		client: client,
 	}

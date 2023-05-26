@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	repository "github.com/romankravchuk/muerta/internal/repositories/category"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	repository "github.com/romankravchuk/muerta/internal/storage/postgres/category"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type CategoryServicer interface {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type CategoryRepositorer interface {
@@ -22,7 +22,7 @@ type CategoryRepositorer interface {
 }
 
 type categoryRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *categoryRepository) Count(
@@ -143,7 +143,7 @@ func (r *categoryRepository) Update(ctx context.Context, role models.ProductCate
 	return nil
 }
 
-func New(client repositories.PostgresClient) CategoryRepositorer {
+func New(client postgres.Client) CategoryRepositorer {
 	return &categoryRepository{
 		client: client,
 	}

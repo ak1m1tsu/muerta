@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type StorageTypeRepositorer interface {
@@ -17,12 +17,12 @@ type StorageTypeRepositorer interface {
 	FindTips(ctx context.Context, id int) ([]models.Tip, error)
 	CreateTip(ctx context.Context, id int, tipID int) (models.Tip, error)
 	DeleteTip(ctx context.Context, id int, tipID int) error
-	FindStorages(ctx context.Context, id int) ([]models.Storage, error)
+	FindStorages(ctx context.Context, id int) ([]models.Vault, error)
 	Count(ctx context.Context, filter models.StorageTypeFilter) (int, error)
 }
 
 type storageTypeRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *storageTypeRepository) Count(
@@ -85,14 +85,14 @@ func (r *storageTypeRepository) DeleteTip(ctx context.Context, id int, tipID int
 func (r *storageTypeRepository) FindStorages(
 	ctx context.Context,
 	id int,
-) ([]models.Storage, error) {
+) ([]models.Vault, error) {
 	var (
 		query = `
 			SELECT s.id, s.name, s.temperature, s.humidity
 			FROM storages s
 			WHERE s.id_type = $1 AND s.deleted_at IS NULL
 		`
-		result []models.Storage
+		result []models.Vault
 	)
 	rows, err := r.client.Query(ctx, query, id)
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *storageTypeRepository) FindStorages(
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var storage models.Storage
+		var storage models.Vault
 		if err := rows.Scan(&storage.ID, &storage.Name, &storage.Temperature, &storage.Humidity); err != nil {
 			return nil, fmt.Errorf("failed to scan storage: %w", err)
 		}
@@ -219,7 +219,7 @@ func (r *storageTypeRepository) Update(ctx context.Context, storageType models.S
 	return nil
 }
 
-func New(client repositories.PostgresClient) StorageTypeRepositorer {
+func New(client postgres.Client) StorageTypeRepositorer {
 	return &storageTypeRepository{
 		client: client,
 	}

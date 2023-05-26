@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type SettingsRepositorer interface {
@@ -19,10 +19,10 @@ type SettingsRepositorer interface {
 }
 
 type settingsRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
-func New(client repositories.PostgresClient) SettingsRepositorer {
+func New(client postgres.Client) SettingsRepositorer {
 	return &settingsRepository{
 		client: client,
 	}

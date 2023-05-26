@@ -16,7 +16,7 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/notfound"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
@@ -26,7 +26,7 @@ type Router struct {
 
 func NewV1(
 	cfg *config.Config,
-	client repositories.PostgresClient,
+	client postgres.Client,
 	cache redis.Client,
 	logger *log.Logger,
 ) *Router {

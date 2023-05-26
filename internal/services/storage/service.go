@@ -6,8 +6,8 @@ import (
 
 	"github.com/romankravchuk/muerta/internal/api/routes/dto"
 	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	"github.com/romankravchuk/muerta/internal/repositories/storage"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/storage"
 )
 
 type StorageServicer interface {

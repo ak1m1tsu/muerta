@@ -5,13 +5,13 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/access"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	"github.com/romankravchuk/muerta/internal/repositories"
-	repository "github.com/romankravchuk/muerta/internal/repositories/shelf-life-status"
 	service "github.com/romankravchuk/muerta/internal/services/shelf-life-status"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	repository "github.com/romankravchuk/muerta/internal/storage/postgres/shelf-life-status"
 )
 
 func NewRouter(
-	client repositories.PostgresClient,
+	client postgres.Client,
 	log *log.Logger,
 	jware *jware.JWTMiddleware,
 ) *fiber.App {

@@ -5,7 +5,7 @@ import "time"
 type ShelfLife struct {
 	ID           int `db:"id"`
 	Product      Product
-	Storage      Storage
+	Storage      Vault
 	Measure      Measure
 	User         User
 	Quantity     int        `db:"quantity"`

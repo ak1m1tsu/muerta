@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type ProductRepositorer interface {
@@ -26,7 +26,7 @@ type ProductRepositorer interface {
 }
 
 type productRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 // CreateTip implements ProductRepositorer
@@ -150,7 +150,7 @@ func (r *productRepository) DeleteCategory(
 	return nil
 }
 
-func New(client repositories.PostgresClient) ProductRepositorer {
+func New(client postgres.Client) ProductRepositorer {
 	return &productRepository{client: client}
 }
 

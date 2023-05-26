@@ -6,13 +6,13 @@ import (
 	"github.com/romankravchuk/muerta/internal/api/routes/middleware/context"
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	"github.com/romankravchuk/muerta/internal/repositories"
-	repo "github.com/romankravchuk/muerta/internal/repositories/product"
 	svc "github.com/romankravchuk/muerta/internal/services/product"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	repo "github.com/romankravchuk/muerta/internal/storage/postgres/product"
 )
 
 func NewRouter(
-	client repositories.PostgresClient,
+	client postgres.Client,
 	log *log.Logger,
 	jware *jware.JWTMiddleware,
 ) *fiber.App {

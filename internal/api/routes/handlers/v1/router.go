@@ -20,14 +20,14 @@ import (
 	jware "github.com/romankravchuk/muerta/internal/api/routes/middleware/jwt"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/log"
-	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 func New(
 	cfg *config.Config,
 	app fiber.Router,
-	client repositories.PostgresClient,
+	client postgres.Client,
 	cache redis.Client,
 	logger *log.Logger,
 ) {

@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type Storage struct {
+type Vault struct {
 	ID          int        `db:"id"`
 	Name        string     `db:"name"`
 	Temperature float32    `db:"temperature"`

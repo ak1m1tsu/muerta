@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type RecipeIngredientsRepositorer interface {
@@ -43,7 +43,7 @@ type RecipesRepositorer interface {
 }
 
 type recipesRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *recipesRepository) Count(ctx context.Context, filter models.RecipeFilter) (int, error) {
@@ -241,7 +241,7 @@ func (r *recipesRepository) UpdateIngredient(
 	return *entity, nil
 }
 
-func New(client repositories.PostgresClient) RecipesRepositorer {
+func New(client postgres.Client) RecipesRepositorer {
 	return &recipesRepository{client: client}
 }
 

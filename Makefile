@@ -11,7 +11,7 @@ run: build
 	./bin/muerta
 
 format:
-	golines -w /dev/null --base-formatter="gofumpt" ./internal && \
+	gofumpt -w ./internal && \
 	 goimports-reviser ./internal
 
 docker-up:

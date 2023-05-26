@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/repositories"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type MeasureRepositorer interface {
@@ -18,7 +18,7 @@ type MeasureRepositorer interface {
 }
 
 type measureRepository struct {
-	client repositories.PostgresClient
+	client postgres.Client
 }
 
 func (r *measureRepository) Count(ctx context.Context, filter models.MeasureFilter) (int, error) {
@@ -118,7 +118,7 @@ func (r *measureRepository) Update(ctx context.Context, measure models.Measure) 
 	return nil
 }
 
-func New(client repositories.PostgresClient) MeasureRepositorer {
+func New(client postgres.Client) MeasureRepositorer {
 	return &measureRepository{
 		client: client,
 	}
