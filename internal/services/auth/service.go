@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
 	"github.com/romankravchuk/muerta/internal/pkg/auth"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/jwt"
@@ -23,12 +23,12 @@ type JWTCredential struct {
 }
 
 type AuthServicer interface {
-	SignUpUser(ctx context.Context, payload *dto.SignUp) error
+	SignUpUser(ctx context.Context, payload *params.SignUp) error
 	LoginUser(
 		ctx context.Context,
-		payload *dto.Login,
-	) (*dto.TokenDetails, *dto.TokenDetails, error)
-	RefreshAccessToken(ctx context.Context, refreshToken string) (*dto.TokenDetails, error)
+		payload *params.Login,
+	) (*params.TokenDetails, *params.TokenDetails, error)
+	RefreshAccessToken(ctx context.Context, refreshToken string) (*params.TokenDetails, error)
 	LogoutUser(ctx context.Context, refreshToken, accessTokenUUID string) error
 }
 
@@ -52,7 +52,7 @@ func (s *AuthService) LogoutUser(ctx context.Context, refreshToken, accessTokenU
 func (s *AuthService) RefreshAccessToken(
 	ctx context.Context,
 	refreshToken string,
-) (*dto.TokenDetails, error) {
+) (*params.TokenDetails, error) {
 	tokenPayload, err := jwt.ValidateToken(refreshToken, s.refreshCreds.PublicKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
@@ -73,8 +73,8 @@ func (s *AuthService) RefreshAccessToken(
 // LoginUser implements AuthServicer
 func (s *AuthService) LoginUser(
 	ctx context.Context,
-	payload *dto.Login,
-) (*dto.TokenDetails, *dto.TokenDetails, error) {
+	payload *params.Login,
+) (*params.TokenDetails, *params.TokenDetails, error) {
 	model, err := s.usrStorage.FindByName(ctx, payload.Name)
 	if err != nil {
 		return nil, nil, fmt.Errorf("user not found: %w", err)
@@ -83,7 +83,7 @@ func (s *AuthService) LoginUser(
 	if ok := auth.CompareHashAndPassword(payload.Password, model.Salt, hash); !ok {
 		return nil, nil, fmt.Errorf("invalid name or password")
 	}
-	tokenPayload := &dto.TokenPayload{
+	tokenPayload := &params.TokenPayload{
 		UserID:   model.ID,
 		Username: payload.Name,
 		Roles:    []string{},
@@ -110,7 +110,7 @@ func (s *AuthService) LoginUser(
 }
 
 // SignUpUser implements AuthServicer
-func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUp) error {
+func (s *AuthService) SignUpUser(ctx context.Context, payload *params.SignUp) error {
 	if _, err := s.usrStorage.FindByName(ctx, payload.Name); err == nil {
 		return fmt.Errorf("user already exists")
 	}

@@ -4,20 +4,20 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
-	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
+	"github.com/romankravchuk/muerta/internal/services/utils"
 	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 	"github.com/romankravchuk/muerta/internal/storage/postgres/setting"
 )
 
 type UserSettingsServicer interface {
-	FindSettingByID(ctx context.Context, id int) (dto.FindSetting, error)
-	FindSettings(ctx context.Context, filter *dto.SettingFilter) ([]dto.FindSetting, error)
-	CreateSetting(ctx context.Context, setting *dto.CreateSetting) error
-	UpdateSetting(ctx context.Context, id int, setting *dto.UpdateSetting) error
+	FindSettingByID(ctx context.Context, id int) (params.FindSetting, error)
+	FindSettings(ctx context.Context, filter *params.SettingFilter) ([]params.FindSetting, error)
+	CreateSetting(ctx context.Context, setting *params.CreateSetting) error
+	UpdateSetting(ctx context.Context, id int, setting *params.UpdateSetting) error
 	DeleteSetting(ctx context.Context, id int) error
-	RestoreSetting(ctx context.Context, id int) (dto.FindSetting, error)
-	Count(ctx context.Context, filter dto.SettingFilter) (int, error)
+	RestoreSetting(ctx context.Context, id int) (params.FindSetting, error)
+	Count(ctx context.Context, filter params.SettingFilter) (int, error)
 }
 
 type userSettingsService struct {
@@ -25,7 +25,7 @@ type userSettingsService struct {
 }
 
 // Count implements UserSettingsServicer
-func (s *userSettingsService) Count(ctx context.Context, filter dto.SettingFilter) (int, error) {
+func (s *userSettingsService) Count(ctx context.Context, filter params.SettingFilter) (int, error) {
 	return s.repo.Count(ctx, models.SettingFilter{Name: filter.Name})
 }
 
@@ -36,19 +36,19 @@ func New(repo setting.SettingsRepositorer) UserSettingsServicer {
 func (s *userSettingsService) FindSettingByID(
 	ctx context.Context,
 	id int,
-) (dto.FindSetting, error) {
+) (params.FindSetting, error) {
 	model, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		return dto.FindSetting{}, err
+		return params.FindSetting{}, err
 	}
-	dto := translate.SettingModelToFind(&model)
+	dto := utils.SettingModelToFind(&model)
 	return dto, nil
 }
 
 func (s *userSettingsService) FindSettings(
 	ctx context.Context,
-	filter *dto.SettingFilter,
-) ([]dto.FindSetting, error) {
+	filter *params.SettingFilter,
+) ([]params.FindSetting, error) {
 	models, err := s.repo.FindMany(ctx, models.SettingFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
@@ -59,15 +59,15 @@ func (s *userSettingsService) FindSettings(
 	if err != nil {
 		return nil, err
 	}
-	dtos := translate.SettingModelsToFinds(models)
+	dtos := utils.SettingModelsToFinds(models)
 	return dtos, nil
 }
 
 func (s *userSettingsService) CreateSetting(
 	ctx context.Context,
-	payload *dto.CreateSetting,
+	payload *params.CreateSetting,
 ) error {
-	model := translate.CreateSettingToModel(payload)
+	model := utils.CreateSettingToModel(payload)
 	err := s.repo.Create(ctx, model)
 	return err
 }
@@ -75,7 +75,7 @@ func (s *userSettingsService) CreateSetting(
 func (s *userSettingsService) UpdateSetting(
 	ctx context.Context,
 	id int,
-	payload *dto.UpdateSetting,
+	payload *params.UpdateSetting,
 ) error {
 	model, err := s.repo.FindByID(ctx, id)
 	if err != nil {
@@ -104,10 +104,10 @@ func (s *userSettingsService) DeleteSetting(ctx context.Context, id int) error {
 func (s *userSettingsService) RestoreSetting(
 	ctx context.Context,
 	id int,
-) (dto.FindSetting, error) {
+) (params.FindSetting, error) {
 	model, err := s.repo.Restore(ctx, id)
 	if err != nil {
-		return dto.FindSetting{}, fmt.Errorf("restore setting error: %w", err)
+		return params.FindSetting{}, fmt.Errorf("restore setting error: %w", err)
 	}
-	return translate.SettingModelToFind(&model), nil
+	return utils.SettingModelToFind(&model), nil
 }

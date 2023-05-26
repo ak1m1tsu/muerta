@@ -4,23 +4,23 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
-	"github.com/romankravchuk/muerta/internal/pkg/translate"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
+	"github.com/romankravchuk/muerta/internal/services/utils"
 	repository "github.com/romankravchuk/muerta/internal/storage/postgres/category"
 	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
 )
 
 type CategoryServicer interface {
-	FindCategoryByID(ctx context.Context, id int) (dto.FindProductCategory, error)
+	FindCategoryByID(ctx context.Context, id int) (params.FindProductCategory, error)
 	FindCategorys(
 		ctx context.Context,
-		filter *dto.ProductCategoryFilter,
-	) ([]dto.FindProductCategory, error)
-	CreateCategory(ctx context.Context, payload *dto.CreateProductCategory) error
-	UpdateCategory(ctx context.Context, id int, category *dto.UpdateProductCategory) error
+		filter *params.ProductCategoryFilter,
+	) ([]params.FindProductCategory, error)
+	CreateCategory(ctx context.Context, payload *params.CreateProductCategory) error
+	UpdateCategory(ctx context.Context, id int, category *params.UpdateProductCategory) error
 	DeleteCategory(ctx context.Context, id int) error
 	RestoreCategory(ctx context.Context, id int) error
-	Count(ctx context.Context, filter dto.ProductCategoryFilter) (int, error)
+	Count(ctx context.Context, filter params.ProductCategoryFilter) (int, error)
 }
 
 type categoryService struct {
@@ -29,7 +29,7 @@ type categoryService struct {
 
 func (s *categoryService) Count(
 	ctx context.Context,
-	filter dto.ProductCategoryFilter,
+	filter params.ProductCategoryFilter,
 ) (int, error) {
 	count, err := s.repo.Count(ctx, models.ProductCategoryFilter{Name: filter.Name})
 	if err != nil {
@@ -41,9 +41,9 @@ func (s *categoryService) Count(
 // CreateCategory implements CategoryServicer
 func (svc *categoryService) CreateCategory(
 	ctx context.Context,
-	payload *dto.CreateProductCategory,
+	payload *params.CreateProductCategory,
 ) error {
-	model := translate.CreateCategoryToModel(payload)
+	model := utils.CreateCategoryToModel(payload)
 	if err := svc.repo.Create(ctx, model); err != nil {
 		return err
 	}
@@ -62,20 +62,20 @@ func (svc *categoryService) DeleteCategory(ctx context.Context, id int) error {
 func (svc *categoryService) FindCategoryByID(
 	ctx context.Context,
 	id int,
-) (dto.FindProductCategory, error) {
+) (params.FindProductCategory, error) {
 	category, err := svc.repo.FindByID(ctx, id)
 	if err != nil {
-		return dto.FindProductCategory{}, err
+		return params.FindProductCategory{}, err
 	}
-	dto := translate.ProductCategoryModelToFind(&category)
+	dto := utils.ProductCategoryModelToFind(&category)
 	return dto, nil
 }
 
 // FindCategorys implements CategoryServicer
 func (svc *categoryService) FindCategorys(
 	ctx context.Context,
-	filter *dto.ProductCategoryFilter,
-) ([]dto.FindProductCategory, error) {
+	filter *params.ProductCategoryFilter,
+) ([]params.FindProductCategory, error) {
 	categories, err := svc.repo.FindMany(ctx, models.ProductCategoryFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
@@ -86,7 +86,7 @@ func (svc *categoryService) FindCategorys(
 	if err != nil {
 		return nil, err
 	}
-	dtos := translate.CategoryModelsToFinds(categories)
+	dtos := utils.CategoryModelsToFinds(categories)
 	return dtos, nil
 }
 
@@ -102,7 +102,7 @@ func (svc *categoryService) RestoreCategory(ctx context.Context, id int) error {
 func (svc *categoryService) UpdateCategory(
 	ctx context.Context,
 	id int,
-	category *dto.UpdateProductCategory,
+	category *params.UpdateProductCategory,
 ) error {
 	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {

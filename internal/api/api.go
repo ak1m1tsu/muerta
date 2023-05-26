@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/api/routes"
+	"github.com/romankravchuk/muerta/internal/api/router"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/logger"
 	"github.com/romankravchuk/muerta/internal/storage/postgres"
@@ -11,7 +11,7 @@ import (
 )
 
 type API struct {
-	router     *routes.Router
+	router     *router.Router
 	listenAddr string
 }
 
@@ -22,7 +22,7 @@ func New(
 	logger logger.Logger,
 ) *API {
 	return &API{
-		router:     routes.NewV1(cfg, client, cache, logger),
+		router:     router.NewV1(cfg, client, cache, logger),
 		listenAddr: fmt.Sprintf("0.0.0.0:%s", cfg.API.Port),
 	}
 }

@@ -26,13 +26,6 @@ func init() {
 	validate.RegisterValidation("notblank", notBlank)
 }
 
-const (
-	KeyErrResponses string = "validation"
-	keyField        string = "field"
-	keyTag          string = "tag"
-	keyValue        string = "value"
-)
-
 type ValidationError struct {
 	Field string      `json:"field"`
 	Tag   string      `json:"tag"`
