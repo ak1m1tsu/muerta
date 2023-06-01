@@ -3,26 +3,26 @@ package api
 import (
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/api/routes"
+	"github.com/romankravchuk/muerta/internal/api/router"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
-	"github.com/romankravchuk/muerta/internal/pkg/log"
-	"github.com/romankravchuk/muerta/internal/repositories"
+	"github.com/romankravchuk/muerta/internal/pkg/logger"
+	"github.com/romankravchuk/muerta/internal/storage/postgres"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
 type API struct {
-	router     *routes.Router
+	router     *router.Router
 	listenAddr string
 }
 
 func New(
 	cfg *config.Config,
-	client repositories.PostgresClient,
+	client postgres.Client,
 	cache redis.Client,
-	logger *log.Logger,
+	logger logger.Logger,
 ) *API {
 	return &API{
-		router:     routes.NewV1(cfg, client, cache, logger),
+		router:     router.NewV1(cfg, client, cache, logger),
 		listenAddr: fmt.Sprintf("0.0.0.0:%s", cfg.API.Port),
 	}
 }

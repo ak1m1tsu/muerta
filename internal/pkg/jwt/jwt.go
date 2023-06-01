@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
 	"github.com/romankravchuk/muerta/internal/pkg/errors"
 )
 
@@ -29,12 +29,12 @@ type Claims struct {
 // CreateToken creates a new JWT token with the given payload, TTL, and private key.
 // Returns the token details and an error, if any.
 func CreateToken(
-	payload *dto.TokenPayload,
+	payload *params.TokenPayload,
 	ttl time.Duration,
 	pirvateKey []byte,
-) (*dto.TokenDetails, error) {
+) (*params.TokenDetails, error) {
 	now := time.Now().UTC()
-	td := &dto.TokenDetails{
+	td := &params.TokenDetails{
 		UUID: uuid.New().String(),
 		User: payload,
 	}
@@ -65,7 +65,7 @@ func CreateToken(
 
 // ValidateToken validates a JWT token with the given public key.
 // Returns the token payload and an error, if any.
-func ValidateToken(token string, publickKey []byte) (*dto.TokenPayload, error) {
+func ValidateToken(token string, publickKey []byte) (*params.TokenPayload, error) {
 	key, err := jwt.ParseRSAPublicKeyFromPEM(publickKey)
 	if err != nil {
 		return nil, errValidateToken.With(errParseKey).With(err)
@@ -87,7 +87,7 @@ func ValidateToken(token string, publickKey []byte) (*dto.TokenPayload, error) {
 	if !ok {
 		return nil, errValidateToken.With(errClaimsType)
 	}
-	payload := &dto.TokenPayload{
+	payload := &params.TokenPayload{
 		UUID:     claims.ID,
 		UserID:   claims.UserID,
 		Username: claims.Username,
