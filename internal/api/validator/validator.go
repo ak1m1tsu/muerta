@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/rs/zerolog"
 )
 
 var validate *validator.Validate
@@ -27,13 +26,6 @@ func init() {
 	validate.RegisterValidation("notblank", notBlank)
 }
 
-const (
-	KeyErrResponses string = "HTTPErrors"
-	keyField        string = "field"
-	keyTag          string = "tag"
-	keyValue        string = "value"
-)
-
 type ValidationError struct {
 	Field string      `json:"field"`
 	Tag   string      `json:"tag"`
@@ -49,12 +41,6 @@ func (e ValidationError) Error() string {
 	)
 }
 
-func (er ValidationError) MarshalZerologObject(e *zerolog.Event) {
-	e.Str(keyField, er.Field).
-		Str(keyTag, er.Tag).
-		Interface(keyValue, er.Value)
-}
-
 type ValidationErrors []ValidationError
 
 func (errs ValidationErrors) Error() string {
@@ -67,12 +53,6 @@ func (errs ValidationErrors) Error() string {
 		buf.WriteString(fmt.Sprintf("%s, ", err))
 	}
 	return buf.String()
-}
-
-func (ers ValidationErrors) MarshalZerologArray(a *zerolog.Array) {
-	for _, er := range ers {
-		a.Object(er)
-	}
 }
 
 func Validate(payload interface{}) ValidationErrors {

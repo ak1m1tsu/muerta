@@ -8,19 +8,19 @@ import (
 	"testing"
 	"time"
 
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_CreateToken(t *testing.T) {
 	testCases := []struct {
 		name    string
-		details *dto.TokenDetails
+		details *params.TokenDetails
 	}{
 		{
 			name: "valid details",
-			details: &dto.TokenDetails{
-				User: &dto.TokenPayload{
+			details: &params.TokenDetails{
+				User: &params.TokenPayload{
 					UserID:   1,
 					Username: "username",
 					Roles:    []string{"user"},

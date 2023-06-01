@@ -4,22 +4,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
-	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	repository "github.com/romankravchuk/muerta/internal/repositories/shelf-life-status"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
+	"github.com/romankravchuk/muerta/internal/services/utils"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	repository "github.com/romankravchuk/muerta/internal/storage/postgres/shelf-life-status"
 )
 
 type ShelfLifeStatusServicer interface {
-	FindShelfLifeStatusByID(ctx context.Context, id int) (dto.FindShelfLifeStatus, error)
+	FindShelfLifeStatusByID(ctx context.Context, id int) (params.FindShelfLifeStatus, error)
 	FindShelfLifeStatuss(
 		ctx context.Context,
-		filter *dto.ShelfLifeStatusFilter,
-	) ([]dto.FindShelfLifeStatus, error)
-	CreateShelfLifeStatus(ctx context.Context, payload *dto.CreateShelfLifeStatus) error
-	UpdateShelfLifeStatus(ctx context.Context, id int, payload *dto.UpdateShelfLifeStatus) error
+		filter *params.ShelfLifeStatusFilter,
+	) ([]params.FindShelfLifeStatus, error)
+	CreateShelfLifeStatus(ctx context.Context, payload *params.CreateShelfLifeStatus) error
+	UpdateShelfLifeStatus(ctx context.Context, id int, payload *params.UpdateShelfLifeStatus) error
 	DeleteShelfLifeStatus(ctx context.Context, id int) error
-	Count(ctx context.Context, filter dto.ShelfLifeStatusFilter) (int, error)
+	Count(ctx context.Context, filter params.ShelfLifeStatusFilter) (int, error)
 }
 
 type shelfLifeStatusService struct {
@@ -28,7 +28,7 @@ type shelfLifeStatusService struct {
 
 func (s *shelfLifeStatusService) Count(
 	ctx context.Context,
-	filter dto.ShelfLifeStatusFilter,
+	filter params.ShelfLifeStatusFilter,
 ) (int, error) {
 	count, err := s.repo.Count(ctx, models.ShelfLifeStatusFilter{Name: filter.Name})
 	if err != nil {
@@ -40,9 +40,9 @@ func (s *shelfLifeStatusService) Count(
 // CreateShelfLifeStatus implements ShelfLifeStatusServicer
 func (svc *shelfLifeStatusService) CreateShelfLifeStatus(
 	ctx context.Context,
-	payload *dto.CreateShelfLifeStatus,
+	payload *params.CreateShelfLifeStatus,
 ) error {
-	model := translate.CreateShelfLifeStatusToModel(payload)
+	model := utils.CreateShelfLifeStatusToModel(payload)
 	if err := svc.repo.Create(ctx, model); err != nil {
 		return err
 	}
@@ -61,11 +61,11 @@ func (svc *shelfLifeStatusService) DeleteShelfLifeStatus(ctx context.Context, id
 func (svc *shelfLifeStatusService) FindShelfLifeStatusByID(
 	ctx context.Context,
 	id int,
-) (dto.FindShelfLifeStatus, error) {
+) (params.FindShelfLifeStatus, error) {
 	model, err := svc.repo.FindByID(ctx, id)
-	result := translate.ShelfLifeStatusModelToFind(&model)
+	result := utils.ShelfLifeStatusModelToFind(&model)
 	if err != nil {
-		return dto.FindShelfLifeStatus{}, err
+		return params.FindShelfLifeStatus{}, err
 	}
 	return result, nil
 }
@@ -73,8 +73,8 @@ func (svc *shelfLifeStatusService) FindShelfLifeStatusByID(
 // FindShelfLifeStatuss implements ShelfLifeStatusServicer
 func (svc *shelfLifeStatusService) FindShelfLifeStatuss(
 	ctx context.Context,
-	filter *dto.ShelfLifeStatusFilter,
-) ([]dto.FindShelfLifeStatus, error) {
+	filter *params.ShelfLifeStatusFilter,
+) ([]params.FindShelfLifeStatus, error) {
 	models, err := svc.repo.FindMany(ctx, models.ShelfLifeStatusFilter{
 		PageFilter: models.PageFilter{
 			Limit:  filter.Limit,
@@ -82,7 +82,7 @@ func (svc *shelfLifeStatusService) FindShelfLifeStatuss(
 		},
 		Name: filter.Name,
 	})
-	dtos := translate.ShelfLifeStatusModelsToFinds(models)
+	dtos := utils.ShelfLifeStatusModelsToFinds(models)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (svc *shelfLifeStatusService) FindShelfLifeStatuss(
 func (svc *shelfLifeStatusService) UpdateShelfLifeStatus(
 	ctx context.Context,
 	id int,
-	payload *dto.UpdateShelfLifeStatus,
+	payload *params.UpdateShelfLifeStatus,
 ) error {
 	model, err := svc.repo.FindByID(ctx, id)
 	if err != nil {

@@ -4,24 +4,24 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
-	"github.com/romankravchuk/muerta/internal/pkg/translate"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	"github.com/romankravchuk/muerta/internal/repositories/storage"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
+	"github.com/romankravchuk/muerta/internal/services/utils"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/storage"
 )
 
 type StorageServicer interface {
-	FindStorageByID(ctx context.Context, id int) (dto.FindStorage, error)
-	FindStorages(ctx context.Context, filter *dto.StorageFilter) ([]dto.FindStorage, error)
-	CreateStorage(ctx context.Context, payload *dto.CreateStorage) error
-	UpdateStorage(ctx context.Context, id int, payload *dto.UpdateStorage) error
+	FindStorageByID(ctx context.Context, id int) (params.FindStorage, error)
+	FindStorages(ctx context.Context, filter *params.StorageFilter) ([]params.FindStorage, error)
+	CreateStorage(ctx context.Context, payload *params.CreateStorage) error
+	UpdateStorage(ctx context.Context, id int, payload *params.UpdateStorage) error
 	DeleteStorage(ctx context.Context, id int) error
 	RestoreStorage(ctx context.Context, id int) error
-	FindTips(ctx context.Context, id int) ([]dto.FindTip, error)
-	CreateTip(ctx context.Context, id, tipID int) (dto.FindTip, error)
+	FindTips(ctx context.Context, id int) ([]params.FindTip, error)
+	CreateTip(ctx context.Context, id, tipID int) (params.FindTip, error)
 	DeleteTip(ctx context.Context, id, tipID int) error
-	FindShelfLives(ctx context.Context, id int) ([]dto.FindShelfLife, error)
-	Count(ctx context.Context, filter dto.StorageFilter) (int, error)
+	FindShelfLives(ctx context.Context, id int) ([]params.FindShelfLife, error)
+	Count(ctx context.Context, filter params.StorageFilter) (int, error)
 }
 
 type storageService struct {
@@ -31,15 +31,15 @@ type storageService struct {
 func (s *storageService) FindShelfLives(
 	ctx context.Context,
 	id int,
-) ([]dto.FindShelfLife, error) {
+) ([]params.FindShelfLife, error) {
 	result, err := s.repo.FindShelfLives(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find shelf lives: %w", err)
 	}
-	return translate.ShelfLifeModelsToFinds(result), nil
+	return utils.ShelfLifeModelsToFinds(result), nil
 }
 
-func (s *storageService) Count(ctx context.Context, filter dto.StorageFilter) (int, error) {
+func (s *storageService) Count(ctx context.Context, filter params.StorageFilter) (int, error) {
 	count, err := s.repo.Count(ctx, models.StorageFilter{Name: filter.Name})
 	if err != nil {
 		return 0, fmt.Errorf("error counting storages: %w", err)
@@ -48,12 +48,12 @@ func (s *storageService) Count(ctx context.Context, filter dto.StorageFilter) (i
 }
 
 // CreateTip implements StorageServicer
-func (s *storageService) CreateTip(ctx context.Context, id int, tipID int) (dto.FindTip, error) {
+func (s *storageService) CreateTip(ctx context.Context, id int, tipID int) (params.FindTip, error) {
 	result, err := s.repo.CreateTip(ctx, id, tipID)
 	if err != nil {
-		return dto.FindTip{}, fmt.Errorf("failed to create tip: %w", err)
+		return params.FindTip{}, fmt.Errorf("failed to create tip: %w", err)
 	}
-	return translate.TipModelToFind(&result), nil
+	return utils.TipModelToFind(&result), nil
 }
 
 // DeleteTip implements StorageServicer
@@ -65,12 +65,12 @@ func (s *storageService) DeleteTip(ctx context.Context, id int, tipID int) error
 }
 
 // FindTips implements StorageServicer
-func (s *storageService) FindTips(ctx context.Context, id int) ([]dto.FindTip, error) {
+func (s *storageService) FindTips(ctx context.Context, id int) ([]params.FindTip, error) {
 	result, err := s.repo.FindTips(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find tips: %w", err)
 	}
-	return translate.TipModelsToFinds(result), nil
+	return utils.TipModelsToFinds(result), nil
 }
 
 func New(repo storage.StorageRepositorer) StorageServicer {
@@ -79,19 +79,19 @@ func New(repo storage.StorageRepositorer) StorageServicer {
 	}
 }
 
-func (s *storageService) FindStorageByID(ctx context.Context, id int) (dto.FindStorage, error) {
+func (s *storageService) FindStorageByID(ctx context.Context, id int) (params.FindStorage, error) {
 	model, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		return dto.FindStorage{}, fmt.Errorf("failed to find storage: %w", err)
+		return params.FindStorage{}, fmt.Errorf("failed to find storage: %w", err)
 	}
-	dto := translate.StorageModelToFind(&model)
+	dto := utils.StorageModelToFind(&model)
 	return dto, nil
 }
 
 func (s *storageService) FindStorages(
 	ctx context.Context,
-	filter *dto.StorageFilter,
-) ([]dto.FindStorage, error) {
+	filter *params.StorageFilter,
+) ([]params.FindStorage, error) {
 	models, err := s.repo.FindMany(ctx, models.StorageFilter{
 		PageFilter: models.PageFilter{Limit: filter.Limit, Offset: filter.Offset},
 		Name:       filter.Name,
@@ -99,12 +99,12 @@ func (s *storageService) FindStorages(
 	if err != nil {
 		return nil, fmt.Errorf("failed to find storages: %w", err)
 	}
-	dtos := translate.StorageModelsToFinds(models)
+	dtos := utils.StorageModelsToFinds(models)
 	return dtos, nil
 }
 
-func (s *storageService) CreateStorage(ctx context.Context, payload *dto.CreateStorage) error {
-	model := translate.CreateStorageToModel(payload)
+func (s *storageService) CreateStorage(ctx context.Context, payload *params.CreateStorage) error {
+	model := utils.CreateStorageToModel(payload)
 	if err := s.repo.Create(ctx, &model); err != nil {
 		return fmt.Errorf("failed to create storage: %w", err)
 	}
@@ -114,7 +114,7 @@ func (s *storageService) CreateStorage(ctx context.Context, payload *dto.CreateS
 func (s *storageService) UpdateStorage(
 	ctx context.Context,
 	id int,
-	payload *dto.UpdateStorage,
+	payload *params.UpdateStorage,
 ) error {
 	model, err := s.repo.FindByID(ctx, id)
 	if err != nil {

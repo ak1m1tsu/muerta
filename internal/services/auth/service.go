@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/romankravchuk/muerta/internal/api/routes/dto"
+	"github.com/romankravchuk/muerta/internal/api/router/params"
 	"github.com/romankravchuk/muerta/internal/pkg/auth"
 	"github.com/romankravchuk/muerta/internal/pkg/config"
 	"github.com/romankravchuk/muerta/internal/pkg/jwt"
-	"github.com/romankravchuk/muerta/internal/repositories/models"
-	"github.com/romankravchuk/muerta/internal/repositories/role"
-	"github.com/romankravchuk/muerta/internal/repositories/user"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/models"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/role"
+	"github.com/romankravchuk/muerta/internal/storage/postgres/user"
 	"github.com/romankravchuk/muerta/internal/storage/redis"
 )
 
@@ -23,26 +23,26 @@ type JWTCredential struct {
 }
 
 type AuthServicer interface {
-	SignUpUser(ctx context.Context, payload *dto.SignUp) error
+	SignUpUser(ctx context.Context, payload *params.SignUp) error
 	LoginUser(
 		ctx context.Context,
-		payload *dto.Login,
-	) (*dto.TokenDetails, *dto.TokenDetails, error)
-	RefreshAccessToken(ctx context.Context, refreshToken string) (*dto.TokenDetails, error)
+		payload *params.Login,
+	) (*params.TokenDetails, *params.TokenDetails, error)
+	RefreshAccessToken(ctx context.Context, refreshToken string) (*params.TokenDetails, error)
 	LogoutUser(ctx context.Context, refreshToken, accessTokenUUID string) error
 }
 
 type AuthService struct {
-	redis          redis.Client
-	userRepository user.UserRepositorer
-	roleRepository role.RoleRepositorer
-	refresh        JWTCredential
-	access         JWTCredential
+	cache        redis.Client
+	usrStorage   user.UserStorage
+	rlStorage    role.RoleRepositorer
+	refreshCreds JWTCredential
+	accessCreds  JWTCredential
 }
 
 // LogoutUser implements AuthServicer
 func (s *AuthService) LogoutUser(ctx context.Context, refreshToken, accessTokenUUID string) error {
-	if _, err := s.redis.Del(ctx, accessTokenUUID).Result(); err != nil {
+	if _, err := s.cache.Del(ctx, accessTokenUUID).Result(); err != nil {
 		return fmt.Errorf("failed to delete access token: %w", err)
 	}
 	return nil
@@ -52,19 +52,19 @@ func (s *AuthService) LogoutUser(ctx context.Context, refreshToken, accessTokenU
 func (s *AuthService) RefreshAccessToken(
 	ctx context.Context,
 	refreshToken string,
-) (*dto.TokenDetails, error) {
-	tokenPayload, err := jwt.ValidateToken(refreshToken, s.refresh.PublicKey)
+) (*params.TokenDetails, error) {
+	tokenPayload, err := jwt.ValidateToken(refreshToken, s.refreshCreds.PublicKey)
 	if err != nil {
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
-	if err := s.redis.Get(ctx, tokenPayload.UUID).Err(); err != nil {
+	if err := s.cache.Get(ctx, tokenPayload.UUID).Err(); err != nil {
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
-	access, err := jwt.CreateToken(tokenPayload, s.access.TTL, s.access.PrivateKey)
+	access, err := jwt.CreateToken(tokenPayload, s.accessCreds.TTL, s.accessCreds.PrivateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create access token: %w", err)
 	}
-	if err := s.redis.Set(ctx, access.UUID, tokenPayload.UserID, time.Until(time.Unix(access.ExpiresIn, 0))).Err(); err != nil {
+	if err := s.cache.Set(ctx, access.UUID, tokenPayload.UserID, time.Until(time.Unix(access.ExpiresIn, 0))).Err(); err != nil {
 		return nil, fmt.Errorf("failed to set access token in redis: %w", err)
 	}
 	return access, nil
@@ -73,9 +73,9 @@ func (s *AuthService) RefreshAccessToken(
 // LoginUser implements AuthServicer
 func (s *AuthService) LoginUser(
 	ctx context.Context,
-	payload *dto.Login,
-) (*dto.TokenDetails, *dto.TokenDetails, error) {
-	model, err := s.userRepository.FindByName(ctx, payload.Name)
+	payload *params.Login,
+) (*params.TokenDetails, *params.TokenDetails, error) {
+	model, err := s.usrStorage.FindByName(ctx, payload.Name)
 	if err != nil {
 		return nil, nil, fmt.Errorf("user not found: %w", err)
 	}
@@ -83,7 +83,7 @@ func (s *AuthService) LoginUser(
 	if ok := auth.CompareHashAndPassword(payload.Password, model.Salt, hash); !ok {
 		return nil, nil, fmt.Errorf("invalid name or password")
 	}
-	tokenPayload := &dto.TokenPayload{
+	tokenPayload := &params.TokenPayload{
 		UserID:   model.ID,
 		Username: payload.Name,
 		Roles:    []string{},
@@ -91,30 +91,30 @@ func (s *AuthService) LoginUser(
 	for _, role := range model.Roles {
 		tokenPayload.Roles = append(tokenPayload.Roles, role.Name)
 	}
-	access, err := jwt.CreateToken(tokenPayload, s.access.TTL, s.access.PrivateKey)
+	access, err := jwt.CreateToken(tokenPayload, s.accessCreds.TTL, s.accessCreds.PrivateKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create access token: %w", err)
 	}
-	refresh, err := jwt.CreateToken(tokenPayload, s.refresh.TTL, s.refresh.PrivateKey)
+	refresh, err := jwt.CreateToken(tokenPayload, s.refreshCreds.TTL, s.refreshCreds.PrivateKey)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create refresh token: %w", err)
 	}
 	now := time.Now()
-	if err := s.redis.Set(ctx, access.UUID, model.ID, time.Unix(access.ExpiresIn, 0).Sub(now)).Err(); err != nil {
+	if err := s.cache.Set(ctx, access.UUID, model.ID, time.Unix(access.ExpiresIn, 0).Sub(now)).Err(); err != nil {
 		return nil, nil, fmt.Errorf("failed to set access token in redis: %w", err)
 	}
-	if err := s.redis.Set(ctx, refresh.UUID, model.ID, time.Unix(refresh.ExpiresIn, 0).Sub(now)).Err(); err != nil {
+	if err := s.cache.Set(ctx, refresh.UUID, model.ID, time.Unix(refresh.ExpiresIn, 0).Sub(now)).Err(); err != nil {
 		return nil, nil, fmt.Errorf("failed to set refresh token in redis: %w", err)
 	}
 	return access, refresh, nil
 }
 
 // SignUpUser implements AuthServicer
-func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUp) error {
-	if _, err := s.userRepository.FindByName(ctx, payload.Name); err == nil {
+func (s *AuthService) SignUpUser(ctx context.Context, payload *params.SignUp) error {
+	if _, err := s.usrStorage.FindByName(ctx, payload.Name); err == nil {
 		return fmt.Errorf("user already exists")
 	}
-	role, err := s.roleRepository.FindByName(ctx, "user")
+	role, err := s.rlStorage.FindByName(ctx, "user")
 	if err != nil {
 		return fmt.Errorf("failed to find roles: %w", err)
 	}
@@ -128,7 +128,7 @@ func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUp) error
 			Hash: hash,
 		},
 	}
-	if err := s.userRepository.Create(ctx, model); err != nil {
+	if err := s.usrStorage.Create(ctx, model); err != nil {
 		return fmt.Errorf("failed to create user: %w", err)
 	}
 	return nil
@@ -136,20 +136,20 @@ func (s *AuthService) SignUpUser(ctx context.Context, payload *dto.SignUp) error
 
 func New(
 	cfg *config.Config,
-	repo user.UserRepositorer,
+	repo user.UserStorage,
 	roleRepository role.RoleRepositorer,
 	redis redis.Client,
 ) AuthServicer {
 	return &AuthService{
-		redis:          redis,
-		userRepository: repo,
-		roleRepository: roleRepository,
-		refresh: JWTCredential{
+		cache:      redis,
+		usrStorage: repo,
+		rlStorage:  roleRepository,
+		refreshCreds: JWTCredential{
 			PrivateKey: cfg.RefreshTokenPrivateKey,
 			PublicKey:  cfg.RefreshTokenPublicKey,
 			TTL:        cfg.RefreshTokenExpiresIn,
 		},
-		access: JWTCredential{
+		accessCreds: JWTCredential{
 			PrivateKey: cfg.AccessTokenPrivateKey,
 			PublicKey:  cfg.AccessTokenPublicKey,
 			TTL:        cfg.AccessTokenExpiresIn,
