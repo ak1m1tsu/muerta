@@ -1,8 +1,8 @@
 package params
 
 type FindStorageType struct {
-	ID   int    `json:"id"   example:"1"`
-	Name string `json:"name" example:"Для овощей"`
+	ID   int    `json:"id,omitempty"   example:"1"`
+	Name string `json:"name,omitempty" example:"Для овощей"`
 }
 
 type UpdateStorageType struct {

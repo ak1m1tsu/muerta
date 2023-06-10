@@ -113,11 +113,11 @@ func (r *shelfLifeRepository) FindStatuses(
 func (r *shelfLifeRepository) Create(ctx context.Context, model models.ShelfLife) error {
 	query := `
 			INSERT INTO shelf_lives
-				(id, id_product, id_storage, id_measure, id_user, quantity, purchase_date, end_date)
+				(id_product, id_storage, id_measure, id_user, quantity, purchase_date, end_date)
 			VALUES
-				($1, $2, $3, $4, $5, $6, $7, $8)
+				($1, $2, $3, $4, $5, $6, $7)
 		`
-	if _, err := r.client.Exec(ctx, query, model.ID, model.Product.ID, model.Storage.ID, model.Measure.ID, model.User.ID, model.Quantity, model.PurchaseDate, model.EndDate); err != nil {
+	if _, err := r.client.Exec(ctx, query, model.Product.ID, model.Storage.ID, model.Measure.ID, model.User.ID, model.Quantity, model.PurchaseDate, model.EndDate); err != nil {
 		return fmt.Errorf("failed to create shelf life: %w", err)
 	}
 	return nil
@@ -163,10 +163,7 @@ func (r *shelfLifeRepository) FindByID(ctx context.Context, id int) (models.Shel
 }
 
 // FindMany implements ShelfLifeRepositorer
-func (r *shelfLifeRepository) FindMany(
-	ctx context.Context,
-	filter models.ShelfLifeFilter,
-) ([]models.ShelfLife, error) {
+func (r *shelfLifeRepository) FindMany(ctx context.Context, filter models.ShelfLifeFilter) ([]models.ShelfLife, error) {
 	var (
 		query = `
 			SELECT sl.id, 
@@ -192,9 +189,16 @@ func (r *shelfLifeRepository) FindMany(
 	defer rows.Close()
 	for rows.Next() {
 		var shelfLife models.ShelfLife
-		if err := rows.Scan(&shelfLife.ID, &shelfLife.Product.ID, &shelfLife.Product.Name, &shelfLife.Storage.ID, &shelfLife.Storage.Name, &shelfLife.Measure.ID, &shelfLife.Measure.Name, &shelfLife.Quantity, &shelfLife.PurchaseDate, &shelfLife.EndDate); err != nil {
+		if err := rows.Scan(
+			&shelfLife.ID,
+			&shelfLife.Product.ID, &shelfLife.Product.Name,
+			&shelfLife.Storage.ID, &shelfLife.Storage.Name,
+			&shelfLife.Measure.ID, &shelfLife.Measure.Name,
+			&shelfLife.Quantity, &shelfLife.PurchaseDate, &shelfLife.EndDate,
+		); err != nil {
 			return nil, fmt.Errorf("failed to scan shelf life: %w", err)
 		}
+		fmt.Printf("%#v\n", shelfLife)
 		shelfLives = append(shelfLives, shelfLife)
 	}
 	return shelfLives, nil
