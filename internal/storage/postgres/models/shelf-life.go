@@ -8,7 +8,7 @@ type ShelfLife struct {
 	Storage      Vault
 	Measure      Measure
 	User         User
-	Quantity     int        `db:"quantity"`
+	Quantity     float32    `db:"quantity"`
 	PurchaseDate *time.Time `db:"purchase_date"`
 	EndDate      *time.Time `db:"end_date"`
 	CreatedAt    *time.Time `db:"created_at"`

@@ -42,7 +42,7 @@ type UserShelfLife struct {
 	ProductID    int        `json:"id_product"    validate:"omitempty,gt=0"                                  example:"1"`
 	StorageID    int        `json:"id_storage"    validate:"omitempty,gt=0"                                  example:"1"`
 	MeasureID    int        `json:"id_measure"    validate:"omitempty,gt=0"                                  example:"1"`
-	Quantity     int        `json:"quantity"      validate:"omitempty,gt=0"                                  example:"1"`
+	Quantity     float32    `json:"quantity"      validate:"omitempty,gt=0"                                  example:"1"`
 	PurchaseDate *time.Time `json:"purchase_date" validate:"required_with=EndDate,ltfield=EndDate"           example:"2020-01-01T00:00:00Z"`
 	EndDate      *time.Time `json:"end_date"      validate:"required_with=PurchaseDate,gtfield=PurchaseDate" example:"2020-01-02T00:00:00Z"`
 }

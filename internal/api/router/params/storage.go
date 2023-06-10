@@ -4,8 +4,8 @@ import "time"
 
 type CreateStorage struct {
 	Name        string  `json:"name"        validate:"required,gte=3,notblank" example:"Холодильник"`
-	Temperature float32 `json:"temperature" validate:"required"                example:"1"`
-	Humidity    float32 `json:"humidity"    validate:"required"                example:"1"`
+	Temperature float32 `json:"temperature" validate:"required,min=-40,max=60"                example:"1"`
+	Humidity    float32 `json:"humidity"    validate:"required,min=0,max=100"                example:"1"`
 	TypeID      int     `json:"id_type"     validate:"required,gt=0"           example:"1"`
 }
 
@@ -20,7 +20,7 @@ type FindStorage struct {
 
 type UpdateStorage struct {
 	Name        string  `json:"name,omitempty"        validate:"omitempty,gte=3,notblank" example:"Холодильник"`
-	Temperature float32 `json:"temperature,omitempty" validate:"omitempty,gte=0"          example:"1"`
-	Humidity    float32 `json:"humidity,omitempty"    validate:"omitempty,gte=0"          example:"1"`
+	Temperature float32 `json:"temperature,omitempty" validate:"omitempty,min=-40,max=60"          example:"1"`
+	Humidity    float32 `json:"humidity,omitempty"    validate:"omitempty,min=0,max=100"          example:"1"`
 	TypeID      int     `json:"id_type,omitempty"     validate:"omitempty,gte=0"          example:"1"`
 }
