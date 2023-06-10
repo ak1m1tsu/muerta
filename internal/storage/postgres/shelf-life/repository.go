@@ -198,7 +198,6 @@ func (r *shelfLifeRepository) FindMany(ctx context.Context, filter models.ShelfL
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan shelf life: %w", err)
 		}
-		fmt.Printf("%#v\n", shelfLife)
 		shelfLives = append(shelfLives, shelfLife)
 	}
 	return shelfLives, nil

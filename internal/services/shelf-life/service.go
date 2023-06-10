@@ -96,7 +96,6 @@ func (svc *shelfLifeSerivce) FindShelfLifes(ctx context.Context, filter *params.
 			Offset: filter.Offset,
 		},
 	})
-	fmt.Printf("%+v\n", models)
 	dtos := utils.ShelfLifeModelsToFinds(models)
 	if err != nil {
 		return nil, err
