@@ -18,6 +18,7 @@ type Config struct {
 	Redis    redis    `yaml:"redis"`
 	Access   rsa      `yaml:"access"`
 	Refresh  rsa      `yaml:"refresh"`
+	RabbitMQ rabbitmq `yaml:"rabbitmq"`
 }
 
 type server struct {
@@ -45,6 +46,14 @@ type redis struct {
 	ReadTimeout  time.Duration `yaml:"read_timeout" env-default:"5s"`
 	WriteTimeout time.Duration `yaml:"write_timeout" env-default:"5s"`
 	DialTimeout  time.Duration `yaml:"dial_timeout" env-default:"5s"`
+}
+
+type rabbitmq struct {
+	Host      string `yaml:"host" env:"RABBITMQ_HOST"`
+	Port      string `yaml:"port" env:"RABBITMQ_PORT"`
+	User      string `yaml:"user" env:"RABBITMQ_USER"`
+	Password  string `yaml:"password" env:"RABBITMQ_PASSWORD"`
+	QueueName string `yaml:"queue_name"`
 }
 
 type rsa struct {
