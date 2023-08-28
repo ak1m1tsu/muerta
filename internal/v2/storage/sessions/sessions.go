@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/romankravchuk/muerta/internal/data"
+	"github.com/romankravchuk/muerta/internal/v2/data"
 )
 
 type Storage interface {

@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/romankravchuk/muerta/internal/data"
-	"github.com/romankravchuk/muerta/internal/storage"
-	"github.com/romankravchuk/muerta/internal/storage/users"
+	"github.com/romankravchuk/muerta/internal/v2/data"
+	"github.com/romankravchuk/muerta/internal/v2/storage"
+	"github.com/romankravchuk/muerta/internal/v2/storage/users"
 )
 
 // Storage represents a postgres users storage.

@@ -9,9 +9,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/romankravchuk/muerta/internal/data"
 	"github.com/romankravchuk/muerta/internal/pkg/jwt"
-	"github.com/romankravchuk/muerta/internal/server/response"
+	"github.com/romankravchuk/muerta/internal/v2/data"
+	"github.com/romankravchuk/muerta/internal/v2/server/response"
 )
 
 var ErrAccessTokenIsEmpty = errors.New("access token is empty")

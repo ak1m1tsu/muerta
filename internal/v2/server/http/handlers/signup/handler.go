@@ -8,9 +8,9 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"github.com/romankravchuk/muerta/internal/data"
-	"github.com/romankravchuk/muerta/internal/server/response"
-	"github.com/romankravchuk/muerta/internal/storage/users"
+	"github.com/romankravchuk/muerta/internal/v2/data"
+	"github.com/romankravchuk/muerta/internal/v2/server/response"
+	"github.com/romankravchuk/muerta/internal/v2/storage/users"
 )
 
 type SignUper interface {

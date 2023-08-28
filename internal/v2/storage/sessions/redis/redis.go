@@ -7,7 +7,7 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/redis/go-redis/v9"
-	"github.com/romankravchuk/muerta/internal/data"
+	"github.com/romankravchuk/muerta/internal/v2/data"
 )
 
 var ErrRedisClientIsNil = errors.New("the redis client is nil")
