@@ -3,11 +3,12 @@ package postgres
 import (
 	"context"
 	"database/sql"
-	"errors"
+	errs "errors"
 	"fmt"
 	"log/slog"
 
 	"github.com/romankravchuk/muerta/internal/v2/data"
+	"github.com/romankravchuk/muerta/internal/v2/lib/errors"
 	"github.com/romankravchuk/muerta/internal/v2/storage"
 	"github.com/romankravchuk/muerta/internal/v2/storage/users"
 )
@@ -52,7 +53,7 @@ func (s *Storage) Create(ctx context.Context, user *data.User) error {
 
 	tx, err := s.db.Begin()
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 	defer func() {
 		if err := tx.Rollback(); err != nil {
@@ -70,19 +71,19 @@ func (s *Storage) Create(ctx context.Context, user *data.User) error {
 		user.EncryptedPassword,
 	).Scan(&user.ID, &user.CreatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errs.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("%s: %w", op, users.ErrNotFound)
 		}
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 
 	_, err = tx.ExecContext(ctx, rolesQuery, user.ID)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 
 	return nil
@@ -102,11 +103,11 @@ func (s *Storage) Update(ctx context.Context, user *data.User) error {
 
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 
 	if _, err := stmt.ExecContext(ctx, user.FirstName, user.LastName, user.ID); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 
 	return nil
@@ -127,11 +128,11 @@ func (s *Storage) Delete(ctx context.Context, id string) error {
 
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 
 	if _, err := stmt.ExecContext(ctx, id); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+		return errors.WithOp(op, err)
 	}
 
 	return nil
@@ -159,7 +160,7 @@ func (s *Storage) FindByEmail(ctx context.Context, email string) (*data.User, er
 
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 
 	var user *data.User
@@ -173,10 +174,10 @@ func (s *Storage) FindByEmail(ctx context.Context, email string) (*data.User, er
 		user.UpdatedAt,
 	)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errs.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("%s: %w", op, users.ErrNotFound)
 		}
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 
 	return user, nil
@@ -210,7 +211,7 @@ func (s *Storage) FindMany(ctx context.Context, filter data.UserFilter) ([]data.
 
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 
 	rows, err := stmt.QueryContext(ctx,
@@ -220,7 +221,7 @@ func (s *Storage) FindMany(ctx context.Context, filter data.UserFilter) ([]data.
 		filter.LastName,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 	defer rows.Close()
 
@@ -235,13 +236,13 @@ func (s *Storage) FindMany(ctx context.Context, filter data.UserFilter) ([]data.
 			&user.CreatedAt,
 			&user.UpdatedAt,
 		); err != nil {
-			return nil, fmt.Errorf("%s: %w", op, err)
+			return nil, errors.WithOp(op, err)
 		}
 		users = append(users, user)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 
 	return users, nil
