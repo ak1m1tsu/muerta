@@ -75,10 +75,10 @@ func Load() (*Config, error) {
 		return nil, errors.WithOp(op, err)
 	}
 
-	var cfg *Config
-	if err := cleanenv.ReadConfig(configPath, cfg); err != nil {
+	var cfg Config
+	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		return nil, errors.WithOp(op, err)
 	}
 
-	return cfg, nil
+	return &cfg, nil
 }

@@ -3,18 +3,18 @@ package middleware
 import (
 	"context"
 	"encoding/base64"
-	"errors"
-	"fmt"
+	errs "errors"
 	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/romankravchuk/muerta/internal/pkg/jwt"
 	"github.com/romankravchuk/muerta/internal/v2/data"
+	"github.com/romankravchuk/muerta/internal/v2/lib/errors"
 	"github.com/romankravchuk/muerta/internal/v2/server/response"
 )
 
-var ErrAccessTokenIsEmpty = errors.New("access token is empty")
+var ErrAccessTokenIsEmpty = errs.New("access token is empty")
 
 const (
 	authHeader  = "Authorization"
@@ -27,7 +27,7 @@ func Auth(log *slog.Logger, rsaPub string) (func(next http.Handler) http.Handler
 
 	pubKey, err := base64.StdEncoding.DecodeString(rsaPub)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 
 	log.Debug("auth middleware initialized")

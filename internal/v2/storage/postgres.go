@@ -2,9 +2,9 @@ package storage
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "github.com/lib/pq"
+	"github.com/romankravchuk/muerta/internal/v2/lib/errors"
 )
 
 const UniqueViolation = "23505"
@@ -14,11 +14,11 @@ func NewPostgresConnection(url string) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", url)
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 
 	if err = db.Ping(); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errors.WithOp(op, err)
 	}
 
 	return db, nil
