@@ -3,7 +3,9 @@ package memo
 import (
 	"context"
 	"sync"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/romankravchuk/muerta/internal/v2/data"
 	"github.com/romankravchuk/muerta/internal/v2/lib/errors"
 	"github.com/romankravchuk/muerta/internal/v2/storage/users"
@@ -29,6 +31,10 @@ func (s *Storage) Create(_ context.Context, user *data.User) error {
 	if _, ok := s.users[user.Email]; ok {
 		return errors.WithOp(op, users.ErrExists)
 	}
+
+	user.ID = uuid.New()
+	user.CreatedAt = time.Now().UTC()
+	user.UpdatedAt = time.Now().UTC()
 
 	s.users[user.Email] = user
 	return nil

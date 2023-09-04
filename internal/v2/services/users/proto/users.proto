@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package users;
+
+option go_package = "./users/proto";
+
+service UsersService {
+    rpc FindByEmail(FindByEmailRequest) returns (UserResponse) {}
+    rpc List(ListRequest) returns (UsersResponse) {}
+    rpc Create(CreateRequest) returns (UserResponse) {}
+    rpc Update(UpdateRequest) returns (UserResponse) {}
+    rpc Delete(DeleteRequest) returns (Response) {}
+}
+
+message Response {
+    int64 status = 1;
+    string error = 2;
+}
+
+message UserResponse {
+    Response meta = 1;
+    User user = 2;
+}
+
+message UsersResponse {
+    Response meta = 1;
+    repeated User users = 2;
+}
+
+message FindByEmailRequest {
+    string email = 1;
+}
+
+message ListRequest {
+    string firstName = 1;
+    string lastName = 2;
+    int64 limit = 3;
+    int64 offset = 4;
+    bool deleted = 5;
+}
+
+message CreateRequest {
+    string email = 1;
+    string password = 2;
+    string firstName = 3;
+    string lastName = 4;
+}
+
+message UpdateRequest {
+    string firstName = 1;
+    string lastName = 2;
+}
+
+message DeleteRequest {
+    string id = 1;
+}
+
+message User {
+    string id = 1;
+    string firstName = 2;
+    string lastName = 3;
+    string email = 4;
+    string encryptedPassword = 5;
+    string createdAt = 6;
+    string updatedAt = 7;
+    string deletedAt = 8;
+}
