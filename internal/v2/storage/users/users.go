@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("the user not found")
-	ErrExists   = errors.New("the user already exists")
+	ErrUserNotFound  = errors.New("the user not found")
+	ErrAlreadyExists = errors.New("the user already exists")
+	ErrUsersNotFound = errors.New("the users not found")
 )
 
 type Storage interface {

@@ -61,7 +61,7 @@ func New(log *slog.Logger, s SignUper) func(w http.ResponseWriter, r *http.Reque
 		// }
 
 		user, err := s.SignUp(req.Email, req.Password)
-		if errors.Is(err, users.ErrExists) {
+		if errors.Is(err, users.ErrAlreadyExists) {
 			msg := fmt.Sprintf("user with email %s already exists", req.Email)
 
 			log.Error(msg, slog.String("error", err.Error()))

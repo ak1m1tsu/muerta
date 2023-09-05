@@ -186,8 +186,8 @@ func (s *Service) Login(ctx context.Context, in *proto.LoginRequest) (*proto.Log
 
 	user, err := s.users.FindByEmail(ctx, in.GetEmail())
 	if err != nil {
-		if errs.Is(err, users.ErrNotFound) {
-			msg := users.ErrNotFound.Error()
+		if errs.Is(err, users.ErrUserNotFound) {
+			msg := users.ErrUserNotFound.Error()
 
 			s.log.Error(msg, slog.String("error", err.Error()))
 
@@ -344,10 +344,10 @@ func (s *Service) Register(ctx context.Context, in *proto.RegisterRequest) (*pro
 		Email:             in.GetEmail(),
 		EncryptedPassword: string(hash),
 	})
-	if errs.Is(err, users.ErrExists) {
+	if errs.Is(err, users.ErrAlreadyExists) {
 		return &proto.RegisterResponse{
 			Status: http.StatusBadRequest,
-			Error:  users.ErrExists.Error(),
+			Error:  users.ErrAlreadyExists.Error(),
 		}, nil
 	}
 	if err != nil {

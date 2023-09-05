@@ -4,8 +4,6 @@ import (
 	"context"
 	"database/sql"
 	errs "errors"
-	"fmt"
-	"log/slog"
 
 	"github.com/romankravchuk/muerta/internal/v2/data"
 	"github.com/romankravchuk/muerta/internal/v2/lib/errors"
@@ -25,7 +23,7 @@ func New(db *sql.DB) (*Storage, error) {
 	const op = "storage.users.postgres.New"
 
 	if db == nil {
-		return nil, fmt.Errorf("%s: %w", op, storage.ErrDBPoolIsNnil)
+		return nil, errors.WithOp(op, storage.ErrDBPoolIsNnil)
 	}
 
 	return &Storage{db: db}, nil
@@ -46,7 +44,7 @@ func (s *Storage) Create(ctx context.Context, user *data.User) error {
 		rolesQuery = `
 		INSERT INTO user_roles
 			(user_id, role_id)
-		SELECT $1, role_id
+		SELECT $1, id
 		FROM roles
 		WHERE name = 'user'`
 	)
@@ -55,14 +53,7 @@ func (s *Storage) Create(ctx context.Context, user *data.User) error {
 	if err != nil {
 		return errors.WithOp(op, err)
 	}
-	defer func() {
-		if err := tx.Rollback(); err != nil {
-			slog.Error(storage.RollbackFailedMessage,
-				slog.String("op", op),
-				slog.String("error", err.Error()),
-			)
-		}
-	}()
+	defer func() { _ = tx.Rollback() }()
 
 	err = tx.QueryRowContext(ctx, query,
 		user.FirstName,
@@ -72,7 +63,7 @@ func (s *Storage) Create(ctx context.Context, user *data.User) error {
 	).Scan(&user.ID, &user.CreatedAt)
 	if err != nil {
 		if errs.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("%s: %w", op, users.ErrNotFound)
+			return errors.WithOp(op, users.ErrUserNotFound)
 		}
 		return errors.WithOp(op, err)
 	}
@@ -175,7 +166,7 @@ func (s *Storage) FindByEmail(ctx context.Context, email string) (*data.User, er
 	)
 	if err != nil {
 		if errs.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%s: %w", op, users.ErrNotFound)
+			return nil, errors.WithOp(op, users.ErrUserNotFound)
 		}
 		return nil, errors.WithOp(op, err)
 	}
@@ -207,7 +198,7 @@ func (s *Storage) FindMany(ctx context.Context, filter data.UserFilter) ([]data.
 		OFFSET $2`
 	)
 
-	users := make([]data.User, 0, filter.Limit)
+	foundUsers := make([]data.User, 0, filter.Limit)
 
 	stmt, err := s.db.PrepareContext(ctx, query)
 	if err != nil {
@@ -238,12 +229,16 @@ func (s *Storage) FindMany(ctx context.Context, filter data.UserFilter) ([]data.
 		); err != nil {
 			return nil, errors.WithOp(op, err)
 		}
-		users = append(users, user)
+		foundUsers = append(foundUsers, user)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, errors.WithOp(op, err)
 	}
 
-	return users, nil
+	if len(foundUsers) == 0 {
+		return nil, errors.WithOp(op, users.ErrUsersNotFound)
+	}
+
+	return foundUsers, nil
 }

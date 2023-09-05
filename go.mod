@@ -17,7 +17,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/otiai10/gosseract/v2 v2.4.0
 	github.com/redis/go-redis/v9 v9.1.0
-	github.com/romankravchuk/nix v0.0.4
+	github.com/romankravchuk/nix v0.0.5
 	github.com/rs/zerolog v1.30.0
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/swag v1.16.1

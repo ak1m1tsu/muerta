@@ -143,6 +143,8 @@ github.com/rogpeppe/go-internal v1.11.0 h1:cWPaGQEPrBb5/AsnsZesgZZ9yb1OQ+GOISoDN
 github.com/rogpeppe/go-internal v1.11.0/go.mod h1:ddIwULY96R17DhadqLgMfk9H9tvdUzkipdSkR5nkCZA=
 github.com/romankravchuk/nix v0.0.4 h1:SPuQlk4w5+3fu15Oa8mIfle9pmyBVhUKCCckPYykb6k=
 github.com/romankravchuk/nix v0.0.4/go.mod h1:0NXbdzVH+RR8o7D6KeChW2JAw8pfREx1+r6PkJ8lwcU=
+github.com/romankravchuk/nix v0.0.5 h1:VZKj34wfMaBqmj0RB5vrqFc/1BQMi205kaBhZjnVee0=
+github.com/romankravchuk/nix v0.0.5/go.mod h1:0NXbdzVH+RR8o7D6KeChW2JAw8pfREx1+r6PkJ8lwcU=
 github.com/rs/xid v1.5.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
 github.com/rs/zerolog v1.30.0 h1:SymVODrcRsaRaSInD9yQtKbtWqwsfoPcRff/oRXLj4c=
 github.com/rs/zerolog v1.30.0/go.mod h1:/tk+P47gFdPXq4QYjvCmT5/Gsug2nagsFWBWhAiSi1w=

@@ -47,8 +47,9 @@ message CreateRequest {
 }
 
 message UpdateRequest {
-    string firstName = 1;
-    string lastName = 2;
+    string id = 1;
+    string firstName = 2;
+    string lastName = 3;
 }
 
 message DeleteRequest {

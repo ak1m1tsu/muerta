@@ -59,7 +59,7 @@ func New(log *slog.Logger, signiner Signiner) func(w http.ResponseWriter, r *htt
 		// }
 
 		access, refresh, err := signiner.SignIn(req.Email, req.Password)
-		if errors.Is(err, users.ErrNotFound) {
+		if errors.Is(err, users.ErrUserNotFound) {
 			msg := fmt.Sprintf("user with email %s not found", req.Email)
 
 			log.Error(msg, slog.String("error", err.Error()))

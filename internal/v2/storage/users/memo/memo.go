@@ -28,15 +28,15 @@ func (s *Storage) Create(_ context.Context, user *data.User) error {
 	s.usersMu.Lock()
 	defer s.usersMu.Unlock()
 
-	if _, ok := s.users[user.Email]; ok {
-		return errors.WithOp(op, users.ErrExists)
+	if _, ok := s.users[user.ID.String()]; ok {
+		return errors.WithOp(op, users.ErrAlreadyExists)
 	}
 
 	user.ID = uuid.New()
 	user.CreatedAt = time.Now().UTC()
 	user.UpdatedAt = time.Now().UTC()
 
-	s.users[user.Email] = user
+	s.users[user.ID.String()] = user
 	return nil
 }
 
@@ -46,11 +46,18 @@ func (s *Storage) Update(_ context.Context, user *data.User) error {
 	s.usersMu.Lock()
 	defer s.usersMu.Unlock()
 
-	if _, ok := s.users[user.Email]; !ok {
-		return errors.WithOp(op, users.ErrNotFound)
+	old, ok := s.users[user.ID.String()]
+	if !ok {
+		return errors.WithOp(op, users.ErrUserNotFound)
 	}
 
-	s.users[user.Email] = user
+	user.Email = old.Email
+	user.EncryptedPassword = old.EncryptedPassword
+	user.CreatedAt = old.CreatedAt
+	user.UpdatedAt = old.UpdatedAt
+	user.DeletedAt = old.DeletedAt
+
+	s.users[user.ID.String()] = user
 	return nil
 }
 
@@ -61,7 +68,7 @@ func (s *Storage) Delete(_ context.Context, email string) error {
 	defer s.usersMu.Unlock()
 
 	if _, ok := s.users[email]; !ok {
-		return errors.WithOp(op, users.ErrNotFound)
+		return errors.WithOp(op, users.ErrUserNotFound)
 	}
 
 	delete(s.users, email)
@@ -74,20 +81,22 @@ func (s *Storage) FindByEmail(_ context.Context, email string) (*data.User, erro
 	s.usersMu.Lock()
 	defer s.usersMu.Unlock()
 
-	if user, ok := s.users[email]; ok {
-		return &data.User{
-			ID:                user.ID,
-			FirstName:         user.FirstName,
-			LastName:          user.LastName,
-			Email:             user.Email,
-			EncryptedPassword: user.EncryptedPassword,
-			CreatedAt:         user.CreatedAt,
-			UpdatedAt:         user.UpdatedAt,
-			DeletedAt:         user.DeletedAt,
-		}, nil
+	for _, user := range s.users {
+		if user.Email == email {
+			return &data.User{
+				ID:                user.ID,
+				FirstName:         user.FirstName,
+				LastName:          user.LastName,
+				Email:             user.Email,
+				EncryptedPassword: user.EncryptedPassword,
+				CreatedAt:         user.CreatedAt,
+				UpdatedAt:         user.UpdatedAt,
+				DeletedAt:         user.DeletedAt,
+			}, nil
+		}
 	}
 
-	return nil, errors.WithOp(op, users.ErrNotFound)
+	return nil, errors.WithOp(op, users.ErrUserNotFound)
 }
 
 func (s *Storage) FindMany(_ context.Context, _ data.UserFilter) ([]data.User, error) {
@@ -97,7 +106,7 @@ func (s *Storage) FindMany(_ context.Context, _ data.UserFilter) ([]data.User, e
 	defer s.usersMu.Unlock()
 
 	if len(s.users) == 0 {
-		return nil, errors.WithOp(op, users.ErrNotFound)
+		return nil, errors.WithOp(op, users.ErrUsersNotFound)
 	}
 
 	users := make([]data.User, 0, len(s.users))
