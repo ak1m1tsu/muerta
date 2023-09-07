@@ -21,4 +21,5 @@ type UserFilter struct {
 	Pagination
 	FirstName string
 	LastName  string
+	Deleted   bool
 }
